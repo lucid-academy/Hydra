@@ -2,6 +2,7 @@
 // Runs the battle simulation in fixed ticks and draws it; taps and keys become commands to the simulation.
 // The battle starts paused. Space / the Pause button stops and starts the ticks; orders can be given while paused.
 // Controls: tap a head (or its card, or 1–9) to select it, then tap an enemy to make it attack.
+// Several heads at once: Ctrl or Shift + tap on heads or cards (Shift + 1–9), or "All heads" (key A).
 // With no head selected, tap a free hex to move the body there (right-click always moves it).
 
 import * as Phaser from 'phaser';
@@ -13,7 +14,7 @@ import type { Hex, HexLayout } from '../sim/hex';
 import { exposeBattleSummary, markReady } from '../testHooks';
 import { Button } from '../ui/Button';
 import { HeadCards } from '../ui/HeadCards';
-import { onKeyDown } from '../ui/keys';
+import { onKeyDown, wantsToAdd } from '../ui/keys';
 import { color, getContext } from './context';
 import { getRun, startNewRun } from './RunController';
 import type { RunController } from './RunController';
@@ -74,7 +75,8 @@ export class BattleScene extends Phaser.Scene {
   private started = false;
   private speedIndex = 0;
   private accumulator = 0;
-  private selectedHeadId: string | null = null;
+  /** Heads picked by the player; an order goes to all of them. */
+  private selected = new Set<string>();
   private finished = false;
   /** Real milliseconds of combo slow-down left. */
   private slowdownLeft = 0;
@@ -129,7 +131,7 @@ export class BattleScene extends Phaser.Scene {
     this.started = false;
     this.speedIndex = 0;
     this.accumulator = 0;
-    this.selectedHeadId = null;
+    this.selected = new Set();
     this.finished = false;
     this.slowdownLeft = 0;
     this.marks = new Map();
@@ -162,6 +164,8 @@ export class BattleScene extends Phaser.Scene {
         return { id: e.id, typeId: e.typeId, x: feet.x, y: feet.y - 16 };
       }),
       heads: this.battle.heads.map((h) => ({ id: h.id, classId: h.classId, x: this.heads.get(h.id)?.x ?? 0, y: this.heads.get(h.id)?.y ?? 0 })),
+      selected: [...this.selected],
+      orders: Object.fromEntries(this.battle.heads.map((h) => [h.id, h.orderTargetId])),
       clouds: this.battle.clouds.length,
       combos: [...this.combosSeen],
     }));
@@ -265,7 +269,7 @@ export class BattleScene extends Phaser.Scene {
         classColors: Object.fromEntries(Object.entries(heads.classes).map(([id, c]) => [id, c.color])),
         classNames: Object.fromEntries(Object.entries(heads.classes).map(([id, c]) => [id, c.displayName])),
       },
-      (headId) => this.selectHead(headId),
+      (headId, add) => this.selectHead(headId, add),
     );
 
     const buttonStyle = {
@@ -281,7 +285,15 @@ export class BattleScene extends Phaser.Scene {
       this.speedIndex = (this.speedIndex + 1) % SPEEDS.length;
       this.updateButtons();
     });
-    for (const b of [this.pauseButton, this.speedButton]) b.setDepth(DEPTH.ui + 2);
+    const allHeads = new Button(
+      this,
+      width - 40,
+      ARENA_TOP / 2,
+      text.battle.selectAllButton,
+      { ...buttonStyle, width: 74, height: 13, fontSize: '9px' },
+      () => this.selectAllHeads(),
+    );
+    for (const b of [this.pauseButton, this.speedButton, allHeads]) b.setDepth(DEPTH.ui + 2);
     this.updateButtons();
   }
 
@@ -301,8 +313,19 @@ export class BattleScene extends Phaser.Scene {
     this.updateButtons();
   }
 
-  private selectHead(headId: string | null): void {
-    this.selectedHeadId = this.selectedHeadId === headId ? null : headId;
+  /** A plain tap picks one head (or lets go of it); with `add` (Ctrl, Shift) the head joins the picked ones or leaves them. */
+  private selectHead(headId: string, add: boolean): void {
+    if (add) {
+      if (this.selected.has(headId)) this.selected.delete(headId);
+      else this.selected.add(headId);
+      return;
+    }
+    const onlyThisOne = this.selected.size === 1 && this.selected.has(headId);
+    this.selected = onlyThisOne ? new Set() : new Set([headId]);
+  }
+
+  private selectAllHeads(): void {
+    if (!this.finished) this.selected = new Set(this.battle.heads.map((h) => h.id));
   }
 
   // ------------------------------------------------------------ input
@@ -310,44 +333,47 @@ export class BattleScene extends Phaser.Scene {
   private setUpInput(): void {
     this.input.mouse?.disableContextMenu();
     onKeyDown(this, (event) => {
+      // Key codes, not characters: Shift + 1 still counts as 1 on every keyboard layout.
+      const digit = /^Digit([1-9])$/.exec(event.code);
       if (event.code === 'Space') this.togglePause();
-      else if (event.key === 'Escape') this.selectedHeadId = null;
-      else if (/^[1-9]$/.test(event.key)) {
-        const head = this.battle.heads[Number(event.key) - 1];
-        if (head) this.selectHead(head.id);
+      else if (event.key === 'Escape') this.selected = new Set();
+      else if (event.code === 'KeyA') this.selectAllHeads();
+      else if (digit) {
+        const head = this.battle.heads[Number(digit[1]) - 1];
+        if (head) this.selectHead(head.id, event.shiftKey);
       }
     });
 
     // The board area: buttons, cards and the top bar lie above it and catch their own taps first.
     const zone = this.add.zone(0, ARENA_TOP, this.scale.gameSize.width, PANEL_TOP - ARENA_TOP).setOrigin(0, 0).setDepth(DEPTH.tile).setInteractive();
     zone.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-      if (!this.finished) this.handleTap({ x: pointer.worldX, y: pointer.worldY }, pointer.rightButtonReleased());
+      if (!this.finished) this.handleTap({ x: pointer.worldX, y: pointer.worldY }, pointer.rightButtonReleased(), wantsToAdd(pointer));
     });
   }
 
-  private handleTap(at: Point, rightButton: boolean): void {
+  private handleTap(at: Point, rightButton: boolean, add: boolean): void {
     const rules = this.run.battleRules;
     const tappedHex = pixelToHex(LAYOUT, at.x, at.y);
     if (!rightButton) {
       const head = this.headAt(at);
       if (head) {
-        this.selectHead(head.id);
+        this.selectHead(head.id, add);
         return;
       }
       const enemy = this.enemyAt(at, tappedHex);
       if (enemy) {
-        if (this.selectedHeadId) applyCommand(this.battle, { type: 'attack', headId: this.selectedHeadId, enemyId: enemy.id }, rules);
+        for (const headId of this.selected) applyCommand(this.battle, { type: 'attack', headId, enemyId: enemy.id }, rules);
         return;
       }
-      // A tap that missed everything while a head is selected only lets go of the head:
+      // A tap that missed everything while heads are selected only lets go of them:
       // on a phone it is usually a missed enemy, and the body must not wander off because of it.
-      if (this.selectedHeadId) {
-        this.selectedHeadId = null;
+      if (this.selected.size > 0) {
+        this.selected = new Set();
         return;
       }
     }
     if (isOnBoard(tappedHex, rules)) applyCommand(this.battle, { type: 'moveBody', to: tappedHex }, rules);
-    this.selectedHeadId = null;
+    this.selected = new Set();
   }
 
   private headAt(at: Point): BattleHead | null {
@@ -399,7 +425,7 @@ export class BattleScene extends Phaser.Scene {
         this.accumulator -= stepMs;
       }
     }
-    if (this.selectedHeadId && !this.battle.heads.some((h) => h.id === this.selectedHeadId)) this.selectedHeadId = null;
+    for (const id of this.selected) if (!this.battle.heads.some((h) => h.id === id)) this.selected.delete(id);
     this.syncSprites();
     this.draw(delta);
     if (this.battle.outcome && !this.finished) this.finish();
@@ -490,7 +516,7 @@ export class BattleScene extends Phaser.Scene {
     this.bodyHpText.setText(`${text.battle.body} ${Math.max(0, Math.ceil(this.battle.body.hp))}/${this.battle.body.maxHp}`);
     this.cards.update(
       this.battle.heads.map((h) => ({ ...h, charge: 1 - h.cooldown / rules.headClasses[h.classId]!.attack.cooldownTicks })),
-      this.selectedHeadId,
+      this.selected,
     );
   }
 
@@ -607,7 +633,7 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  /** Hex outlines: how far the selected head reaches, which enemies it can take, where the body is going. */
+  /** Hex outlines: how far the selected heads reach, which enemies they can take, where the body is going. */
   private drawMarks(): void {
     const rules = this.run.battleRules;
     for (const mark of this.marks.values()) mark.setVisible(false);
@@ -615,15 +641,20 @@ export class BattleScene extends Phaser.Scene {
       this.marks.get(hexKey(h))?.setVisible(true).setTint(tint).setAlpha(alpha);
     };
     const center = this.battle.body.center;
-    const selected = this.battle.heads.find((h) => h.id === this.selectedHeadId);
-    if (selected && !this.finished) {
-      const range = rules.headClasses[selected.classId]!.attack.range;
+    const picked = this.battle.heads.filter((h) => this.selected.has(h.id));
+    if (picked.length > 0 && !this.finished) {
+      const rangeOf = (h: BattleHead) => rules.headClasses[h.classId]!.attack.range;
+      const reach = Math.max(...picked.map(rangeOf));
       for (const h of boardHexes(rules)) {
         const d = bodyDistance(center, h);
-        if (d >= 1 && d <= range) show(h, 0xc6e04a, 0.45);
+        if (d >= 1 && d <= reach) show(h, 0xc6e04a, 0.45);
       }
+      // Orange: enemies at least one of them can reach. Red: enemies they were ordered to attack.
+      const ordered = new Set(picked.map((h) => h.orderTargetId));
       for (const enemy of this.battle.enemies) {
-        if (bodyDistance(center, enemy.hex) <= range) show(enemy.hex, enemy.id === selected.orderTargetId ? 0xff5030 : 0xffa030, 0.95);
+        const inReach = picked.some((h) => bodyDistance(center, enemy.hex) <= rangeOf(h));
+        if (ordered.has(enemy.id)) show(enemy.hex, 0xff5030, 0.95);
+        else if (inReach) show(enemy.hex, 0xffa030, 0.95);
       }
     }
     if (this.battle.body.moveTarget && !this.finished) show(this.battle.body.moveTarget, 0xe8f0e0, 0.7);
@@ -666,7 +697,7 @@ export class BattleScene extends Phaser.Scene {
       const view = this.heads.get(head.id);
       if (!view) continue;
       hpBar(g, view.x, view.y - 11, 14, head.hp / head.maxHp, 0x7fc05a);
-      if (head.id !== this.selectedHeadId) continue;
+      if (!this.selected.has(head.id)) continue;
       g.lineStyle(1, 0xc6e04a);
       g.strokeEllipse(Math.round(view.x), Math.round(view.y), 26, 20);
       const ordered = head.orderTargetId !== null ? this.enemies.get(head.orderTargetId) : undefined;

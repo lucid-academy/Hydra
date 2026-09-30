@@ -133,9 +133,9 @@ Współrzędne osiowe (axial q, r), heksy pointy-top, algorytmy według przewodn
 
 ### 6.2 Hydra w walce
 - **Body:** duże, wolne, z własnym HP. Zajmuje 7 heksów (środek i sześć dookoła) i zaczyna bitwę na środku planszy, więc ludzie mogą je otoczyć, a głowy atakują we wszystkie strony. Śmierć Body to śmierć hydry i koniec pokolenia. Porusza się na rozkaz (prawy klik albo tapnięcie w wolne pole), krok po kroku i tylko wtedy, gdy pola, na które wchodzi, są wolne.
-- **Heads:** każda głowa to jednostka z HP, klasą, poziomem, imieniem i przypadłością. Głowy nie zajmują heksów: wyrastają dookoła Body. Głowa atakuje tylko w zasięgu szyi od Body, liczonym w heksach. Ma atak podstawowy (automatyczny) i umiejętności z czasem odnowienia.
+- **Heads:** każda głowa to jednostka z HP, klasą, poziomem, imieniem i przypadłością. Głowy nie zajmują heksów: wyrastają dookoła Body. Głowa atakuje tylko w zasięgu szyi od Body, liczonym w heksach; zasięg to jedna z rzeczy, które odróżniają klasy głów. Ma atak podstawowy i umiejętności z czasem odnowienia. Atak podstawowy działa sam, gdy wróg wejdzie w zasięg. Umiejętności używa tylko gracz, kliknięciem; głowa nigdy nie użyje ich sama.
 - Szyje rysowane proceduralnie jako łańcuch segmentów od Body do pozycji głowy, więc głowa widocznie „sięga" do celu.
-- Sterowanie: wybór głowy klawiszami 1–9 albo kliknięciem, umiejętności Q/W/E, kliknięcie celu. Rozkazy można kolejkować w pauzie. Od początku projektujemy tak, żeby dało się grać dotykiem: duży przycisk pauzy, tapnięcie wybiera, kolejne tapnięcie wskazuje cel.
+- Sterowanie: wybór głowy klawiszami 1–9 albo kliknięciem, umiejętności Q/W/E, kliknięcie celu. Rozkazy można kolejkować w pauzie. Kilka głów naraz: Ctrl albo Shift + kliknięcie w głowy lub ich karty, albo przycisk „All heads” (klawisz A); rozkaz dostają wtedy wszystkie zaznaczone. Od początku projektujemy tak, żeby dało się grać dotykiem: duży przycisk pauzy, tapnięcie wybiera, kolejne tapnięcie wskazuje cel.
 
 ### 6.3 Ścinanie, odrost, przypalanie (rdzeń gry)
 - Głowa z 0 HP zostaje ścięta i zostaje po niej Stump.
@@ -315,3 +315,6 @@ Gotowe, gdy: da się rozegrać kilka bitw pod linkiem, testy przechodzą, a zrzu
 ## 16. Otwarte pytania (decyduje Piotr, nie zgadywać)
 
 - Ile kapliczek Płomienia trzeba zgasić, żeby zamek stał się celem (roboczo: wszystkie).
+- **Odrost (pomysł Piotra po playteście M1b):** nowe głowy są mniejsze i na początku zadają połowę obrażeń, żeby odrost nie dawał od razu siły. Głowy potem rosną, i dlatego z czasem hydra jest mocna. Do ustalenia: od czego rosną (doświadczenie z walk, błogosławieństwa, czas).
+- **Fabuła (pomysł Piotra):** hydra szuka błogosławieństw Wielkiego Węża, który otula swoim ciałem środek planety. Może to on sprawia, że głowy rosną. Do rozwinięcia.
+- **The Spare (pomysły Piotra):** czasem przeszkadza, np. przejmuje na chwilę kursor i nie można sterować. Ma też umiejętność „Multiheadeverse”, która losowo działa albo nie: przyzywa półprzezroczyste głowy z innych wymiarów, które na chwilę pojawiają się przy wszystkich ludziach i zadają im obrażenia albo całkiem ich rozrywają.

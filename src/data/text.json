@@ -23,7 +23,8 @@
     "cauterized": "The stump is burnt shut.",
     "victoryTitle": "The Order retreats. Mostly into you.",
     "defeatTitle": "The hydra is dead.",
-    "continueButton": "Continue"
+    "continueButton": "Continue",
+    "selectAllButton": "All heads"
   },
   "gameOver": {
     "title": "The hydra is dead.",

@@ -267,6 +267,7 @@ export const textSchema = z
       speed: z.string().min(1),
       body: z.string().min(1),
       hintSelectHead: z.string(),
+      selectAllButton: z.string().min(1),
       severed: z.string().min(1),
       regrown: z.string().min(1),
       cauterized: z.string().min(1),

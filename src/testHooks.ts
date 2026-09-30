@@ -25,6 +25,10 @@ declare global {
         paused: boolean;
         enemies: Array<{ id: number; typeId: string; x: number; y: number }>;
         heads: Array<{ id: string; classId: string; x: number; y: number }>;
+        /** Ids of the heads the player has picked. */
+        selected: string[];
+        /** Enemy each head was ordered to attack (null = none). */
+        orders: Record<string, number | null>;
         clouds: number;
         combos: string[];
       };

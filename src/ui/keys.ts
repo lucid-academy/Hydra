@@ -7,6 +7,12 @@
 
 import type * as Phaser from 'phaser';
 
+/** Ctrl, Shift or Cmd held during a click or tap: add to the selection instead of replacing it. */
+export function wantsToAdd(pointer: Phaser.Input.Pointer): boolean {
+  const event = pointer.event as MouseEvent | undefined;
+  return Boolean(event && (event.ctrlKey || event.shiftKey || event.metaKey));
+}
+
 export function onKeyDown(scene: Phaser.Scene, handler: (event: KeyboardEvent) => void): void {
   const handled = new WeakSet<KeyboardEvent>();
   scene.input.keyboard?.on('keydown', (event: KeyboardEvent) => {

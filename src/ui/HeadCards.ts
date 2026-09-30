@@ -1,8 +1,9 @@
 // Row of head cards along the bottom of the battle screen: name, class, HP and how charged its attack is
 // (the thin bar fills up and turns bright when the next attack is ready, like weapons in FTL).
-// Tapping a card selects that head (same as keys 1–9).
+// Tapping a card selects that head (same as keys 1–9); with Ctrl or Shift held it is added to the selected heads.
 
 import * as Phaser from 'phaser';
+import { wantsToAdd } from './keys';
 import { pinToScreen } from './pinToScreen';
 
 const CARD_HEIGHT = 40;
@@ -48,18 +49,18 @@ export class HeadCards {
   constructor(
     private readonly scene: Phaser.Scene,
     style: HeadCardsStyle,
-    private readonly onSelect: (headId: string) => void,
+    private readonly onSelect: (headId: string, add: boolean) => void,
   ) {
     this.style = style;
     this.cardWidth = Math.floor((style.width - GAP * (style.maxCards - 1)) / style.maxCards);
     this.container = pinToScreen(scene.add.container(style.x, style.y)).setDepth(150);
   }
 
-  update(heads: readonly HeadCardInfo[], selectedId: string | null): void {
-    const layout = heads.map((h) => h.id).join('|') + `#${selectedId}`;
+  update(heads: readonly HeadCardInfo[], selected: ReadonlySet<string>): void {
+    const layout = heads.map((h) => `${h.id}${selected.has(h.id) ? '*' : ''}`).join('|');
     if (layout !== this.builtFor) {
       this.builtFor = layout;
-      this.build(heads, selectedId);
+      this.build(heads, selected);
     }
     const barWidth = this.cardWidth - 9;
     for (const head of heads) {
@@ -72,7 +73,7 @@ export class HeadCards {
     }
   }
 
-  private build(heads: readonly HeadCardInfo[], selectedId: string | null): void {
+  private build(heads: readonly HeadCardInfo[], selectedIds: ReadonlySet<string>): void {
     this.container.removeAll(true);
     this.bars.clear();
     const barWidth = this.cardWidth - 9;
@@ -80,7 +81,7 @@ export class HeadCards {
     const textWidth = this.cardWidth - 6;
     heads.forEach((head, i) => {
       const x = i * (this.cardWidth + GAP);
-      const selected = head.id === selectedId;
+      const selected = selectedIds.has(head.id);
       const classColor = Phaser.Display.Color.HexStringToColor(this.style.classColors[head.classId] ?? '#cccccc').color;
 
       const bg = this.scene.add
@@ -88,7 +89,7 @@ export class HeadCards {
         .setOrigin(0, 0)
         .setStrokeStyle(1, selected ? 0xc6e04a : 0x2c3a3a)
         .setInteractive({ useHandCursor: true });
-      bg.on('pointerup', () => this.onSelect(head.id));
+      bg.on('pointerup', (pointer: Phaser.Input.Pointer) => this.onSelect(head.id, wantsToAdd(pointer)));
 
       const stripe = this.scene.add.rectangle(x, 0, 3, CARD_HEIGHT, classColor).setOrigin(0, 0);
       const name = this.scene.add.text(x + 5, 2, `${i + 1} ${head.name}`, { fontFamily: 'monospace', fontSize: '9px', color: '#e8f0e0', fixedWidth: textWidth });

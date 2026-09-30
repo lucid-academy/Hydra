@@ -26,6 +26,7 @@ const RESUME_BUTTON = { x: 602, y: 328 };
 const CONTINUE_BUTTON = { x: 320, y: 148 };
 const NEW_HYDRA_BUTTON = { x: 320, y: 212 };
 const FIRST_HEAD_CARD = { x: 32, y: 338 };
+const ALL_HEADS_BUTTON = { x: 600, y: 8 };
 const HEAD_CARD_STEP = 62;
 /** Map hexes under the top bar or the End Turn button can't be tapped. */
 const MAP_TAP_AREA = { left: 10, right: 630, top: 24, bottom: 320 };
@@ -80,14 +81,25 @@ async function mapStep(page, step) {
   await page.waitForTimeout(900); // walking + camera pan
 }
 
-/** Plays the battle on screen: orders every head onto one enemy, starts it, waits for the end, presses Continue. */
-async function playBattle(page) {
+/**
+ * Plays the battle on screen: orders every head onto one enemy (all at once with "All heads", or card by card),
+ * starts it, waits for the end, presses Continue.
+ */
+async function playBattle(page, allAtOnce) {
   const start = await page.evaluate(() => window.__hydra.battleSummary());
   if (!start.paused) throw new Error('A battle should start paused');
-  for (let i = 0; i < start.heads.length; i++) {
-    await tap(page, { x: FIRST_HEAD_CARD.x + i * HEAD_CARD_STEP, y: FIRST_HEAD_CARD.y });
-    await tap(page, start.enemies[0]);
+  const target = start.enemies[0];
+  if (allAtOnce) {
+    await tap(page, ALL_HEADS_BUTTON);
+    await tap(page, target);
+  } else {
+    for (let i = 0; i < start.heads.length; i++) {
+      await tap(page, { x: FIRST_HEAD_CARD.x + i * HEAD_CARD_STEP, y: FIRST_HEAD_CARD.y });
+      await tap(page, target);
+    }
   }
+  const orders = await page.evaluate(() => window.__hydra.battleSummary().orders);
+  if (Object.values(orders).some((id) => id !== target.id)) throw new Error(`Not every head got the order: ${JSON.stringify(orders)}`);
   await tap(page, RESUME_BUTTON);
   await page.waitForFunction(() => window.__hydra.battleSummary().outcome !== null, null, { timeout: 240_000 });
   const end = await page.evaluate(() => window.__hydra.battleSummary());
@@ -114,7 +126,7 @@ try {
       continue;
     }
     await waitForScene(page, 'battle', won);
-    const end = await playBattle(page);
+    const end = await playBattle(page, won === 0);
     if (end.outcome !== 'won') throw new Error(`Expected to win battle ${won + 1}, but the outcome was "${end.outcome}"`);
     const after = await page.evaluate(() => window.__hydra.runSummary());
     if (after.inBattle) throw new Error('Still in battle after pressing Continue');
