@@ -21,11 +21,15 @@ const drawTitleBackground: PlaceholderDrawer = (scene, key, width, height, palet
     g.fillRect(0, i * bandHeight, width, bandHeight);
   });
 
+  // Far shore between sky and swamp, so the mist has something to lie on.
+  g.fillStyle(color('#0b1614'));
+  g.fillRect(0, Math.round(height * 0.5), width, Math.round(height * 0.12));
+
   // Hill with the Order's castle on the right, windows lit by the Eternal Flame.
   g.fillStyle(color('#0b0f10'));
   g.fillTriangle(width * 0.45, height * 0.62, width * 0.78, height * 0.3, width * 1.1, height * 0.62);
   const castleX = Math.round(width * 0.72);
-  const castleY = Math.round(height * 0.3);
+  const castleY = Math.round(height * 0.3) + 16; // sunk into the hilltop
   g.fillRect(castleX - 24, castleY - 20, 48, 22);
   g.fillRect(castleX - 30, castleY - 34, 10, 36);
   g.fillRect(castleX + 20, castleY - 30, 10, 32);
