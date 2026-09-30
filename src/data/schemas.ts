@@ -15,6 +15,10 @@ function section<T extends z.ZodRawShape>(shape: T) {
 }
 
 const share = z.number().min(0).max(1);
+/** Board sizes must be odd, so the board has a middle hex for the hydra's body. */
+const oddBoardSize = z.number().int().min(5).refine((n) => n % 2 === 1, 'must be an odd number (5, 7, 9, …) so the board has a middle hex');
+/** Distances on the battle board, in hexes. */
+const hexes = z.number().int().min(1);
 
 const terrainRulesSchema = section({
   // null = impassable
@@ -53,11 +57,10 @@ export const balanceSchema = section({
   }),
   battle: section({
     ticksPerSecond: z.number().int().positive(),
-    arenaWidth: z.number().int().positive(),
-    arenaHeight: z.number().int().positive(),
+    boardColumns: oddBoardSize,
+    boardRows: oddBoardSize,
     bodyMaxHp: z.number().positive(),
-    bodyRadius: z.number().positive(),
-    bodySpeed: z.number().positive(),
+    bodyStepSeconds: z.number().positive(),
   }),
   healing: section({
     bodyHpPerTurn: z.number().min(0),
@@ -68,17 +71,13 @@ export const balanceSchema = section({
 const attackSchema = section({
   damage: z.number().min(0),
   cooldownSeconds: z.number().positive(),
-  range: z.number().positive(),
+  // For heads: hexes from the body. For humans: hexes from where they stand (1 = next hex).
+  range: hexes,
 });
 
 export const headsSchema = section({
   maxHeads: z.number().int().min(1),
   regrowSeconds: z.number().positive(),
-  neck: section({
-    length: z.number().positive(),
-    restDistance: z.number().positive(),
-    headSpeed: z.number().positive(),
-  }),
   startingHeads: z.array(z.string()).min(1),
   hatchlingClassPool: z.array(z.string()).min(1),
   classes: z.record(
@@ -88,6 +87,8 @@ export const headsSchema = section({
       color: hexColor,
       maxHp: z.number().positive(),
       attack: attackSchema.extend({
+        // true = the head goes out to bite its target, and can be hit back there.
+        melee: z.boolean().optional(),
         tags: z.array(z.string()),
         // Status (from combos.json) put on the enemy this attack hits.
         appliesStatus: z.string().min(1).optional(),
@@ -117,8 +118,8 @@ export const enemiesSchema = section({
       displayName: z.string().min(1),
       maxHp: z.number().positive(),
       armor: z.number().min(0),
-      speed: z.number().positive(),
-      radius: z.number().positive(),
+      // Seconds one step from a hex to the next takes.
+      stepSeconds: z.number().positive(),
       attack: attackSchema,
       bonusDamageVsHeads: z.number().positive().optional(),
       cauterizeSeconds: z.number().positive().optional(),
@@ -178,7 +179,8 @@ export const combosSchema = section({
     }),
   ),
   mistCloud: section({
-    radius: z.number().positive(),
+    // In hexes: 1 = the hex where the breath lands and its six neighbours.
+    radius: z.number().int().min(0),
     durationSeconds: z.number().positive(),
     appliesStatus: z.string().min(1).optional(),
   }),

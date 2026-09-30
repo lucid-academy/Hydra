@@ -1,17 +1,18 @@
-// Statuses on enemies, Mist clouds on the arena, and combos.
+// Statuses on enemies, Mist clouds on the board, and combos.
 // Combos are described in data (combos.json): a trigger, conditions and effects. A new combo is a new entry there.
 
-import type { BattleRules, BattleState, ComboEffect, ComboTrigger, Enemy, HitSource, MistCloud, Vec } from './types';
-import { distance } from './vec';
+import { hexDistance } from '../hex';
+import type { Hex } from '../hex';
+import type { BattleRules, BattleState, ComboEffect, ComboTrigger, Enemy, HitSource, MistCloud } from './types';
 
 /** Deals damage as given (armor is not applied here) and removes the enemy if it dies. */
-export function hurtEnemy(state: BattleState, enemy: Enemy, damage: number, attacker: HitSource): void {
+export function hurtEnemy(state: BattleState, enemy: Enemy, damage: number, attacker: HitSource, attackerId: string | number | null = null): void {
   if (!state.enemies.includes(enemy)) return;
   enemy.hp -= damage;
-  state.events.push({ type: 'hit', tick: state.tick, attacker, targetKind: 'enemy', targetId: enemy.id, damage, at: { ...enemy.pos } });
+  state.events.push({ type: 'hit', tick: state.tick, attacker, attackerId, targetKind: 'enemy', targetId: enemy.id, damage, at: enemy.hex });
   if (enemy.hp <= 0) {
     state.enemies = state.enemies.filter((e) => e !== enemy);
-    state.events.push({ type: 'enemyKilled', tick: state.tick, enemyId: enemy.id, at: { ...enemy.pos } });
+    state.events.push({ type: 'enemyKilled', tick: state.tick, enemyId: enemy.id, at: enemy.hex });
   }
 }
 
@@ -22,11 +23,11 @@ export function enemyArmor(enemy: Enemy, rules: BattleRules): number {
   return Math.max(0, armor);
 }
 
-/** Pixels per tick, after statuses that slow the enemy down. */
-export function enemySpeed(enemy: Enemy, rules: BattleRules): number {
-  let speed = rules.enemyTypes[enemy.typeId]!.speed;
+/** Ticks one step takes this enemy now: statuses that slow it down make steps longer. */
+export function enemyStepTicks(enemy: Enemy, rules: BattleRules): number {
+  let speed = 1;
   for (const status of enemy.statuses) speed *= rules.statuses[status.id]!.speedMultiplier;
-  return speed;
+  return Math.max(1, Math.round(rules.enemyTypes[enemy.typeId]!.stepTicks / speed));
 }
 
 export function hasStatus(enemy: Enemy, statusId: string): boolean {
@@ -52,29 +53,29 @@ export function applyStatus(state: BattleState, enemy: Enemy, statusId: string, 
   return true;
 }
 
-function cloudsOver(state: BattleState, pos: Vec): MistCloud[] {
-  return state.clouds.filter((cloud) => distance(cloud.pos, pos) <= cloud.radius);
+export function cloudsOver(state: BattleState, h: Hex): MistCloud[] {
+  return state.clouds.filter((cloud) => hexDistance(cloud.center, h) <= cloud.radius);
 }
 
-export function isInMist(state: BattleState, pos: Vec): boolean {
-  return cloudsOver(state, pos).length > 0;
+export function isInMist(state: BattleState, h: Hex): boolean {
+  return cloudsOver(state, h).length > 0;
 }
 
 export function isAcid(state: BattleState, cloud: MistCloud): boolean {
   return state.tick < cloud.acidUntilTick;
 }
 
-/** New Mist cloud at `at`. Breathing into a cloud that already covers the spot just makes that one last longer. */
-export function createMistCloud(state: BattleState, at: Vec, rules: BattleRules): void {
+/** New Mist cloud centred on `at`. Breathing again on the same hex just makes that cloud last longer. */
+export function createMistCloud(state: BattleState, at: Hex, rules: BattleRules): void {
   const untilTick = state.tick + rules.mistCloud.durationTicks;
-  const existing = state.clouds.find((cloud) => distance(cloud.pos, at) <= cloud.radius / 2);
+  const existing = state.clouds.find((cloud) => cloud.center.q === at.q && cloud.center.r === at.r);
   if (existing) {
     existing.untilTick = untilTick;
     return;
   }
   state.clouds.push({
     id: state.nextId++,
-    pos: { ...at },
+    center: at,
     radius: rules.mistCloud.radius,
     untilTick,
     acidUntilTick: 0,
@@ -90,13 +91,13 @@ export function updateEffects(state: BattleState, rules: BattleRules): void {
     const acidDue = isAcid(state, cloud) && state.tick >= cloud.nextAcidTick;
     if (acidDue) cloud.nextAcidTick = state.tick + rules.ticksPerSecond;
     for (const enemy of [...state.enemies]) {
-      if (distance(cloud.pos, enemy.pos) > cloud.radius) continue;
+      if (hexDistance(cloud.center, enemy.hex) > cloud.radius) continue;
       if (rules.mistCloud.appliesStatus !== null) applyStatus(state, enemy, rules.mistCloud.appliesStatus, rules);
       if (acidDue) hurtEnemy(state, enemy, cloud.acidDamagePerSecond, 'mist');
     }
   }
   for (const enemy of [...state.enemies]) {
-    if (isInMist(state, enemy.pos)) triggerCombos(state, 'enemyInMist', enemy, null, rules);
+    if (isInMist(state, enemy.hex)) triggerCombos(state, 'enemyInMist', enemy, null, rules);
   }
 
   for (const enemy of [...state.enemies]) {
@@ -123,11 +124,11 @@ export function triggerCombos(state: BattleState, when: ComboTrigger, enemy: Ene
     const c = combo.conditions;
     if (c.attackTag !== null && !attackTags?.includes(c.attackTag)) continue;
     if (c.enemyHasStatus !== null && !hasStatus(enemy, c.enemyHasStatus)) continue;
-    if (c.enemyInMist !== null && isInMist(state, enemy.pos) !== c.enemyInMist) continue;
+    if (c.enemyInMist !== null && isInMist(state, enemy.hex) !== c.enemyInMist) continue;
     if (c.enemyCarriesFire !== null && (rules.enemyTypes[enemy.typeId]!.cauterizeTicks !== null) !== c.enemyCarriesFire) continue;
     if (c.enemyArmorBroken !== null && enemy.armorBroken !== c.enemyArmorBroken) continue;
 
-    const at = { ...enemy.pos };
+    const at = enemy.hex;
     let changed = false;
     for (const effect of combo.effects) changed = applyEffect(state, enemy, effect, rules) || changed;
     if (changed) state.events.push({ type: 'combo', tick: state.tick, comboId: combo.id, enemyId: enemy.id, at });
@@ -150,7 +151,7 @@ function applyEffect(state: BattleState, enemy: Enemy, effect: ComboEffect, rule
       return false;
     case 'acidifyMist': {
       let turned = false;
-      for (const cloud of cloudsOver(state, enemy.pos)) {
+      for (const cloud of cloudsOver(state, enemy.hex)) {
         if (!isAcid(state, cloud)) {
           turned = true;
           cloud.nextAcidTick = state.tick + rules.ticksPerSecond;

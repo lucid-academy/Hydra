@@ -1,5 +1,5 @@
 {
-  "//": "TODO(design): all numbers are working values for M1. Times in seconds, distances in arena pixels (the arena is 640x300).",
+  "//": "TODO(design): all numbers are working values. Times in seconds, distances in hexes.",
   "statuses": {
     "corroded": {
       "//": "Put on by the Acid Spitter: eats armor and hurts a little every second.",
@@ -21,8 +21,8 @@
     }
   },
   "mistCloud": {
-    "//": "Left by the Mist Breather where its attack lands.",
-    "radius": 30,
+    "//": "Left by the Mist Breather where its attack lands. radius 1 = that hex and its six neighbours.",
+    "radius": 1,
     "durationSeconds": 6,
     "appliesStatus": "soaked"
   },

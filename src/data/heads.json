@@ -1,12 +1,7 @@
 {
-  "//": "TODO(design): all numbers are working values for M1. Distances in arena pixels (the arena is 640x300), times in seconds.",
+  "//": "TODO(design): all numbers are working values. Times in seconds. Attack range in hexes from the body (1 = only enemies standing next to it). melee: the head goes out to bite, and can be hit back there.",
   "maxHeads": 9,
   "regrowSeconds": 8,
-  "neck": {
-    "length": 80,
-    "restDistance": 20,
-    "headSpeed": 110
-  },
   "startingHeads": ["biter", "acidSpitter", "mistBreather"],
   "hatchlingClassPool": ["biter", "acidSpitter", "mistBreather"],
   "classes": {
@@ -14,19 +9,19 @@
       "displayName": "Biter",
       "color": "#5f9a4a",
       "maxHp": 40,
-      "attack": { "damage": 10, "cooldownSeconds": 2, "range": 14, "tags": ["bite"] }
+      "attack": { "damage": 10, "cooldownSeconds": 2, "range": 2, "melee": true, "tags": ["bite"] }
     },
     "acidSpitter": {
       "displayName": "Acid Spitter",
       "color": "#b7d13a",
       "maxHp": 30,
-      "attack": { "damage": 4, "cooldownSeconds": 2.4, "range": 100, "tags": ["acid"], "appliesStatus": "corroded" }
+      "attack": { "damage": 4, "cooldownSeconds": 2.4, "range": 5, "tags": ["acid"], "appliesStatus": "corroded" }
     },
     "mistBreather": {
       "displayName": "Mist Breather",
       "color": "#8fb3a8",
       "maxHp": 32,
-      "attack": { "damage": 2, "cooldownSeconds": 3, "range": 60, "tags": ["mist"], "createsMistCloud": true }
+      "attack": { "damage": 2, "cooldownSeconds": 3, "range": 3, "tags": ["mist"], "createsMistCloud": true }
     }
   },
   "names": [

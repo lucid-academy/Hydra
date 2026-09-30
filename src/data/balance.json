@@ -40,13 +40,12 @@
     "perBattle": 5
   },
   "battle": {
-    "//": "TODO(design): arena size in pixels; body stats are working values for M1.",
+    "//": "TODO(design): working values. The board is counted in hexes: boardColumns across, boardRows down (both odd, so the body has a middle hex). The body covers 7 hexes.",
     "ticksPerSecond": 20,
-    "arenaWidth": 640,
-    "arenaHeight": 300,
+    "boardColumns": 13,
+    "boardRows": 9,
     "bodyMaxHp": 150,
-    "bodyRadius": 27,
-    "bodySpeed": 20
+    "bodyStepSeconds": 1.2
   },
   "healing": {
     "//": "TODO(design): working values. HP healed at End Turn, until the lair exists (M2).",

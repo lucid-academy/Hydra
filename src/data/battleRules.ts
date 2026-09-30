@@ -1,5 +1,5 @@
 // Converts heads.json, enemies.json and balance.json into the rules the battle simulation uses
-// (seconds become ticks, speeds per second become pixels per tick), plus statuses and combos from combos.json.
+// (seconds become ticks; distances are already in hexes), plus statuses and combos from combos.json.
 
 import type { BattleRules, ComboEffect } from '../sim/battle';
 import type { GameData } from './index';
@@ -11,10 +11,9 @@ export function battleRulesFrom(data: GameData): BattleRules {
 
   return {
     ticksPerSecond: tps,
-    arenaWidth: balance.battle.arenaWidth,
-    arenaHeight: balance.battle.arenaHeight,
-    body: { radius: balance.battle.bodyRadius, speed: balance.battle.bodySpeed / tps },
-    neck: { length: heads.neck.length, restDistance: heads.neck.restDistance, headSpeed: heads.neck.headSpeed / tps },
+    boardColumns: balance.battle.boardColumns,
+    boardRows: balance.battle.boardRows,
+    bodyStepTicks: ticks(balance.battle.bodyStepSeconds),
     maxHeads: heads.maxHeads,
     regrowTicks: ticks(heads.regrowSeconds),
     headClasses: Object.fromEntries(
@@ -26,6 +25,7 @@ export function battleRulesFrom(data: GameData): BattleRules {
             damage: c.attack.damage,
             cooldownTicks: ticks(c.attack.cooldownSeconds),
             range: c.attack.range,
+            melee: c.attack.melee ?? false,
             tags: c.attack.tags,
             appliesStatus: c.attack.appliesStatus ?? null,
             createsMistCloud: c.attack.createsMistCloud ?? false,
@@ -41,9 +41,8 @@ export function battleRulesFrom(data: GameData): BattleRules {
         {
           maxHp: e.maxHp,
           armor: e.armor,
-          speed: e.speed / tps,
-          radius: e.radius,
-          attack: { damage: e.attack.damage, cooldownTicks: ticks(e.attack.cooldownSeconds), range: e.attack.range, tags: [], appliesStatus: null, createsMistCloud: false },
+          stepTicks: ticks(e.stepSeconds),
+          attack: { damage: e.attack.damage, cooldownTicks: ticks(e.attack.cooldownSeconds), range: e.attack.range },
           bonusDamageVsHeads: e.bonusDamageVsHeads ?? 1,
           cauterizeTicks: e.cauterizeSeconds !== undefined ? ticks(e.cauterizeSeconds) : null,
           behavior: e.behavior,

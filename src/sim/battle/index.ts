@@ -1,4 +1,4 @@
 export * from './types';
-export * from './vec';
-export * from './battle';
+export * from './board';
 export * from './effects';
+export * from './battle';

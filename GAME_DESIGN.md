@@ -22,6 +22,9 @@ Gatunek: roguelite z pokoleniami. Warstwa strategiczna to turowa mapa heksagonal
 - **Cywilizacja:** ruch po heksach, odsłanianie mapy, mgła wojny na terenach już odkrytych.
 - **Heroes of Might and Magic II:** podział na mapę przygody i osobny ekran bitwy. Wygląd hydry (nasza jest mroczniejsza).
 - **Hades:** dialogi z dużym portretem i tekstem, postacie reagujące na to, co się wydarzyło, śmierć jako postęp fabuły.
+- **Into the Breach:** wygląd bitwy. Plansza widziana pod skosem, wyraźne pola, postacie lekko poruszające się na swoim polu. U nas pola to heksy, a walka toczy się w czasie rzeczywistym, nie w turach.
+- **FTL:** pauza w czasie rzeczywistym: zatrzymujesz, wydajesz rozkazy, puszczasz.
+- **Songs of Conquest:** docelowy styl warstwy eksploracji (mapy przygody).
 - **Key art** (okładka gry): źródło palety i klimatu.
 
 ## 3. Słownik (obowiązuje w kodzie i w tekstach)
@@ -123,14 +126,14 @@ Współrzędne osiowe (axial q, r), heksy pointy-top, algorytmy według przewodn
 ## 6. Walka (warstwa taktyczna)
 
 ### 6.1 Zasady ogólne
-- Osobna scena: arena widziana z góry, generowana z szablonu zależnego od terenu heksu (zalana jaskinia, krypta, pole we mgle, dziedziniec kapliczki itd.).
-- Czas rzeczywisty z pauzą. Spacja to pauza: w pauzie wydajesz rozkazy, po wznowieniu wszystko się dzieje. Prędkości gry: 1× i 0,5×.
+- Osobna scena: plansza z heksów widziana pod skosem (jak plansza w Into the Breach, tylko z heksów), generowana z szablonu zależnego od terenu heksu (zalana jaskinia, krypta, pole we mgle, dziedziniec kapliczki itd.). Postacie stoją na swoich polach i lekko się poruszają, także wtedy, gdy nic nie robią.
+- Czas rzeczywisty z pauzą (jak w FTL). Bitwa zaczyna się w pauzie. Spacja to pauza: w pauzie wydajesz rozkazy, po wznowieniu wszystko się dzieje. Prędkości gry: 1× i 0,5×.
 - Symulacja walki działa w stałym kroku (20 tików na sekundę), niezależnie od liczby klatek. Pauza to po prostu zatrzymanie tików.
-- Ruch swobodny, nie po heksach. Kolizje jako proste okręgi, bez silnika fizyki.
+- Ruch po heksach. Każdy człowiek zajmuje jeden heks i przechodzi z heksu na heks, a krok trwa określony czas. Zasięgi ataków i efektów liczone są w heksach. (Decyzja po playteście M1; wcześniej ruch był swobodny.)
 
 ### 6.2 Hydra w walce
-- **Body:** duże, wolne, z własnym HP. Śmierć Body to śmierć hydry i koniec pokolenia. Porusza się na rozkaz (prawy klik albo tapnięcie w teren).
-- **Heads:** każda głowa to jednostka z HP, klasą, poziomem, imieniem i przypadłością. Atakuje tylko w zasięgu szyi od Body. Ma atak podstawowy (automatyczny) i umiejętności z czasem odnowienia.
+- **Body:** duże, wolne, z własnym HP. Zajmuje 7 heksów (środek i sześć dookoła) i zaczyna bitwę na środku planszy, więc ludzie mogą je otoczyć, a głowy atakują we wszystkie strony. Śmierć Body to śmierć hydry i koniec pokolenia. Porusza się na rozkaz (prawy klik albo tapnięcie w wolne pole), krok po kroku i tylko wtedy, gdy pola, na które wchodzi, są wolne.
+- **Heads:** każda głowa to jednostka z HP, klasą, poziomem, imieniem i przypadłością. Głowy nie zajmują heksów: wyrastają dookoła Body. Głowa atakuje tylko w zasięgu szyi od Body, liczonym w heksach. Ma atak podstawowy (automatyczny) i umiejętności z czasem odnowienia.
 - Szyje rysowane proceduralnie jako łańcuch segmentów od Body do pozycji głowy, więc głowa widocznie „sięga" do celu.
 - Sterowanie: wybór głowy klawiszami 1–9 albo kliknięciem, umiejętności Q/W/E, kliknięcie celu. Rozkazy można kolejkować w pauzie. Od początku projektujemy tak, żeby dało się grać dotykiem: duży przycisk pauzy, tapnięcie wybiera, kolejne tapnięcie wskazuje cel.
 
@@ -264,6 +267,7 @@ Woda (Body szybsze, powolne leczenie), błoto, suchy grunt (Body wolniejsze), ch
 - Pixel art, wewnętrzna rozdzielczość 640×360, skalowanie całkowite, bez wygładzania.
 - Paleta z key artu. Podziemia i hydra są zimne: głęboki turkus, bagienna zieleń, czerń, chorobliwie żółtozielona bioluminescencja. Zakon i powierzchnia są ciepli: złoto, pomarańcz, czerwone chorągwie, ogień. Mist to granica między tymi światami: blada, zielonkawoszara, półprzezroczysta. Konflikt gry jest dosłownie widoczny: ciepłe światło płomieni przeciw zimnej mgle.
 - Hydra: sprite Body, proceduralne szyje, sprite'y głów z odcieniem zależnym od klasy. Dzięki temu dodanie głowy nie wymaga nowej animacji.
+- Bitwa widziana pod skosem: plansza z heksów jak gruba płyta, postacie stojące. Warstwa eksploracji docelowo w stylu Songs of Conquest.
 - Portrety do dialogów: większe popiersia w pixel arcie.
 - Grafika na start: zastępcza (generowana w kodzie) i darmowe paczki CC0. Docelowe sprite'y i portrety robi Piotr w GPT, dlatego wymiary i kadrowanie każdej grafiki muszą być spisane w `docs/ASSETS.md`.
 
@@ -293,6 +297,8 @@ Zasada: po każdym etapie gra jest wdrożona i grywalna pod linkiem, a Claude Co
 4. Minimalny interfejs: lista głów z HP, pasek Alertu, przycisk pauzy.
 
 Gotowe, gdy: da się rozegrać kilka bitw pod linkiem, testy przechodzą, a zrzuty mapy i bitwy leżą w `docs/screens/`.
+
+**M1b: bitwa na heksach (po playteście M1).** Plansza z heksów widziana pod skosem, Body na 7 heksach na środku, ludzie chodzą z heksu na heks i otaczają hydrę, bitwa zaczyna się w pauzie. Zasady z M1 (ścinanie, odrost, przypalanie, statusy, combosy) bez zmian.
 
 **M2: podziemia na serio.** Pełny generator z biomami i walidatorem, duża mapa, leże, kapliczki, Spell Caches, zasoby, pozostałe klasy głów i ich combosy, kodeks combosów, doświadczenie i specjalizacje.
 

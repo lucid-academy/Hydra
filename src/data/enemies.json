@@ -1,22 +1,20 @@
 {
-  "//": "TODO(design): all numbers are working values for M1. Distances in arena pixels, times in seconds.",
+  "//": "TODO(design): all numbers are working values. Times in seconds. stepSeconds: how long one step from a hex to the next takes. Attack range in hexes (1 = the neighbouring hex).",
   "types": {
     "manAtArms": {
       "displayName": "Man-at-Arms",
       "maxHp": 140,
       "armor": 2,
-      "speed": 20,
-      "radius": 7,
-      "attack": { "damage": 5, "cooldownSeconds": 2.4, "range": 14 },
+      "stepSeconds": 0.9,
+      "attack": { "damage": 5, "cooldownSeconds": 2.4, "range": 1 },
       "behavior": "fighter"
     },
     "headhunter": {
       "displayName": "Headhunter",
       "maxHp": 100,
       "armor": 1,
-      "speed": 24,
-      "radius": 7,
-      "attack": { "damage": 7, "cooldownSeconds": 2.6, "range": 16 },
+      "stepSeconds": 0.75,
+      "attack": { "damage": 7, "cooldownSeconds": 2.6, "range": 1 },
       "bonusDamageVsHeads": 1.5,
       "behavior": "headhunter"
     },
@@ -24,9 +22,8 @@
       "displayName": "Torchbearer",
       "maxHp": 70,
       "armor": 0,
-      "speed": 22,
-      "radius": 6,
-      "attack": { "damage": 3, "cooldownSeconds": 2.4, "range": 12 },
+      "stepSeconds": 0.8,
+      "attack": { "damage": 3, "cooldownSeconds": 2.4, "range": 1 },
       "cauterizeSeconds": 4,
       "behavior": "torchbearer"
     }

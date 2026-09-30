@@ -1,19 +1,27 @@
-// Battle simulation types. Positions are arena pixels, time is counted in ticks (fixed steps).
+// Battle simulation types. The battlefield is a board of hexes (axial coordinates, as on the strategic map)
+// with the hydra's body in the middle. Time is counted in ticks (fixed steps).
 
-export interface Vec {
-  x: number;
-  y: number;
-}
+import type { Hex } from '../hex';
 
-export interface AttackRules {
+export interface HeadAttackRules {
   damage: number;
   cooldownTicks: number;
+  /** How far from the body the head can attack, in hexes (1 = only enemies standing next to the body). */
   range: number;
+  /** A head with a melee attack goes out to its target, and can be hit back there. */
+  melee: boolean;
   tags: readonly string[];
   /** Status put on the enemy this attack hits. */
   appliesStatus: string | null;
   /** The attack leaves a Mist cloud where it lands. */
   createsMistCloud: boolean;
+}
+
+export interface EnemyAttackRules {
+  damage: number;
+  cooldownTicks: number;
+  /** How far the enemy reaches from the hex it stands on, in hexes (1 = the neighbouring hex). */
+  range: number;
 }
 
 export interface StatusRules {
@@ -49,7 +57,7 @@ export interface ComboRules {
 
 export interface HeadClassRules {
   maxHp: number;
-  attack: AttackRules;
+  attack: HeadAttackRules;
 }
 
 export type EnemyBehavior = 'fighter' | 'headhunter' | 'torchbearer';
@@ -57,21 +65,24 @@ export type EnemyBehavior = 'fighter' | 'headhunter' | 'torchbearer';
 export interface EnemyTypeRules {
   maxHp: number;
   armor: number;
-  /** Pixels per tick. */
-  speed: number;
-  radius: number;
-  attack: AttackRules;
+  /** Ticks one step from a hex to the next takes. */
+  stepTicks: number;
+  attack: EnemyAttackRules;
   bonusDamageVsHeads: number;
   cauterizeTicks: number | null;
   behavior: EnemyBehavior;
 }
 
-export interface BattleRules {
+export interface BoardSize {
+  /** Hexes across and down, as seen on screen. Both odd, so there is a middle hex for the body. */
+  boardColumns: number;
+  boardRows: number;
+}
+
+export interface BattleRules extends BoardSize {
   ticksPerSecond: number;
-  arenaWidth: number;
-  arenaHeight: number;
-  body: { radius: number; speed: number };
-  neck: { length: number; restDistance: number; headSpeed: number };
+  /** Ticks one step of the body takes. */
+  bodyStepTicks: number;
   maxHeads: number;
   regrowTicks: number;
   headClasses: Readonly<Record<string, HeadClassRules>>;
@@ -79,6 +90,7 @@ export interface BattleRules {
   headNames: readonly string[];
   enemyTypes: Readonly<Record<string, EnemyTypeRules>>;
   statuses: Readonly<Record<string, StatusRules>>;
+  /** `radius` in hexes: 1 = the hex where the breath lands and its six neighbours. */
   mistCloud: { radius: number; durationTicks: number; appliesStatus: string | null };
   combos: readonly ComboRules[];
 }
@@ -94,12 +106,13 @@ export interface HeadRecord {
 }
 
 export interface BattleHead extends HeadRecord {
-  pos: Vec;
-  /** Direction (radians) where the neck leaves the body. */
+  /** Direction where the neck leaves the body, in radians: 0 = east, π/2 = south (down the screen). */
   anchorAngle: number;
   cooldown: number;
-  /** Enemy this head was ordered to attack; null = pick targets automatically. */
+  /** Enemy this head was ordered to attack; null = pick targets by itself. */
   orderTargetId: number | null;
+  /** Enemy this head is fighting right now (ordered or picked by itself); null = nobody in reach. */
+  targetId: number | null;
   /** Stump this head grew from, if it is a hatchling from this battle. */
   twinGroup: number | null;
 }
@@ -122,10 +135,10 @@ export interface ActiveStatus {
   nextDamageTick: number;
 }
 
-/** A Mist cloud lying on the arena. */
+/** A Mist cloud lying on the board: all hexes within `radius` of `center`. */
 export interface MistCloud {
   id: number;
-  pos: Vec;
+  center: Hex;
   radius: number;
   untilTick: number;
   /** While the tick is below this, the cloud is acid and hurts enemies inside (Acid Fog). */
@@ -134,10 +147,21 @@ export interface MistCloud {
   nextAcidTick: number;
 }
 
-export interface Enemy {
+/**
+ * Something that walks from hex to hex. It counts as standing on its new hex from the moment it sets off
+ * (so nobody else takes the hex), but it can't act until it arrives at `stepEndTick`.
+ * `stepFrom` and the two ticks let the screen draw it on its way.
+ */
+export interface Walker {
+  stepFrom: Hex;
+  stepStartTick: number;
+  stepEndTick: number;
+}
+
+export interface Enemy extends Walker {
   id: number;
   typeId: string;
-  pos: Vec;
+  hex: Hex;
   hp: number;
   maxHp: number;
   cooldown: number;
@@ -150,24 +174,43 @@ export interface Enemy {
   torchOutUntilTick: number;
 }
 
+export interface Body extends Walker {
+  /** Middle hex of the body; the body covers it and its six neighbours. */
+  center: Hex;
+  hp: number;
+  maxHp: number;
+  /** Where the body was ordered to go (its middle hex), or null. */
+  moveTarget: Hex | null;
+}
+
 export type BattleOutcome = 'won' | 'lost';
 
 /** What dealt the damage: a head, a human, a status (e.g. Corroded), an acid Mist cloud or a combo. */
 export type HitSource = 'head' | 'enemy' | 'status' | 'mist' | 'combo';
 
 export type BattleEvent =
-  | { type: 'hit'; tick: number; attacker: HitSource; targetKind: 'head' | 'enemy' | 'body'; targetId: number | string; damage: number; at: Vec }
-  | { type: 'enemyKilled'; tick: number; enemyId: number; at: Vec }
+  | {
+      type: 'hit';
+      tick: number;
+      attacker: HitSource;
+      /** Head id or enemy id of the attacker, when there is one. */
+      attackerId: string | number | null;
+      targetKind: 'head' | 'enemy' | 'body';
+      targetId: number | string;
+      damage: number;
+      at: Hex;
+    }
+  | { type: 'enemyKilled'; tick: number; enemyId: number; at: Hex }
   | { type: 'severed'; tick: number; headId: string; name: string; stumpId: number }
   | { type: 'regrown'; tick: number; stumpId: number; headIds: string[] }
   | { type: 'cauterized'; tick: number; stumpId: number }
-  | { type: 'combo'; tick: number; comboId: string; enemyId: number; at: Vec }
+  | { type: 'combo'; tick: number; comboId: string; enemyId: number; at: Hex }
   | { type: 'ended'; tick: number; outcome: BattleOutcome };
 
 export interface BattleState {
   tick: number;
   rngState: number;
-  body: { pos: Vec; hp: number; maxHp: number; moveTarget: Vec | null };
+  body: Body;
   heads: BattleHead[];
   stumps: Stump[];
   enemies: Enemy[];
@@ -180,6 +223,6 @@ export interface BattleState {
 }
 
 export type BattleCommand =
-  | { type: 'moveBody'; to: Vec }
+  | { type: 'moveBody'; to: Hex }
   | { type: 'attack'; headId: string; enemyId: number }
   | { type: 'clearOrder'; headId: string };
