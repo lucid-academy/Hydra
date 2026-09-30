@@ -10,6 +10,40 @@ export interface AttackRules {
   cooldownTicks: number;
   range: number;
   tags: readonly string[];
+  /** Status put on the enemy this attack hits. */
+  appliesStatus: string | null;
+  /** The attack leaves a Mist cloud where it lands. */
+  createsMistCloud: boolean;
+}
+
+export interface StatusRules {
+  durationTicks: number;
+  /** Added to the enemy's armor while the status lasts. */
+  armorChange: number;
+  damagePerSecond: number;
+  speedMultiplier: number;
+}
+
+export type ComboTrigger = 'headHitsEnemy' | 'enemyInMist';
+
+export type ComboEffect =
+  | { type: 'damage'; amount: number }
+  | { type: 'breakArmor' }
+  | { type: 'removeStatus'; status: string }
+  | { type: 'acidifyMist'; damagePerSecond: number; ticks: number }
+  | { type: 'putOutTorch'; ticks: number };
+
+export interface ComboRules {
+  id: string;
+  when: ComboTrigger;
+  /** All conditions that are not null must hold. */
+  conditions: {
+    attackTag: string | null;
+    enemyHasStatus: string | null;
+    enemyInMist: boolean | null;
+    enemyCarriesFire: boolean | null;
+  };
+  effects: readonly ComboEffect[];
 }
 
 export interface HeadClassRules {
@@ -43,6 +77,9 @@ export interface BattleRules {
   hatchlingClassPool: readonly string[];
   headNames: readonly string[];
   enemyTypes: Readonly<Record<string, EnemyTypeRules>>;
+  statuses: Readonly<Record<string, StatusRules>>;
+  mistCloud: { radius: number; durationTicks: number; appliesStatus: string | null };
+  combos: readonly ComboRules[];
 }
 
 /** A head as it lives on the strategic map, between battles. */
@@ -76,6 +113,26 @@ export interface Stump {
   cauterized: boolean;
 }
 
+/** A status currently on an enemy. */
+export interface ActiveStatus {
+  id: string;
+  untilTick: number;
+  /** Next tick when the status deals its per-second damage. */
+  nextDamageTick: number;
+}
+
+/** A Mist cloud lying on the arena. */
+export interface MistCloud {
+  id: number;
+  pos: Vec;
+  radius: number;
+  untilTick: number;
+  /** While the tick is below this, the cloud is acid and hurts enemies inside (Acid Fog). */
+  acidUntilTick: number;
+  acidDamagePerSecond: number;
+  nextAcidTick: number;
+}
+
 export interface Enemy {
   id: number;
   typeId: string;
@@ -85,16 +142,25 @@ export interface Enemy {
   cooldown: number;
   /** Torchbearer currently burning this stump. */
   cauterizingStumpId: number | null;
+  statuses: ActiveStatus[];
+  /** Armor destroyed for the rest of the battle (Corrode & Crush). */
+  armorBroken: boolean;
+  /** While the tick is below this, the torch is out and can't cauterize (Smother). */
+  torchOutUntilTick: number;
 }
 
 export type BattleOutcome = 'won' | 'lost';
 
+/** What dealt the damage: a head, a human, a status (e.g. Corroded), an acid Mist cloud or a combo. */
+export type HitSource = 'head' | 'enemy' | 'status' | 'mist' | 'combo';
+
 export type BattleEvent =
-  | { type: 'hit'; tick: number; attacker: 'head' | 'enemy'; targetKind: 'head' | 'enemy' | 'body'; targetId: number | string; damage: number; at: Vec }
+  | { type: 'hit'; tick: number; attacker: HitSource; targetKind: 'head' | 'enemy' | 'body'; targetId: number | string; damage: number; at: Vec }
   | { type: 'enemyKilled'; tick: number; enemyId: number; at: Vec }
   | { type: 'severed'; tick: number; headId: string; name: string; stumpId: number }
   | { type: 'regrown'; tick: number; stumpId: number; headIds: string[] }
   | { type: 'cauterized'; tick: number; stumpId: number }
+  | { type: 'combo'; tick: number; comboId: string; enemyId: number; at: Vec }
   | { type: 'ended'; tick: number; outcome: BattleOutcome };
 
 export interface BattleState {
@@ -104,6 +170,7 @@ export interface BattleState {
   heads: BattleHead[];
   stumps: Stump[];
   enemies: Enemy[];
+  clouds: MistCloud[];
   /** Heads that grew during this battle get ids from this counter. */
   nextId: number;
   outcome: BattleOutcome | null;

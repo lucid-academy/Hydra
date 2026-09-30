@@ -20,13 +20,13 @@
       "displayName": "Acid Spitter",
       "color": "#b7d13a",
       "maxHp": 22,
-      "attack": { "damage": 4, "cooldownSeconds": 1.5, "range": 110, "tags": ["acid"] }
+      "attack": { "damage": 4, "cooldownSeconds": 1.5, "range": 110, "tags": ["acid"], "appliesStatus": "corroded" }
     },
     "mistBreather": {
       "displayName": "Mist Breather",
       "color": "#8fb3a8",
       "maxHp": 24,
-      "attack": { "damage": 2, "cooldownSeconds": 2, "range": 60, "tags": ["mist"] }
+      "attack": { "damage": 2, "cooldownSeconds": 2, "range": 60, "tags": ["mist"], "createsMistCloud": true }
     }
   },
   "names": [

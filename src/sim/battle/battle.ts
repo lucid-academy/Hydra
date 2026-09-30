@@ -3,6 +3,7 @@
 
 import { Rng } from '../rng';
 import type {
+  AttackRules,
   BattleCommand,
   BattleHead,
   BattleOutcome,
@@ -13,6 +14,7 @@ import type {
   Stump,
   Vec,
 } from './types';
+import { applyStatus, canCauterize, createMistCloud, enemyArmor, enemySpeed, hurtEnemy, triggerCombos, updateEffects } from './effects';
 import { angleTo, clampToArena, distance, fromAngle, moveTowards, vec } from './vec';
 
 /** Angle between neighbouring heads' necks, in radians. */
@@ -59,6 +61,9 @@ export function createBattle(setup: BattleSetup, rules: BattleRules): BattleStat
       maxHp: type.maxHp,
       cooldown: rng.int(0, type.attack.cooldownTicks),
       cauterizingStumpId: null,
+      statuses: [],
+      armorBroken: false,
+      torchOutUntilTick: 0,
     };
   });
 
@@ -69,6 +74,7 @@ export function createBattle(setup: BattleSetup, rules: BattleRules): BattleStat
     heads,
     stumps: [],
     enemies,
+    clouds: [],
     nextId: Math.max(setup.firstFreeId, setup.enemies.length + 1),
     outcome: null,
     events: [],
@@ -102,6 +108,7 @@ export function stepBattle(state: BattleState, rules: BattleRules): void {
 
   moveBody(state, rules);
   for (const head of state.heads) updateHead(state, head, rules);
+  updateEffects(state, rules);
   for (const enemy of [...state.enemies]) updateEnemy(state, enemy, rules);
   separate(state, rules);
   regrowStumps(state, rules, rng, false);
@@ -154,7 +161,7 @@ function updateHead(state: BattleState, head: BattleHead, rules: BattleRules): v
     const radius = rules.enemyTypes[target.typeId]!.radius;
     if (distance(head.pos, target.pos) <= cls.attack.range + radius) {
       head.cooldown = cls.attack.cooldownTicks;
-      damageEnemy(state, target, cls.attack.damage, rules);
+      headAttackLands(state, target, cls.attack, rules);
     }
   }
 }
@@ -179,15 +186,13 @@ function pickHeadTarget(state: BattleState, head: BattleHead, rules: BattleRules
   return best;
 }
 
-function damageEnemy(state: BattleState, enemy: Enemy, rawDamage: number, rules: BattleRules): void {
-  const type = rules.enemyTypes[enemy.typeId]!;
-  const damage = Math.max(1, rawDamage - type.armor);
-  enemy.hp -= damage;
-  state.events.push({ type: 'hit', tick: state.tick, attacker: 'head', targetKind: 'enemy', targetId: enemy.id, damage, at: { ...enemy.pos } });
-  if (enemy.hp <= 0) {
-    state.enemies = state.enemies.filter((e) => e !== enemy);
-    state.events.push({ type: 'enemyKilled', tick: state.tick, enemyId: enemy.id, at: { ...enemy.pos } });
-  }
+/** A head's attack hits: damage, then combos with what is already on the target, then what this attack leaves behind. */
+function headAttackLands(state: BattleState, target: Enemy, attack: AttackRules, rules: BattleRules): void {
+  const at = { ...target.pos };
+  hurtEnemy(state, target, Math.max(1, attack.damage - enemyArmor(target, rules)), 'head');
+  triggerCombos(state, 'headHitsEnemy', target, attack.tags, rules);
+  if (attack.appliesStatus !== null && state.enemies.includes(target)) applyStatus(state, target, attack.appliesStatus, rules);
+  if (attack.createsMistCloud) createMistCloud(state, at, rules);
 }
 
 // ---------------------------------------------------------------- enemies
@@ -197,7 +202,7 @@ function updateEnemy(state: BattleState, enemy: Enemy, rules: BattleRules): void
   const type = rules.enemyTypes[enemy.typeId]!;
   if (enemy.cooldown > 0) enemy.cooldown -= 1;
 
-  if (type.behavior === 'torchbearer' && type.cauterizeTicks !== null && tryCauterize(state, enemy, type.cauterizeTicks, rules)) return;
+  if (type.behavior === 'torchbearer' && type.cauterizeTicks !== null && canCauterize(state, enemy, rules) && tryCauterize(state, enemy, type.cauterizeTicks, rules)) return;
   enemy.cauterizingStumpId = null;
 
   // Heads in reach are hit first: they are in the way. Headhunters only ever go for heads.
@@ -215,7 +220,7 @@ function updateEnemy(state: BattleState, enemy: Enemy, rules: BattleRules): void
   }
 
   const chase = type.behavior === 'headhunter' ? nearest(state.heads, enemy.pos)?.pos ?? state.body.pos : state.body.pos;
-  enemy.pos = moveTowards(enemy.pos, chase, type.speed);
+  enemy.pos = moveTowards(enemy.pos, chase, enemySpeed(enemy, rules));
 }
 
 /** Returns true if the Torchbearer spent this tick on a stump (walking to it or burning it). */
@@ -229,7 +234,7 @@ function tryCauterize(state: BattleState, enemy: Enemy, cauterizeTicks: number, 
   const spot = stumpPosition(state.body.pos, stump, rules);
   if (distance(enemy.pos, spot) > CAUTERIZE_REACH + rules.enemyTypes[enemy.typeId]!.radius) {
     enemy.cauterizingStumpId = null;
-    enemy.pos = moveTowards(enemy.pos, spot, rules.enemyTypes[enemy.typeId]!.speed);
+    enemy.pos = moveTowards(enemy.pos, spot, enemySpeed(enemy, rules));
     return true;
   }
   enemy.cauterizingStumpId = stump.id;

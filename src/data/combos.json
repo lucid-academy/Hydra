@@ -1,0 +1,60 @@
+{
+  "//": "TODO(design): all numbers are working values for M1. Times in seconds, distances in arena pixels (the arena is 640x300).",
+  "statuses": {
+    "corroded": {
+      "//": "Put on by the Acid Spitter: eats armor and hurts a little every second.",
+      "displayName": "Corroded",
+      "color": "#b7d13a",
+      "durationSeconds": 5,
+      "armorChange": -1,
+      "damagePerSecond": 1,
+      "speedMultiplier": 1
+    },
+    "soaked": {
+      "//": "Put on by Mist clouds: people in the mist slow down. Wears off soon after they leave it.",
+      "displayName": "Soaked",
+      "color": "#6fb0c8",
+      "durationSeconds": 1.5,
+      "armorChange": 0,
+      "damagePerSecond": 0,
+      "speedMultiplier": 0.7
+    }
+  },
+  "mistCloud": {
+    "//": "Left by the Mist Breather where its attack lands.",
+    "radius": 26,
+    "durationSeconds": 6,
+    "appliesStatus": "soaked"
+  },
+  "combos": [
+    {
+      "id": "corrodeAndCrush",
+      "displayName": "Corrode & Crush",
+      "when": "headHitsEnemy",
+      "conditions": { "attackTag": "bite", "enemyHasStatus": "corroded" },
+      "effects": [
+        { "type": "damage", "amount": 8 },
+        { "type": "breakArmor" },
+        { "type": "removeStatus", "status": "corroded" }
+      ]
+    },
+    {
+      "id": "acidFog",
+      "displayName": "Acid Fog",
+      "when": "headHitsEnemy",
+      "conditions": { "attackTag": "acid", "enemyInMist": true },
+      "effects": [
+        { "type": "acidifyMist", "damagePerSecond": 2, "seconds": 4 }
+      ]
+    },
+    {
+      "id": "smother",
+      "displayName": "Smother",
+      "when": "enemyInMist",
+      "conditions": { "enemyCarriesFire": true },
+      "effects": [
+        { "type": "putOutTorch", "seconds": 5 }
+      ]
+    }
+  ]
+}

@@ -87,7 +87,13 @@ export const headsSchema = section({
       displayName: z.string().min(1),
       color: hexColor,
       maxHp: z.number().positive(),
-      attack: attackSchema.extend({ tags: z.array(z.string()) }),
+      attack: attackSchema.extend({
+        tags: z.array(z.string()),
+        // Status (from combos.json) put on the enemy this attack hits.
+        appliesStatus: z.string().min(1).optional(),
+        // The attack leaves a Mist cloud where it lands.
+        createsMistCloud: z.boolean().optional(),
+      }),
     }),
   ),
   names: z.array(z.string().min(1)).min(9),
@@ -141,6 +147,75 @@ export const enemiesSchema = section({
       ctx.addIssue({ code: 'custom', path: ['types', id, 'cauterizeSeconds'], message: 'torchbearer behavior needs cauterizeSeconds' });
     }
   }
+});
+
+export const COMBO_TRIGGERS = ['headHitsEnemy', 'enemyInMist'] as const;
+
+const comboEffectSchema = z.discriminatedUnion('type', [
+  // Extra damage that ignores armor.
+  section({ type: z.literal('damage'), amount: z.number().positive() }),
+  // The enemy's armor is gone for the rest of the battle.
+  section({ type: z.literal('breakArmor') }),
+  section({ type: z.literal('removeStatus'), status: z.string().min(1) }),
+  // The Mist cloud the enemy stands in hurts everyone inside it for a while.
+  section({ type: z.literal('acidifyMist'), damagePerSecond: z.number().positive(), seconds: z.number().positive() }),
+  // The enemy can't cauterize stumps for a while.
+  section({ type: z.literal('putOutTorch'), seconds: z.number().positive() }),
+]);
+
+export const combosSchema = section({
+  statuses: z.record(
+    z.string(),
+    section({
+      displayName: z.string().min(1),
+      color: hexColor,
+      durationSeconds: z.number().positive(),
+      // Added to the enemy's armor while the status lasts (negative = weaker armor).
+      armorChange: z.number(),
+      damagePerSecond: z.number().min(0),
+      // 1 = normal speed, 0.5 = half speed.
+      speedMultiplier: z.number().positive(),
+    }),
+  ),
+  mistCloud: section({
+    radius: z.number().positive(),
+    durationSeconds: z.number().positive(),
+    appliesStatus: z.string().min(1).optional(),
+  }),
+  combos: z.array(
+    section({
+      id: z.string().min(1),
+      displayName: z.string().min(1),
+      // What sets the combo off: a head's attack landing, or an enemy standing in a Mist cloud.
+      when: z.enum(COMBO_TRIGGERS),
+      // All listed conditions must hold. Leave one out to not care about it.
+      conditions: section({
+        attackTag: z.string().min(1).optional(),
+        enemyHasStatus: z.string().min(1).optional(),
+        enemyInMist: z.boolean().optional(),
+        enemyCarriesFire: z.boolean().optional(),
+      }),
+      effects: z.array(comboEffectSchema).min(1),
+    }),
+  ),
+}).superRefine((data, ctx) => {
+  const known = Object.keys(data.statuses);
+  const check = (id: string | undefined, path: Array<string | number>) => {
+    if (id !== undefined && !known.includes(id)) ctx.addIssue({ code: 'custom', path, message: `unknown status "${id}"; known: ${known.join(', ')}` });
+  };
+  check(data.mistCloud.appliesStatus, ['mistCloud', 'appliesStatus']);
+  const ids = new Set<string>();
+  data.combos.forEach((combo, c) => {
+    if (ids.has(combo.id)) ctx.addIssue({ code: 'custom', path: ['combos', c, 'id'], message: `combo id "${combo.id}" is used twice` });
+    ids.add(combo.id);
+    check(combo.conditions.enemyHasStatus, ['combos', c, 'conditions', 'enemyHasStatus']);
+    if (combo.when === 'enemyInMist' && combo.conditions.attackTag !== undefined) {
+      ctx.addIssue({ code: 'custom', path: ['combos', c, 'conditions', 'attackTag'], message: 'attackTag only works with "when": "headHitsEnemy"' });
+    }
+    combo.effects.forEach((effect, e) => {
+      if (effect.type === 'removeStatus') check(effect.status, ['combos', c, 'effects', e, 'status']);
+    });
+  });
 });
 
 export const paletteSchema = z
@@ -221,6 +296,7 @@ export const manifestSchema = z
 export type Balance = z.infer<typeof balanceSchema>;
 export type HeadsData = z.infer<typeof headsSchema>;
 export type EnemiesData = z.infer<typeof enemiesSchema>;
+export type CombosData = z.infer<typeof combosSchema>;
 export type Palette = z.infer<typeof paletteSchema>;
 export type GameText = z.infer<typeof textSchema>;
 export type AssetManifest = z.infer<typeof manifestSchema>;
