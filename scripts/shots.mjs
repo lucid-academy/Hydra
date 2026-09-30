@@ -27,6 +27,16 @@ const SHOTS = [
     await moveFarthest(page);
     await moveFarthest(page);
   } },
+  { name: 'battle-start', query: '?seed=123&scene=battle&group=burningDetail', viewport: DESKTOP, scene: 'battle', act: async (page) => {
+    await page.keyboard.press('Space'); // pause right away
+    await page.keyboard.press('1'); // select the first head
+  } },
+  { name: 'battle-fight', query: '?seed=123&scene=battle&group=burningDetail&debug=1', viewport: DESKTOP, scene: 'battle', act: async (page) => {
+    await page.waitForTimeout(7000);
+  } },
+  { name: 'battle-phone-landscape', query: '?seed=123&scene=battle&group=patrol', viewport: { width: 844, height: 390 }, scene: 'battle', act: async (page) => {
+    await page.waitForTimeout(3000);
+  } },
   { name: 'map-phone-landscape', query: '?seed=123&scene=map', viewport: { width: 844, height: 390 }, scene: 'map' },
 ];
 

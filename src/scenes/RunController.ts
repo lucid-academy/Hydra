@@ -2,9 +2,12 @@
 // Scenes listen for 'changed' to redraw, and for 'events' to animate what just happened.
 
 import * as Phaser from 'phaser';
+import { battleRulesFrom } from '../data/battleRules';
 import { runRulesFrom } from '../data/runRules';
+import type { BattleResult, BattleRules, BattleSetup } from '../sim/battle';
 import type { Hex } from '../sim/hex';
-import { createRun, endTurn, moveHydra, reachableHexes, winPendingBattle } from '../sim/turn';
+import { hex } from '../sim/hex';
+import { createRun, endTurn, finishBattle, moveHydra, pendingBattleSetup, reachableHexes } from '../sim/turn';
 import type { Reachable, RunEvent, RunRules, RunState } from '../sim/turn';
 import { getContext } from './context';
 
@@ -12,11 +15,13 @@ const REGISTRY_KEY = 'run';
 
 export class RunController extends Phaser.Events.EventEmitter {
   readonly rules: RunRules;
+  readonly battleRules: BattleRules;
   readonly state: RunState;
 
-  constructor(seed: number, rules: RunRules) {
+  constructor(seed: number, rules: RunRules, battleRules: BattleRules) {
     super();
     this.rules = rules;
+    this.battleRules = battleRules;
     this.state = createRun(seed, rules);
   }
 
@@ -32,8 +37,17 @@ export class RunController extends Phaser.Events.EventEmitter {
     this.publish(endTurn(this.state, this.rules));
   }
 
-  winBattle(): void {
-    this.publish(winPendingBattle(this.state, this.rules));
+  battleSetup(): BattleSetup | null {
+    return pendingBattleSetup(this.state, this.rules);
+  }
+
+  finishBattle(result: BattleResult): void {
+    this.publish(finishBattle(this.state, result, this.rules));
+  }
+
+  /** For `?scene=battle`: a battle against the given group without walking to it. */
+  startTestBattle(groupId: string): void {
+    this.state.pendingBattle = { at: hex(0, 0), groupId };
   }
 
   private publish(events: RunEvent[]): void {
@@ -44,9 +58,9 @@ export class RunController extends Phaser.Events.EventEmitter {
 }
 
 /** Starts a new run with the seed from the game context and stores it for all scenes. */
-export function startNewRun(scene: Phaser.Scene): RunController {
-  const { data, seed } = getContext(scene);
-  const run = new RunController(seed, runRulesFrom(data.balance));
+export function startNewRun(scene: Phaser.Scene, seed = getContext(scene).seed): RunController {
+  const { data } = getContext(scene);
+  const run = new RunController(seed, runRulesFrom(data), battleRulesFrom(data));
   scene.registry.set(REGISTRY_KEY, run);
   return run;
 }

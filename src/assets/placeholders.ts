@@ -192,7 +192,112 @@ const drawHydraToken: PlaceholderDrawer = (scene, key, width, height, palette) =
   g.destroy();
 };
 
+/** Battle arena floor, seen from above. */
+function arenaFloor(base: string, detail: string, glow: string, seed: number): PlaceholderDrawer {
+  return (scene, key, width, height) => {
+    const g = scene.make.graphics({}, false);
+    const rng = new Rng(seed);
+    g.fillStyle(color(base));
+    g.fillRect(0, 0, width, height);
+    g.fillStyle(color(detail));
+    for (let i = 0; i < 260; i++) g.fillRect(rng.int(0, width), rng.int(0, height), rng.int(2, 9), 1);
+    g.fillStyle(color(glow));
+    for (let i = 0; i < 45; i++) g.fillRect(rng.int(0, width), rng.int(0, height), 1, 1);
+    // Darker edges, like a cave wall closing in.
+    g.fillStyle(0x000000, 0.35);
+    g.fillRect(0, 0, width, 6);
+    g.fillRect(0, height - 6, width, 6);
+    g.fillRect(0, 0, 6, height);
+    g.fillRect(width - 6, 0, 6, height);
+    g.generateTexture(key, width, height);
+    g.destroy();
+  };
+}
+
+/** The hydra's body from above: a dark green mass with a paler back ridge. */
+const drawBattleBody: PlaceholderDrawer = (scene, key, width, height, palette) => {
+  const g = scene.make.graphics({}, false);
+  g.fillStyle(color(palette.underground.black));
+  g.fillEllipse(width / 2, height / 2, width, height);
+  g.fillStyle(color('#2f5e3a'));
+  g.fillEllipse(width / 2, height / 2, width - 4, height - 4);
+  g.fillStyle(color('#3f7a4c'));
+  g.fillEllipse(width / 2 - 2, height / 2 - 2, width - 14, height - 14);
+  g.fillStyle(color('#56925f'));
+  for (let x = 8; x < width - 8; x += 5) g.fillRect(x, height / 2 - 1, 2, 2);
+  g.generateTexture(key, width, height);
+  g.destroy();
+};
+
+/** A head, drawn pale so it can be tinted with its class colour. Faces right. */
+const drawBattleHead: PlaceholderDrawer = (scene, key, width, height) => {
+  const g = scene.make.graphics({}, false);
+  g.fillStyle(0x101010);
+  g.fillEllipse(width / 2, height / 2, width, height - 2);
+  g.fillStyle(0xe6e6e6);
+  g.fillEllipse(width / 2, height / 2, width - 2, height - 4);
+  g.fillRect(width - 4, height / 2 - 1, 3, 2); // snout
+  g.fillStyle(0xfff38a);
+  g.fillRect(width / 2 + 1, height / 2 - 3, 2, 1);
+  g.fillRect(width / 2 + 1, height / 2 + 2, 2, 1);
+  g.generateTexture(key, width, height);
+  g.destroy();
+};
+
+/** A soldier of the Order from above: helmet, shoulders, tabard colour, and what they carry. */
+function battleEnemy(tabard: string, extra: 'sword' | 'axe' | 'torch'): PlaceholderDrawer {
+  return (scene, key, width, height, palette) => {
+    const g = scene.make.graphics({}, false);
+    const cx = width / 2;
+    g.fillStyle(0x111111);
+    g.fillEllipse(cx, height / 2 + 1, width - 2, height - 4);
+    g.fillStyle(color(tabard));
+    g.fillEllipse(cx, height / 2 + 1, width - 4, height - 6);
+    g.fillStyle(0x9a9a9a);
+    g.fillCircle(cx, height / 2, 3); // helmet
+    if (extra === 'sword') {
+      g.fillStyle(0xd0d0d0);
+      g.fillRect(1, 2, 1, height - 6);
+    } else if (extra === 'axe') {
+      g.fillStyle(0x6b4a2a);
+      g.fillRect(1, 3, 1, height - 6);
+      g.fillStyle(0xd0d0d0);
+      g.fillRect(0, 2, 3, 3);
+    } else {
+      g.fillStyle(0x6b4a2a);
+      g.fillRect(1, 5, 1, height - 7);
+      g.fillStyle(color(palette.order.orange));
+      g.fillRect(0, 2, 3, 3);
+      g.fillStyle(color(palette.order.fire));
+      g.fillRect(1, 1, 1, 2);
+    }
+    g.generateTexture(key, width, height);
+    g.destroy();
+  };
+}
+
+function battleDot(fill: string, rim: string): PlaceholderDrawer {
+  return (scene, key, width, height) => {
+    const g = scene.make.graphics({}, false);
+    g.fillStyle(color(rim));
+    g.fillCircle(width / 2, height / 2, width / 2);
+    g.fillStyle(color(fill));
+    g.fillCircle(width / 2, height / 2, width / 2 - 1);
+    g.generateTexture(key, width, height);
+    g.destroy();
+  };
+}
+
 export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
+  battle_arena_water: arenaFloor('#0c3033', '#154347', '#c6e04a', 21),
+  battle_arena_mud: arenaFloor('#262d1b', '#333a22', '#c6e04a', 22),
+  battle_body: drawBattleBody,
+  battle_head: drawBattleHead,
+  battle_enemy_manAtArms: battleEnemy('#9e2323', 'sword'),
+  battle_enemy_headhunter: battleEnemy('#5a1a1a', 'axe'),
+  battle_enemy_torchbearer: battleEnemy('#6b5530', 'torch'),
+  battle_stump: battleDot('#8a2a2a', '#3a0d0d'),
+  battle_scar: battleDot('#2a2220', '#111111'),
   title_background: drawTitleBackground,
   hex_water: hexTile('#0e3b3f', '#1d5a5c', 6, 4, 11),
   hex_mud: hexTile('#2f3a22', '#443f26', 8, 2, 12),

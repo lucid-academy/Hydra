@@ -133,9 +133,21 @@ export class MapScene extends Phaser.Scene {
       tweens: moved.path.map((step) => ({ ...this.tokenPosition(step), duration: STEP_DURATION_MS })),
       onComplete: () => {
         this.animating = false;
+        if (this.run.state.pendingBattle) {
+          this.startBattle();
+          return;
+        }
         this.refresh();
         this.panTo(this.run.state.hydra.position);
       },
+    });
+  }
+
+  private startBattle(): void {
+    this.cameras.main.flash(250, 158, 35, 35);
+    this.time.delayedCall(250, () => {
+      this.scene.stop(SceneKey.Hud);
+      this.scene.start(SceneKey.Battle);
     });
   }
 

@@ -1,8 +1,9 @@
 // `?debug=1`: a small panel with the seed and simulation state, drawn above every other scene.
-// Ticks show "-" until battles exist; turn and visibility show "-" outside a run.
+// Ticks show "-" outside battles; turn and visibility show "-" outside a run.
 
 import * as Phaser from 'phaser';
 import { getContext } from '../scenes/context';
+import type { BattleScene } from '../scenes/BattleScene';
 import { getRun } from '../scenes/RunController';
 import { SceneKey } from '../scenes/sceneKeys';
 
@@ -26,9 +27,13 @@ export class DebugOverlayScene extends Phaser.Scene {
     this.time.addEvent({ delay: 250, loop: true, callback: () => this.refresh() });
   }
 
+  private battleTick(): number | null {
+    return this.scene.isActive(SceneKey.Battle) ? (this.scene.get(SceneKey.Battle) as BattleScene).tick : null;
+  }
+
   private refresh(): void {
-    const { seed } = getContext(this);
     const run = getRun(this)?.state;
+    const seed = run?.seed ?? getContext(this).seed;
     let visibility = '-';
     let turn = '-';
     if (run) {
@@ -45,7 +50,7 @@ export class DebugOverlayScene extends Phaser.Scene {
       [
         `seed: ${seed}`,
         `scene: ${active.join(', ') || '-'}`,
-        `turn: ${turn}   ticks: -`,
+        `turn: ${turn}   ticks: ${this.battleTick() ?? '-'}`,
         `visibility: ${visibility}`,
         `fps: ${Math.round(this.game.loop.actualFps)}`,
       ].join('\n'),

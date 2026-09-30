@@ -78,3 +78,77 @@ Prompt sketch: *"Pixel art game tile, 28x32 pixels, pointy-top hexagon, top-down
 | Used in | strategic map, the hydra's piece |
 
 A tiny hydra seen from above-front: a squat dark green body with **three heads** on short necks, eyes glowing yellow-green. Must read clearly at 20 px against teal and olive tiles; a dark outline helps.
+
+## Battle arenas: battle_arena_water, battle_arena_mud
+
+| | |
+|---|---|
+| Size | 640×300 px each |
+| Frames | 1 (static) |
+| Anchor | top-left (0, 0) |
+| Background | opaque, fills the whole arena |
+| Used in | battle screen, below the 16 px top bar and above the head cards |
+
+The floor of the fight, seen **straight from above**. Which one is used depends on the terrain of the map hex where the battle started.
+
+- **battle_arena_water:** a flooded cave: murky deep teal water, lighter teal ripple lines, a few glowing yellow-green spores.
+- **battle_arena_mud:** dark olive swamp mud, lighter clumps, a few glowing yellow-green spores.
+
+Keep the floor **quiet and low-contrast**: heads, necks, soldiers and HP bars are drawn on top and must stay readable. The outer ~6 px can be darker, like cave walls closing in. No objects that look like obstacles: the whole arena is walkable. The hydra starts on the left (around x 180, y 150), the Order on the right (around x 420).
+
+Prompt sketch: *"Pixel art, 640x300, top-down view, hard pixels, no anti-aliasing. Floor of a [flooded cave, murky deep teal water with faint ripples / dark olive swamp mud with small clumps], scattered tiny yellow-green bioluminescent spores, darker edges. Low contrast, empty, no objects. Dark fantasy underground swamp."*
+
+## battle_body
+
+| | |
+|---|---|
+| Size | 44×32 px |
+| Frames | 1 (static for now) |
+| Anchor | centre (22, 16) |
+| Background | transparent |
+| Used in | battle screen, the hydra's Body |
+
+The hydra's torso **seen from above**, without heads or necks (the game draws the necks itself, starting at the body's edge, and the heads are separate sprites). A squat, dark green oval mass with a paler ridge of scales along the back and a dark outline. It faces right, but necks can leave it in any direction, so keep the outline roughly oval with no head-shaped bumps.
+
+## battle_head
+
+| | |
+|---|---|
+| Size | 12×12 px |
+| Frames | 1 (static for now) |
+| Anchor | centre (6, 6); the game rotates the sprite around it |
+| Background | transparent |
+| Used in | battle screen, one per head |
+
+One hydra head seen from above, **facing right** (snout at the right edge), two small glowing yellow eyes. Draw it in **pale grey / white with a dark outline**: the game tints it with the colour of the head's class (from `src/data/heads.json`), so a coloured drawing would come out muddy. One sprite serves all classes.
+
+## Order soldiers: battle_enemy_manAtArms, battle_enemy_headhunter, battle_enemy_torchbearer
+
+| | |
+|---|---|
+| Size | 14×18 px each |
+| Frames | 1 (static for now) |
+| Anchor | centre (7, 9) |
+| Background | transparent |
+| Used in | battle screen |
+
+People of the Order of the Eternal Flame **seen from above**: helmet in the middle, shoulders, tabard. They are not rotated by the game, so draw them upright. Each must be recognisable at a glance at this size, mainly by colour and by what they carry (held on the left side of the sprite):
+
+- **battle_enemy_manAtArms:** banner-red tabard, steel helmet, a sword.
+- **battle_enemy_headhunter:** dark blood-red, heavier build, a big axe.
+- **battle_enemy_torchbearer:** a lay brother in a brown habit carrying a burning torch: the only warm, bright flame on the screen.
+
+A new enemy type needs a graphic with the key `battle_enemy_<type id from enemies.json>`; without one, the game shows the Man-at-Arms.
+
+## battle_stump, battle_scar
+
+| | |
+|---|---|
+| Size | 8×8 px each |
+| Frames | 1 |
+| Anchor | centre (4, 4) |
+| Background | transparent |
+| Used in | battle screen, at the body's edge where a head was severed |
+
+- **battle_stump:** a fresh neck stump seen from above: a raw dark red disc with a darker rim. Two new heads will grow from it.
+- **battle_scar:** the same stump burnt shut: charred black-brown, no red. Nothing grows from it.

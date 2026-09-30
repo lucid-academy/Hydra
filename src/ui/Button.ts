@@ -37,6 +37,11 @@ export class Button extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
+  setLabel(text: string): this {
+    this.label.setText(text);
+    return this;
+  }
+
   setEnabled(enabled: boolean): this {
     this.enabled = enabled;
     this.setAlpha(enabled ? 1 : 0.4);

@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { loadGameData } from './data';
 import { DataError } from './data/validate';
 import { computeZoom } from './scaling';
+import { BattleScene } from './scenes/BattleScene';
 import { BootScene } from './scenes/BootScene';
 import { setContext } from './scenes/context';
 import { MapScene } from './scenes/MapScene';
@@ -40,7 +41,7 @@ function start(): void {
     },
     banner: false,
     // Order matters: later scenes draw on top and get input first.
-    scene: [BootScene, TitleScene, MapScene, HudScene, DebugOverlayScene],
+    scene: [BootScene, TitleScene, MapScene, HudScene, BattleScene, DebugOverlayScene],
   });
   setContext(game, { data, seed, params });
 

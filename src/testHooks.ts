@@ -14,6 +14,8 @@ declare global {
       /** Screen positions (in game pixels, 640×360) of hexes the hydra can reach now. */
       reachableOnScreen?: () => ScreenPoint[];
       /** Short summary of the current run. */
+      /** Short summary of the current battle; positions in game pixels (640×360). */
+      battleSummary?: () => { tick: number; outcome: string | null; enemies: Array<{ x: number; y: number }>; heads: number };
       runSummary?: () => { turn: number; muck: number; alert: number; inBattle: boolean; explored: number };
     };
   }
@@ -34,4 +36,8 @@ export function exposeReachable(probe: () => ScreenPoint[]): void {
 
 export function exposeRunSummary(summary: NonNullable<Window['__hydra']>['runSummary']): void {
   hooks().runSummary = summary;
+}
+
+export function exposeBattleSummary(summary: NonNullable<Window['__hydra']>['battleSummary']): void {
+  hooks().battleSummary = summary;
 }
