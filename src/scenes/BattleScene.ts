@@ -1,6 +1,7 @@
 // Battle screen: runs the battle simulation in fixed ticks and draws it.
-// Space / the Pause button stops the ticks; orders can be given while paused.
-// Controls: tap a head (or 1–9) to select it, tap an enemy to make it attack; tap the ground (or right-click) to move the body.
+// The battle starts paused. Space / the Pause button stops and starts the ticks; orders can be given while paused.
+// Controls: tap a head (or its card, or 1–9) to select it, then tap an enemy to make it attack.
+// With no head selected, tap the ground to move the body (right-click always moves it).
 
 import * as Phaser from 'phaser';
 import { applyCommand, battleResult, createBattle, distance, fromAngle, isAcid, stepBattle, stumpPosition } from '../sim/battle';
@@ -9,6 +10,7 @@ import { hexKey } from '../sim/hex';
 import { exposeBattleSummary, markReady } from '../testHooks';
 import { Button } from '../ui/Button';
 import { HeadCards } from '../ui/HeadCards';
+import { onKeyDown } from '../ui/keys';
 import { pinToScreen } from '../ui/pinToScreen';
 import { color, getContext } from './context';
 import { getRun, startNewRun } from './RunController';
@@ -17,10 +19,12 @@ import { SceneKey } from './sceneKeys';
 
 /** The arena starts this far below the top of the screen (room for the top bar). */
 const ARENA_TOP = 16;
-/** How far from a head or enemy a tap still counts as tapping it (arena pixels). */
-const TAP_SLOP = 10;
+/** How far from an enemy's edge a tap still counts as tapping it (arena pixels). Generous, for fingers. */
+const TAP_SLOP = 12;
+/** A tap this close to a head's centre selects it. */
+const HEAD_TAP_RADIUS = 16;
 const SPEEDS = [1, 0.5] as const;
-const NECK_SEGMENTS = 7;
+const NECK_SEGMENTS = 9;
 const DEFAULT_TEST_GROUP = 'burningDetail';
 /** After a combo the battle runs this many times slower for a moment, so the player can see it land. */
 const COMBO_SLOWDOWN = 0.3;
@@ -29,7 +33,9 @@ const COMBO_SLOWDOWN_MS = 350;
 export class BattleScene extends Phaser.Scene {
   private run!: RunController;
   private battle!: BattleState;
-  private paused = false;
+  private paused = true;
+  /** False until the player starts the battle for the first time; the how-to-play hint shows until then. */
+  private started = false;
   private speedIndex = 0;
   private accumulator = 0;
   private selectedHeadId: string | null = null;
@@ -49,6 +55,8 @@ export class BattleScene extends Phaser.Scene {
   private cards!: HeadCards;
   private bodyHpText!: Phaser.GameObjects.Text;
   private pausedText!: Phaser.GameObjects.Text;
+  private pausedFrame!: Phaser.GameObjects.Graphics;
+  private hintText!: Phaser.GameObjects.Text;
   private pauseButton!: Button;
   private speedButton!: Button;
 
@@ -67,7 +75,7 @@ export class BattleScene extends Phaser.Scene {
     if (!run || (!run.state.pendingBattle && params.scene === SceneKey.Battle)) {
       // ?scene=battle: a test battle without walking to an encounter.
       run = run ?? startNewRun(this);
-      run.startTestBattle(params.group ?? DEFAULT_TEST_GROUP);
+      run.startTestBattle(params.group ?? DEFAULT_TEST_GROUP, params.hp);
     }
     this.run = run;
     const setup = run.battleSetup();
@@ -78,7 +86,9 @@ export class BattleScene extends Phaser.Scene {
 
     this.battle = createBattle(setup, run.battleRules);
     this.combosSeen = [];
-    this.paused = false;
+    // Every battle starts paused: time to look around and give the first orders.
+    this.paused = true;
+    this.started = false;
     this.speedIndex = 0;
     this.accumulator = 0;
     this.selectedHeadId = null;
@@ -109,8 +119,9 @@ export class BattleScene extends Phaser.Scene {
     exposeBattleSummary(() => ({
       tick: this.battle.tick,
       outcome: this.battle.outcome,
-      enemies: this.battle.enemies.map((e) => ({ x: e.pos.x, y: e.pos.y + ARENA_TOP })),
-      heads: this.battle.heads.length,
+      paused: this.paused,
+      enemies: this.battle.enemies.map((e) => ({ id: e.id, typeId: e.typeId, x: e.pos.x, y: e.pos.y + ARENA_TOP })),
+      heads: this.battle.heads.map((h) => ({ id: h.id, classId: h.classId, x: h.pos.x, y: h.pos.y + ARENA_TOP })),
       clouds: this.battle.clouds.length,
       combos: [...this.combosSeen],
     }));
@@ -128,20 +139,34 @@ export class BattleScene extends Phaser.Scene {
       .text(6, 3, '', { fontFamily: 'monospace', fontSize: '10px', color: '#d8e4d0' })
       .setScrollFactor(0)
       .setDepth(41);
+    // Paused = the word in the top bar plus a gold frame around the arena, so nothing on the battlefield is covered.
+    const { arenaHeight } = this.run.battleRules;
     this.pausedText = this.add
-      .text(width / 2, ARENA_TOP + 14, text.battle.paused, {
+      .text(width / 2, 3, text.battle.paused, { fontFamily: 'monospace', fontSize: '10px', color: palette.order.gold })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(41);
+    this.pausedFrame = this.add.graphics().setScrollFactor(0).setDepth(39);
+    this.pausedFrame.lineStyle(2, color(palette.order.gold), 0.9);
+    this.pausedFrame.strokeRect(1, ARENA_TOP + 1, width - 2, arenaHeight - 2);
+
+    // How to play, shown until the battle is started. It sits between the hydra and the top edge,
+    // where nobody stands at the start (the Order begins on a ring near the edges).
+    this.hintText = this.add
+      .text(width / 2, ARENA_TOP + 58, text.battle.hintSelectHead, {
         fontFamily: 'monospace',
-        fontSize: '14px',
-        color: palette.order.gold,
+        fontSize: '10px',
+        color: '#e8f0e0',
         backgroundColor: '#000000aa',
-        padding: { x: 6, y: 2 },
+        padding: { x: 5, y: 2 },
+        align: 'center',
+        wordWrap: { width: width - 40 },
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(41)
-      .setVisible(false);
+      .setDepth(41);
 
-    const panelY = ARENA_TOP + this.run.battleRules.arenaHeight;
+    const panelY = ARENA_TOP + arenaHeight;
     this.add.rectangle(0, panelY, width, height - panelY, color(palette.underground.black)).setOrigin(0, 0).setScrollFactor(0).setDepth(45).setInteractive();
 
     const buttonWidth = 70;
@@ -180,11 +205,14 @@ export class BattleScene extends Phaser.Scene {
     this.pauseButton.setLabel(this.paused ? text.battle.resumeButton : text.battle.pauseButton);
     this.speedButton.setLabel(`${text.battle.speed} ${SPEEDS[this.speedIndex]}×`);
     this.pausedText.setVisible(this.paused && !this.finished);
+    this.pausedFrame.setVisible(this.paused && !this.finished);
+    this.hintText.setVisible(!this.started && !this.finished);
   }
 
   private togglePause(): void {
     if (this.finished) return;
     this.paused = !this.paused;
+    if (!this.paused) this.started = true;
     this.updateButtons();
   }
 
@@ -196,13 +224,11 @@ export class BattleScene extends Phaser.Scene {
 
   private setUpInput(): void {
     this.input.mouse?.disableContextMenu();
-    const keyboard = this.input.keyboard;
-    keyboard?.on('keydown-SPACE', () => this.togglePause());
-    keyboard?.on('keydown-ESC', () => (this.selectedHeadId = null));
-    keyboard?.on('keydown', (event: KeyboardEvent) => {
-      const n = Number(event.key);
-      if (Number.isInteger(n) && n >= 1 && n <= 9) {
-        const head = this.battle.heads[n - 1];
+    onKeyDown(this, (event) => {
+      if (event.code === 'Space') this.togglePause();
+      else if (event.key === 'Escape') this.selectedHeadId = null;
+      else if (/^[1-9]$/.test(event.key)) {
+        const head = this.battle.heads[Number(event.key) - 1];
         if (head) this.selectHead(head.id);
       }
     });
@@ -225,9 +251,15 @@ export class BattleScene extends Phaser.Scene {
         if (this.selectedHeadId) applyCommand(this.battle, { type: 'attack', headId: this.selectedHeadId, enemyId: enemy.id }, rules);
         return;
       }
-      const head = this.battle.heads.find((h) => distance(h.pos, at) <= TAP_SLOP);
+      const head = this.battle.heads.find((h) => distance(h.pos, at) <= HEAD_TAP_RADIUS);
       if (head) {
         this.selectHead(head.id);
+        return;
+      }
+      // A tap that missed everything while a head is selected only lets go of the head:
+      // on a phone it is usually a missed enemy, and the body must not wander off because of it.
+      if (this.selectedHeadId) {
+        this.selectedHeadId = null;
         return;
       }
     }
@@ -242,10 +274,12 @@ export class BattleScene extends Phaser.Scene {
     const rules = this.run.battleRules;
     if (!this.paused && !this.finished) {
       const stepMs = 1000 / rules.ticksPerSecond;
-      // Never try to catch up more than a quarter second (e.g. after the tab was hidden).
       const slow = this.slowdownLeft > 0 ? COMBO_SLOWDOWN : 1;
       this.slowdownLeft = Math.max(0, this.slowdownLeft - delta);
-      this.accumulator = Math.min(this.accumulator + delta * SPEEDS[this.speedIndex]! * slow, 250);
+      // ?speed=4 fast-forwards battles (for tests).
+      const fastForward = getContext(this).params.speed ?? 1;
+      // Never try to catch up more than a quarter second (e.g. after the tab was hidden).
+      this.accumulator = Math.min(this.accumulator + delta * SPEEDS[this.speedIndex]! * slow * fastForward, 250 * fastForward);
       while (this.accumulator >= stepMs && !this.battle.outcome) {
         stepBattle(this.battle, rules);
         this.showEvents(this.battle.events);
@@ -292,9 +326,9 @@ export class BattleScene extends Phaser.Scene {
         const x = (1 - t) * (1 - t) * base.x + 2 * (1 - t) * t * bend.x + t * t * head.pos.x;
         const y = (1 - t) * (1 - t) * base.y + 2 * (1 - t) * t * bend.y + t * t * head.pos.y;
         this.necks.fillStyle(0x111111);
-        this.necks.fillCircle(Math.round(x), Math.round(y), 3.5 - t);
+        this.necks.fillCircle(Math.round(x), Math.round(y), 5 - 1.5 * t);
         this.necks.fillStyle(0x3f7a4c);
-        this.necks.fillCircle(Math.round(x), Math.round(y), 2.5 - t);
+        this.necks.fillCircle(Math.round(x), Math.round(y), 4 - 1.5 * t);
       }
     }
 
@@ -362,10 +396,10 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     for (const head of this.battle.heads) {
-      hpBar(g, head.pos.x, head.pos.y - 9, 12, head.hp / head.maxHp, 0x7fc05a);
+      hpBar(g, head.pos.x, head.pos.y - 12, 14, head.hp / head.maxHp, 0x7fc05a);
       if (head.id === this.selectedHeadId) {
         g.lineStyle(1, 0xc6e04a);
-        g.strokeCircle(Math.round(head.pos.x), Math.round(head.pos.y), 8);
+        g.strokeCircle(Math.round(head.pos.x), Math.round(head.pos.y), 11);
         const target = this.battle.enemies.find((e) => e.id === head.orderTargetId);
         if (target) {
           g.lineStyle(1, 0xc6e04a, 0.5);

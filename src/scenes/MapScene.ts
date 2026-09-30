@@ -2,7 +2,7 @@
 // Drag to look around; tap a highlighted hex to move there.
 
 import * as Phaser from 'phaser';
-import { hexKey, hexToPixel, pixelToHex } from '../sim/hex';
+import { hexKey, hexToPixel, hexesInRange, pixelToHex } from '../sim/hex';
 import type { Hex, HexLayout } from '../sim/hex';
 import type { MapObject } from '../sim/map';
 import type { RunEvent } from '../sim/turn';
@@ -76,9 +76,12 @@ export class MapScene extends Phaser.Scene {
     this.scene.launch(SceneKey.Hud);
     exposeReachable(() => {
       const cam = this.cameras.main;
+      const { map, visibility } = this.run.state;
       return [...this.run.reachable().entries()].map(([key, { cost }]) => {
-        const { x, y } = hexToPixel(LAYOUT, this.run.state.map.tiles.get(key)!.hex);
-        return { x: (x - cam.worldView.x) * cam.zoom, y: (y - cam.worldView.y) * cam.zoom, cost };
+        const tile = map.tiles.get(key)!;
+        const { x, y } = hexToPixel(LAYOUT, tile.hex);
+        const unexploredNear = hexesInRange(tile.hex, this.run.rules.sightRangeHexes).filter((h) => map.tiles.has(hexKey(h)) && !visibility.has(hexKey(h))).length;
+        return { x: (x - cam.worldView.x) * cam.zoom, y: (y - cam.worldView.y) * cam.zoom, cost, encounter: tile.object?.kind === 'encounter', unexploredNear };
       });
     });
     exposeRunSummary(() => {

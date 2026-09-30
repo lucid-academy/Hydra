@@ -7,6 +7,7 @@ import { requireRun, startNewRun } from '../scenes/RunController';
 import type { RunController } from '../scenes/RunController';
 import { SceneKey } from '../scenes/sceneKeys';
 import { Button } from './Button';
+import { onKeyDown } from './keys';
 
 const BAR_HEIGHT = 16;
 const ALERT_BAR_WIDTH = 100;
@@ -47,7 +48,9 @@ export class HudScene extends Phaser.Scene {
       { width: 88, height: 28, fill: color(palette.underground.deepTeal), border: color(palette.underground.bioluminescence), textColor: '#e8f0e0', fontSize: '12px' },
       () => this.run.endTurn(),
     );
-    this.input.keyboard?.on('keydown-ENTER', () => this.run.endTurn());
+    onKeyDown(this, (event) => {
+      if (event.key === 'Enter') this.run.endTurn();
+    });
 
     this.gameOverPanel = this.createGameOverPanel();
 

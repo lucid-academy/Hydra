@@ -17,7 +17,7 @@
     "resumeButton": "Resume",
     "speed": "Speed",
     "body": "Body",
-    "hintSelectHead": "Tap a head, then an enemy. Tap the ground to move.",
+    "hintSelectHead": "Tap a head, then an enemy. Heads that gang up on one enemy can combo.\nTap the ground to move the body. Press Resume when ready.",
     "severed": "{name} is severed!",
     "regrown": "Two heads grow back!",
     "cauterized": "The stump is burnt shut.",

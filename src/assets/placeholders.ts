@@ -214,7 +214,7 @@ function arenaFloor(base: string, detail: string, glow: string, seed: number): P
   };
 }
 
-/** The hydra's body from above: a dark green mass with a paler back ridge. */
+/** The hydra's body from above: a dark green mound with a ring of paler scales. Necks leave it in every direction. */
 const drawBattleBody: PlaceholderDrawer = (scene, key, width, height, palette) => {
   const g = scene.make.graphics({}, false);
   g.fillStyle(color(palette.underground.black));
@@ -224,7 +224,11 @@ const drawBattleBody: PlaceholderDrawer = (scene, key, width, height, palette) =
   g.fillStyle(color('#3f7a4c'));
   g.fillEllipse(width / 2 - 2, height / 2 - 2, width - 14, height - 14);
   g.fillStyle(color('#56925f'));
-  for (let x = 8; x < width - 8; x += 5) g.fillRect(x, height / 2 - 1, 2, 2);
+  const scales = 12;
+  for (let i = 0; i < scales; i++) {
+    const angle = (i / scales) * Math.PI * 2;
+    g.fillRect(Math.round(width / 2 + Math.cos(angle) * (width / 2 - 13)) - 1, Math.round(height / 2 + Math.sin(angle) * (height / 2 - 13)) - 1, 2, 2);
+  }
   g.generateTexture(key, width, height);
   g.destroy();
 };

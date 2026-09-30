@@ -45,9 +45,10 @@ export class RunController extends Phaser.Events.EventEmitter {
     this.publish(finishBattle(this.state, result, this.rules));
   }
 
-  /** For `?scene=battle`: a battle against the given group without walking to it. */
-  startTestBattle(groupId: string): void {
+  /** For `?scene=battle`: a battle against the given group without walking to it, optionally with a wounded body. */
+  startTestBattle(groupId: string, bodyHp: number | null = null): void {
     this.state.pendingBattle = { at: hex(0, 0), groupId };
+    if (bodyHp !== null) this.state.hydra.bodyHp = Math.min(this.state.hydra.bodyMaxHp, bodyHp);
   }
 
   private publish(events: RunEvent[]): void {

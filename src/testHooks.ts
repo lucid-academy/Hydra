@@ -4,7 +4,12 @@
 export interface ScreenPoint {
   x: number;
   y: number;
+  /** Movement points needed to get there. */
   cost: number;
+  /** There is an encounter on this hex: walking there starts a battle. */
+  encounter: boolean;
+  /** How many hexes not seen yet would be within sight from there. */
+  unexploredNear: number;
 }
 
 declare global {
@@ -14,7 +19,15 @@ declare global {
       /** Screen positions (in game pixels, 640×360) of hexes the hydra can reach now. */
       reachableOnScreen?: () => ScreenPoint[];
       /** Short summary of the current battle; positions in game pixels (640×360). */
-      battleSummary?: () => { tick: number; outcome: string | null; enemies: Array<{ x: number; y: number }>; heads: number; clouds: number; combos: string[] };
+      battleSummary?: () => {
+        tick: number;
+        outcome: string | null;
+        paused: boolean;
+        enemies: Array<{ id: number; typeId: string; x: number; y: number }>;
+        heads: Array<{ id: string; classId: string; x: number; y: number }>;
+        clouds: number;
+        combos: string[];
+      };
       /** Short summary of the current run. */
       runSummary?: () => { turn: number; muck: number; alert: number; inBattle: boolean; explored: number };
     };
