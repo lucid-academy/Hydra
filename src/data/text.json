@@ -11,9 +11,23 @@
     "alert": "Alert",
     "endTurn": "End Turn"
   },
-  "battlePlaceholder": {
-    "//": "Temporary: shown instead of a battle until M1 part B.",
-    "message": "A patrol of the Order blocks the way.\nThey have filled in a form about you.\n\n(Battles arrive in the next update.)",
-    "winButton": "Eat them anyway"
+  "battle": {
+    "paused": "PAUSED",
+    "pauseButton": "Pause",
+    "resumeButton": "Resume",
+    "speed": "Speed",
+    "body": "Body",
+    "hintSelectHead": "Tap a head, then an enemy. Tap the ground to move.",
+    "severed": "{name} is severed!",
+    "regrown": "Two heads grow back!",
+    "cauterized": "The stump is burnt shut.",
+    "victoryTitle": "The Order retreats. Mostly into you.",
+    "defeatTitle": "The hydra is dead.",
+    "continueButton": "Continue"
+  },
+  "gameOver": {
+    "title": "The hydra is dead.",
+    "body": "The Order will file a report. In triplicate.",
+    "newRunButton": "A new hydra"
   }
 }

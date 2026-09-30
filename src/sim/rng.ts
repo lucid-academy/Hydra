@@ -36,6 +36,18 @@ export class Rng {
     return items[this.int(0, items.length - 1)] as T;
   }
 
+  /** Random item, where items with higher `weight` come up proportionally more often. */
+  weightedPick<T extends { weight: number }>(items: readonly T[]): T {
+    const total = items.reduce((sum, item) => sum + item.weight, 0);
+    if (items.length === 0 || total <= 0) throw new Error('Rng.weightedPick: nothing to pick');
+    let roll = this.next() * total;
+    for (const item of items) {
+      roll -= item.weight;
+      if (roll < 0) return item;
+    }
+    return items[items.length - 1] as T;
+  }
+
   /** For saving the game: the generator continues exactly where it stopped. */
   getState(): RngState {
     return this.state;

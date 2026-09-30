@@ -5,9 +5,18 @@
     "undergroundRadius": 9
   },
   "terrain": {
-    "water": { "moveCost": 1, "blocksSight": false },
-    "mud": { "moveCost": 1, "blocksSight": false },
-    "rock": { "moveCost": null, "blocksSight": true }
+    "water": {
+      "moveCost": 1,
+      "blocksSight": false
+    },
+    "mud": {
+      "moveCost": 1,
+      "blocksSight": false
+    },
+    "rock": {
+      "moveCost": null,
+      "blocksSight": true
+    }
   },
   "undergroundGenerator": {
     "//": "TODO(design): working values for M1, tune after playtest. Shares are fractions of all hexes before cleanup.",
@@ -31,6 +40,17 @@
     "perBattle": 5
   },
   "battle": {
-    "ticksPerSecond": 20
+    "//": "TODO(design): arena size in pixels; body stats are working values for M1.",
+    "ticksPerSecond": 20,
+    "arenaWidth": 640,
+    "arenaHeight": 300,
+    "bodyMaxHp": 120,
+    "bodyRadius": 16,
+    "bodySpeed": 30
+  },
+  "healing": {
+    "//": "TODO(design): working values. HP healed at End Turn, until the lair exists (M2).",
+    "bodyHpPerTurn": 8,
+    "headHpPerTurn": 4
   }
 }

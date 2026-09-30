@@ -53,7 +53,94 @@ export const balanceSchema = section({
   }),
   battle: section({
     ticksPerSecond: z.number().int().positive(),
+    arenaWidth: z.number().int().positive(),
+    arenaHeight: z.number().int().positive(),
+    bodyMaxHp: z.number().positive(),
+    bodyRadius: z.number().positive(),
+    bodySpeed: z.number().positive(),
   }),
+  healing: section({
+    bodyHpPerTurn: z.number().min(0),
+    headHpPerTurn: z.number().min(0),
+  }),
+});
+
+const attackSchema = section({
+  damage: z.number().min(0),
+  cooldownSeconds: z.number().positive(),
+  range: z.number().positive(),
+});
+
+export const headsSchema = section({
+  maxHeads: z.number().int().min(1),
+  regrowSeconds: z.number().positive(),
+  neck: section({
+    length: z.number().positive(),
+    restDistance: z.number().positive(),
+    headSpeed: z.number().positive(),
+  }),
+  startingHeads: z.array(z.string()).min(1),
+  hatchlingClassPool: z.array(z.string()).min(1),
+  classes: z.record(
+    z.string(),
+    section({
+      displayName: z.string().min(1),
+      color: hexColor,
+      maxHp: z.number().positive(),
+      attack: attackSchema.extend({ tags: z.array(z.string()) }),
+    }),
+  ),
+  names: z.array(z.string().min(1)).min(9),
+}).superRefine((data, ctx) => {
+  // Class names used in lists must exist in "classes".
+  for (const listName of ['startingHeads', 'hatchlingClassPool'] as const) {
+    data[listName].forEach((id, i) => {
+      if (!(id in data.classes)) {
+        ctx.addIssue({ code: 'custom', path: [listName, i], message: `unknown head class "${id}"; known: ${Object.keys(data.classes).join(', ')}` });
+      }
+    });
+  }
+});
+
+export const ENEMY_BEHAVIORS = ['fighter', 'headhunter', 'torchbearer'] as const;
+
+export const enemiesSchema = section({
+  types: z.record(
+    z.string(),
+    section({
+      displayName: z.string().min(1),
+      maxHp: z.number().positive(),
+      armor: z.number().min(0),
+      speed: z.number().positive(),
+      radius: z.number().positive(),
+      attack: attackSchema,
+      bonusDamageVsHeads: z.number().positive().optional(),
+      cauterizeSeconds: z.number().positive().optional(),
+      behavior: z.enum(ENEMY_BEHAVIORS),
+    }),
+  ),
+  encounterGroups: z
+    .array(
+      section({
+        id: z.string().min(1),
+        weight: z.number().positive(),
+        members: z.array(z.string()).min(1),
+      }),
+    )
+    .min(1),
+}).superRefine((data, ctx) => {
+  data.encounterGroups.forEach((group, g) => {
+    group.members.forEach((id, m) => {
+      if (!(id in data.types)) {
+        ctx.addIssue({ code: 'custom', path: ['encounterGroups', g, 'members', m], message: `unknown enemy type "${id}"; known: ${Object.keys(data.types).join(', ')}` });
+      }
+    });
+  });
+  for (const [id, type] of Object.entries(data.types)) {
+    if (type.behavior === 'torchbearer' && type.cauterizeSeconds === undefined) {
+      ctx.addIssue({ code: 'custom', path: ['types', id, 'cauterizeSeconds'], message: 'torchbearer behavior needs cauterizeSeconds' });
+    }
+  }
 });
 
 export const paletteSchema = z
@@ -94,9 +181,24 @@ export const textSchema = z
       alert: z.string().min(1),
       endTurn: z.string().min(1),
     }),
-    battlePlaceholder: section({
-      message: z.string().min(1),
-      winButton: z.string().min(1),
+    battle: section({
+      paused: z.string().min(1),
+      pauseButton: z.string().min(1),
+      resumeButton: z.string().min(1),
+      speed: z.string().min(1),
+      body: z.string().min(1),
+      hintSelectHead: z.string(),
+      severed: z.string().min(1),
+      regrown: z.string().min(1),
+      cauterized: z.string().min(1),
+      victoryTitle: z.string().min(1),
+      defeatTitle: z.string().min(1),
+      continueButton: z.string().min(1),
+    }),
+    gameOver: section({
+      title: z.string().min(1),
+      body: z.string(),
+      newRunButton: z.string().min(1),
     }),
   })
   .strict();
@@ -117,6 +219,8 @@ export const manifestSchema = z
   .strict();
 
 export type Balance = z.infer<typeof balanceSchema>;
+export type HeadsData = z.infer<typeof headsSchema>;
+export type EnemiesData = z.infer<typeof enemiesSchema>;
 export type Palette = z.infer<typeof paletteSchema>;
 export type GameText = z.infer<typeof textSchema>;
 export type AssetManifest = z.infer<typeof manifestSchema>;

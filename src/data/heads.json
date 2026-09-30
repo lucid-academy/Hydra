@@ -1,0 +1,37 @@
+{
+  "//": "TODO(design): all numbers are working values for M1. Distances in arena pixels (the arena is 640x300), times in seconds.",
+  "maxHeads": 9,
+  "regrowSeconds": 6,
+  "neck": {
+    "length": 70,
+    "restDistance": 26,
+    "headSpeed": 140
+  },
+  "startingHeads": ["biter", "acidSpitter", "mistBreather"],
+  "hatchlingClassPool": ["biter", "acidSpitter", "mistBreather"],
+  "classes": {
+    "biter": {
+      "displayName": "Biter",
+      "color": "#5f9a4a",
+      "maxHp": 30,
+      "attack": { "damage": 9, "cooldownSeconds": 1.2, "range": 14, "tags": ["bite"] }
+    },
+    "acidSpitter": {
+      "displayName": "Acid Spitter",
+      "color": "#b7d13a",
+      "maxHp": 22,
+      "attack": { "damage": 4, "cooldownSeconds": 1.5, "range": 110, "tags": ["acid"] }
+    },
+    "mistBreather": {
+      "displayName": "Mist Breather",
+      "color": "#8fb3a8",
+      "maxHp": 24,
+      "attack": { "damage": 2, "cooldownSeconds": 2, "range": 60, "tags": ["mist"] }
+    }
+  },
+  "names": [
+    "Gerald", "Kevin", "Morwenna", "Bartholomew", "Agnes", "Mildred", "Oswin", "Ethel",
+    "Humphrey", "Gristle", "Dorothea", "Percival", "Winifred", "Clement", "Hilda", "Ambrose",
+    "Brunhilde", "Cuthbert", "Edna", "Fulbert", "Gertrude", "Ignatius", "Lettice", "Norbert"
+  ]
+}

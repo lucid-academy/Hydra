@@ -1,0 +1,40 @@
+{
+  "//": "TODO(design): all numbers are working values for M1. Distances in arena pixels, times in seconds.",
+  "types": {
+    "manAtArms": {
+      "displayName": "Man-at-Arms",
+      "maxHp": 40,
+      "armor": 1,
+      "speed": 28,
+      "radius": 7,
+      "attack": { "damage": 6, "cooldownSeconds": 1.4, "range": 14 },
+      "behavior": "fighter"
+    },
+    "headhunter": {
+      "displayName": "Headhunter",
+      "maxHp": 34,
+      "armor": 0,
+      "speed": 32,
+      "radius": 7,
+      "attack": { "damage": 8, "cooldownSeconds": 1.6, "range": 16 },
+      "bonusDamageVsHeads": 1.5,
+      "behavior": "headhunter"
+    },
+    "torchbearer": {
+      "displayName": "Torchbearer",
+      "maxHp": 24,
+      "armor": 0,
+      "speed": 30,
+      "radius": 6,
+      "attack": { "damage": 3, "cooldownSeconds": 1.5, "range": 12 },
+      "cauterizeSeconds": 3,
+      "behavior": "torchbearer"
+    }
+  },
+  "encounterGroups": [
+    { "id": "patrol", "weight": 3, "members": ["manAtArms", "manAtArms"] },
+    { "id": "huntingParty", "weight": 2, "members": ["manAtArms", "headhunter"] },
+    { "id": "burningDetail", "weight": 2, "members": ["manAtArms", "torchbearer", "headhunter"] },
+    { "id": "lostNovices", "weight": 1, "members": ["torchbearer", "torchbearer"] }
+  ]
+}
