@@ -3,11 +3,11 @@ import { parseUrlParams } from '../src/urlParams';
 
 describe('parseUrlParams', () => {
   it('reads seed, scene and debug', () => {
-    expect(parseUrlParams('?seed=123&scene=battle&debug=1')).toEqual({ seed: 123, scene: 'battle', debug: true });
+    expect(parseUrlParams('?seed=123&scene=battle&debug=1&group=patrol')).toEqual({ seed: 123, scene: 'battle', debug: true, group: 'patrol' });
   });
 
   it('returns defaults when nothing is given', () => {
-    expect(parseUrlParams('')).toEqual({ seed: null, scene: null, debug: false });
+    expect(parseUrlParams('')).toEqual({ seed: null, scene: null, debug: false, group: null });
   });
 
   it('ignores an empty seed', () => {

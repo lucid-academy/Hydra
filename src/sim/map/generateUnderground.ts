@@ -16,6 +16,8 @@ export interface UndergroundGeneratorSettings {
   encounterMinDistanceFromLair: number;
   muckDepositCount: number;
   muckPerDeposit: number;
+  /** Which group of enemies waits at each encounter, picked by weight. */
+  encounterGroups: ReadonlyArray<{ id: string; weight: number }>;
 }
 
 const MAX_ATTEMPTS = 100;
@@ -72,7 +74,9 @@ function tryGenerate(rng: Rng, s: UndergroundGeneratorSettings, terrain: Terrain
 
   const encounterSpots = free.filter((t) => hexDistance(t.hex, lair) >= s.encounterMinDistanceFromLair);
   if (encounterSpots.length < s.encounterCount) return null;
-  for (const tile of takeRandom(rng, encounterSpots, s.encounterCount)) tile.object = { kind: 'encounter' };
+  for (const tile of takeRandom(rng, encounterSpots, s.encounterCount)) {
+    tile.object = { kind: 'encounter', groupId: rng.weightedPick(s.encounterGroups).id };
+  }
 
   const muckSpots = free.filter((t) => t.object === null);
   if (muckSpots.length < s.muckDepositCount) return null;

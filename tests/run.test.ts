@@ -4,10 +4,11 @@ import { runRulesFrom } from '../src/data/runRules';
 import { hex, hexDistance, hexKey, hexesInRange } from '../src/sim/hex';
 import type { HexMap, TerrainTable, Tile } from '../src/sim/map';
 import { hexesSeenFrom, updateVisibility } from '../src/sim/map';
-import { createRun, endTurn, moveHydra, reachableHexes, winPendingBattle } from '../src/sim/turn';
+import { createRun, endTurn, finishBattle, moveHydra, pendingBattleSetup, reachableHexes } from '../src/sim/turn';
+import type { BattleResult } from '../src/sim/battle';
 import type { RunState } from '../src/sim/turn';
 
-const rules = runRulesFrom(loadGameData().balance);
+const rules = runRulesFrom(loadGameData());
 const terrain: TerrainTable = {
   water: { moveCost: 1, blocksSight: false },
   mud: { moveCost: 1, blocksSight: false },
@@ -26,7 +27,7 @@ function flatMap(radius: number, edit: (tiles: Map<string, Tile>) => void = () =
 function runOn(map: HexMap, movement = 5): RunState {
   const state = createRun(1, { ...rules, terrain, movementPointsPerTurn: movement });
   state.map = map;
-  state.hydra = { position: map.lair, movementLeft: movement };
+  state.hydra = { ...state.hydra, position: map.lair, movementLeft: movement };
   state.visibility = new Map();
   // Tests know the whole map, so every hex can be targeted.
   for (const key of map.tiles.keys()) state.visibility.set(key, 'remembered');
@@ -99,7 +100,7 @@ describe('movement', () => {
 
   it('stops on an encounter and blocks moving until the battle is resolved', () => {
     const state = runOn(flatMap(4, (tiles) => {
-      tiles.get('2,0')!.object = { kind: 'encounter' };
+      tiles.get('2,0')!.object = { kind: 'encounter', groupId: 'patrol' };
     }));
     expect(reachableHexes(state, testRules).has('3,0')).toBe(true); // around it, not through
     const events = moveHydra(state, hex(2, 0), testRules);
@@ -107,11 +108,41 @@ describe('movement', () => {
     expect(moveHydra(state, hex(0, 0), testRules)).toEqual([]);
     expect(endTurn(state, testRules)).toEqual([]);
 
+    const setup = pendingBattleSetup(state, testRules)!;
+    expect(setup.enemies).toEqual(testRules.encounterGroupMembers.patrol);
+    expect(setup.heads).toHaveLength(3);
+
     const alertBefore = state.alert;
-    winPendingBattle(state, testRules);
+    const result: BattleResult = { outcome: 'won', bodyHp: 50, heads: setup.heads.slice(1), newScars: 1, nextId: 42 };
+    finishBattle(state, result, testRules);
     expect(state.pendingBattle).toBeNull();
     expect(state.map.tiles.get('2,0')!.object).toBeNull();
     expect(state.alert).toBe(alertBefore + testRules.alertPerBattle);
+    expect(state.hydra.heads).toHaveLength(2);
+    expect(state.hydra.bodyHp).toBe(50);
+    expect(state.hydra.scars).toBe(1);
+    expect(state.nextId).toBe(42);
+  });
+
+  it('a lost battle ends the run', () => {
+    const state = runOn(flatMap(4, (tiles) => {
+      tiles.get('1,0')!.object = { kind: 'encounter', groupId: 'patrol' };
+    }));
+    moveHydra(state, hex(1, 0), testRules);
+    const events = finishBattle(state, { outcome: 'lost', bodyHp: 0, heads: [], newScars: 0, nextId: 9 }, testRules);
+    expect(events).toEqual([{ type: 'hydraDied' }]);
+    expect(state.over).toBe(true);
+    expect(reachableHexes(state, testRules).size).toBe(0);
+    expect(endTurn(state, testRules)).toEqual([]);
+  });
+
+  it('End Turn heals body and heads, up to their maximum', () => {
+    const state = runOn(flatMap(4));
+    state.hydra.bodyHp = 1;
+    state.hydra.heads[0]!.hp = state.hydra.heads[0]!.maxHp - 1;
+    endTurn(state, testRules);
+    expect(state.hydra.bodyHp).toBe(1 + testRules.healing.bodyHpPerTurn);
+    expect(state.hydra.heads[0]!.hp).toBe(state.hydra.heads[0]!.maxHp);
   });
 
   it('End Turn restores movement', () => {
@@ -124,8 +155,10 @@ describe('movement', () => {
 });
 
 describe('createRun', () => {
-  it('starts at the lair with the start area visible and Alert at minimum', () => {
+  it('starts at the lair with three named heads, the start area visible and Alert at minimum', () => {
     const state = createRun(123, rules);
+    expect(state.hydra.heads.map((h) => h.classId)).toEqual(['biter', 'acidSpitter', 'mistBreather']);
+    expect(new Set(state.hydra.heads.map((h) => h.name)).size).toBe(3);
     expect(hexKey(state.hydra.position)).toBe(hexKey(state.map.lair));
     expect(state.visibility.get(hexKey(state.map.lair))).toBe('visible');
     expect(state.alert).toBe(rules.alertMin);

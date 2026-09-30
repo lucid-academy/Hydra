@@ -1,10 +1,12 @@
 // State of one run on the strategic map, and the commands that change it.
 // Commands mutate the state and return events, which the scenes use to animate and show messages.
 
+import type { BattleResult, BattleSetup, HeadRecord } from '../battle';
 import { hexEquals, hexKey, hexNeighbors } from '../hex';
 import type { Hex } from '../hex';
 import { generateUnderground, hexesSeenFrom, updateVisibility } from '../map';
 import type { HexMap, TerrainTable, Visibility } from '../map';
+import { Rng } from '../rng';
 
 export interface RunRules {
   movementPointsPerTurn: number;
@@ -15,19 +17,40 @@ export interface RunRules {
   alertPerHexDiscovered: number;
   alertPerBattle: number;
   generator: Parameters<typeof generateUnderground>[1];
+  bodyMaxHp: number;
+  startingHeads: ReadonlyArray<{ classId: string; maxHp: number }>;
+  headNames: readonly string[];
+  healing: { bodyHpPerTurn: number; headHpPerTurn: number };
+  /** Enemy type ids for each encounter group id. */
+  encounterGroupMembers: Readonly<Record<string, readonly string[]>>;
+}
+
+export interface Hydra {
+  position: Hex;
+  movementLeft: number;
+  bodyHp: number;
+  bodyMaxHp: number;
+  heads: HeadRecord[];
+  /** Stumps burnt shut: they stay for the rest of the run (until the lair can heal them, M2). */
+  scars: number;
 }
 
 export interface RunState {
   readonly seed: number;
   turn: number;
   map: HexMap;
-  hydra: { position: Hex; movementLeft: number };
+  hydra: Hydra;
   visibility: Visibility;
   /** 0–100. Stored with fractions; show it rounded down. */
   alert: number;
   resources: { muck: number };
-  /** Hex of the encounter the hydra stepped on, until the battle is resolved. */
-  pendingBattle: Hex | null;
+  /** The encounter the hydra stepped on, until its battle is resolved. */
+  pendingBattle: { at: Hex; groupId: string } | null;
+  battlesFought: number;
+  /** Next free number for ids of heads grown in battles. */
+  nextId: number;
+  /** The hydra died: this run is over. */
+  over: boolean;
 }
 
 export type RunEvent =
@@ -36,19 +59,38 @@ export type RunEvent =
   | { type: 'collected'; resource: 'muck'; amount: number; at: Hex }
   | { type: 'battleStarted'; at: Hex }
   | { type: 'battleWon'; at: Hex }
+  | { type: 'hydraDied' }
   | { type: 'turnEnded'; turn: number };
 
 export function createRun(seed: number, rules: RunRules): RunState {
   const map = generateUnderground(seed, rules.generator, rules.terrain);
+  // A separate stream from the map's, so changing starting heads never changes the map.
+  const rng = new Rng((seed ^ 0x5eed) >>> 0);
+  const names = [...rules.headNames];
+  const heads = rules.startingHeads.map((h, i) => {
+    const name = names.splice(rng.int(0, names.length - 1), 1)[0] ?? `Head ${i + 1}`;
+    return { id: `h${i + 1}`, name, classId: h.classId, level: 1, hp: h.maxHp, maxHp: h.maxHp };
+  });
+
   const state: RunState = {
     seed,
     turn: 1,
     map,
-    hydra: { position: map.lair, movementLeft: rules.movementPointsPerTurn },
+    hydra: {
+      position: map.lair,
+      movementLeft: rules.movementPointsPerTurn,
+      bodyHp: rules.bodyMaxHp,
+      bodyMaxHp: rules.bodyMaxHp,
+      heads,
+      scars: 0,
+    },
     visibility: new Map(),
     alert: rules.alertMin,
     resources: { muck: 0 },
     pendingBattle: null,
+    battlesFought: 0,
+    nextId: heads.length + 1,
+    over: false,
   };
   // Seeing the lair's surroundings at the start doesn't count as exploring.
   updateVisibility(state.visibility, hexesSeenFrom(map, map.lair, rules.sightRangeHexes, rules.terrain));
@@ -68,6 +110,7 @@ export interface Reachable {
 export function reachableHexes(state: RunState, rules: RunRules): Map<string, Reachable> {
   const start = state.hydra.position;
   const best = new Map<string, Reachable>([[hexKey(start), { cost: 0, path: [] }]]);
+  if (state.over || state.pendingBattle) return new Map();
   const frontier: Hex[] = [start];
   while (frontier.length > 0) {
     // The map is small, so a simple "take the cheapest" beats a priority queue for readability.
@@ -96,7 +139,6 @@ export function reachableHexes(state: RunState, rules: RunRules): Map<string, Re
 
 /** Moves the hydra step by step, revealing the map as it goes. Does nothing if the target is out of reach. */
 export function moveHydra(state: RunState, target: Hex, rules: RunRules): RunEvent[] {
-  if (state.pendingBattle) return [];
   const route = reachableHexes(state, rules).get(hexKey(target));
   if (!route) return [];
 
@@ -116,7 +158,7 @@ export function moveHydra(state: RunState, target: Hex, rules: RunRules): RunEve
       tile.object = null;
     }
     if (tile.object?.kind === 'encounter') {
-      state.pendingBattle = step;
+      state.pendingBattle = { at: step, groupId: tile.object.groupId };
       break;
     }
   }
@@ -126,24 +168,54 @@ export function moveHydra(state: RunState, target: Hex, rules: RunRules): RunEve
     raiseAlert(state, discovered * rules.alertPerHexDiscovered, rules);
     events.push({ type: 'discovered', count: discovered });
   }
-  if (state.pendingBattle) events.push({ type: 'battleStarted', at: state.pendingBattle });
+  if (state.pendingBattle) events.push({ type: 'battleStarted', at: state.pendingBattle.at });
   return events;
 }
 
-/** Temporary until battles exist (M1 part B): the pending battle counts as won. */
-export function winPendingBattle(state: RunState, rules: RunRules): RunEvent[] {
-  const at = state.pendingBattle;
-  if (!at) return [];
-  state.map.tiles.get(hexKey(at))!.object = null;
+/** Everything the battle simulation needs to start the pending battle. */
+export function pendingBattleSetup(state: RunState, rules: RunRules): BattleSetup | null {
+  const pending = state.pendingBattle;
+  if (!pending) return null;
+  const enemies = rules.encounterGroupMembers[pending.groupId];
+  if (!enemies) throw new Error(`Unknown encounter group "${pending.groupId}"`);
+  return {
+    // Every battle of a run gets its own seed, derived from the run seed.
+    seed: (Math.imul(state.seed ^ 0x9e3779b9, state.battlesFought + 1) ^ Math.imul(pending.at.q, 73856093) ^ Math.imul(pending.at.r, 19349663)) >>> 0,
+    heads: state.hydra.heads.map((h) => ({ ...h })),
+    bodyHp: state.hydra.bodyHp,
+    bodyMaxHp: state.hydra.bodyMaxHp,
+    enemies,
+    firstFreeId: state.nextId,
+  };
+}
+
+/** Applies a finished battle: new head line-up, body HP, scars; the encounter is cleared if won. */
+export function finishBattle(state: RunState, result: BattleResult, rules: RunRules): RunEvent[] {
+  const pending = state.pendingBattle;
+  if (!pending) return [];
   state.pendingBattle = null;
+  state.battlesFought += 1;
+  state.nextId = result.nextId;
+  state.hydra.heads = result.heads.map((h) => ({ ...h }));
+  state.hydra.bodyHp = result.bodyHp;
+  state.hydra.scars += result.newScars;
   raiseAlert(state, rules.alertPerBattle, rules);
-  return [{ type: 'battleWon', at }];
+
+  if (result.outcome === 'lost') {
+    state.over = true;
+    return [{ type: 'hydraDied' }];
+  }
+  const tile = state.map.tiles.get(hexKey(pending.at));
+  if (tile?.object?.kind === 'encounter') tile.object = null;
+  return [{ type: 'battleWon', at: pending.at }];
 }
 
 export function endTurn(state: RunState, rules: RunRules): RunEvent[] {
-  if (state.pendingBattle) return [];
+  if (state.pendingBattle || state.over) return [];
   state.turn += 1;
   state.hydra.movementLeft = rules.movementPointsPerTurn;
+  state.hydra.bodyHp = Math.min(state.hydra.bodyMaxHp, state.hydra.bodyHp + rules.healing.bodyHpPerTurn);
+  for (const head of state.hydra.heads) head.hp = Math.min(head.maxHp, head.hp + rules.healing.headHpPerTurn);
   return [{ type: 'turnEnded', turn: state.turn }];
 }
 

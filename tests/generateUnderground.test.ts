@@ -5,7 +5,7 @@ import { hexDistance, hexKey, hexesInRange } from '../src/sim/hex';
 import { floodFill, generateUnderground } from '../src/sim/map';
 import type { HexMap } from '../src/sim/map';
 
-const rules = runRulesFrom(loadGameData().balance);
+const rules = runRulesFrom(loadGameData());
 const settings = rules.generator;
 const SEEDS = 1000;
 

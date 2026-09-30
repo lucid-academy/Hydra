@@ -13,7 +13,7 @@ export type TerrainTable = Readonly<Record<TerrainType, TerrainRules>>;
 
 export type MapObject =
   | { kind: 'lair' }
-  | { kind: 'encounter' }
+  | { kind: 'encounter'; groupId: string }
   | { kind: 'muck'; amount: number };
 
 export interface Tile {
