@@ -44,12 +44,12 @@
     "ticksPerSecond": 20,
     "boardColumns": 13,
     "boardRows": 9,
-    "bodyMaxHp": 150,
+    "bodyMaxHp": 200,
     "bodyStepSeconds": 1.2
   },
   "healing": {
     "//": "TODO(design): working values. HP healed at End Turn, until the lair exists (M2).",
-    "bodyHpPerTurn": 8,
+    "bodyHpPerTurn": 12,
     "headHpPerTurn": 4
   }
 }

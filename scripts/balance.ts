@@ -11,7 +11,7 @@
 import { loadGameData } from '../src/data';
 import { battleRulesFrom } from '../src/data/battleRules';
 import { runRulesFrom } from '../src/data/runRules';
-import { applyCommand, createBattle, distance, neckReach, stepBattle } from '../src/sim/battle';
+import { applyCommand, canHeadReach, createBattle, stepBattle } from '../src/sim/battle';
 import type { BattleRules, BattleState, Enemy } from '../src/sim/battle';
 import { hex } from '../src/sim/hex';
 import { createRun, pendingBattleSetup } from '../src/sim/turn';
@@ -34,8 +34,7 @@ function priority(enemy: Enemy, r: BattleRules): number {
 
 function giveFocusOrders(state: BattleState, r: BattleRules): void {
   for (const head of state.heads) {
-    const range = r.headClasses[head.classId]!.attack.range;
-    const inReach = state.enemies.filter((e) => distance(state.body.pos, e.pos) <= neckReach(r) + range + r.enemyTypes[e.typeId]!.radius);
+    const inReach = state.enemies.filter((e) => canHeadReach(state, head, e, r));
     inReach.sort((a, b) => priority(a, r) - priority(b, r) || a.hp - b.hp || a.id - b.id);
     const target = inReach[0];
     if (!target) {

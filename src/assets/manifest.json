@@ -10,15 +10,18 @@
     "icon_encounter": { "file": null, "width": 12, "height": 12 },
     "icon_muck": { "file": null, "width": 12, "height": 12 },
     "token_hydra": { "file": null, "width": 20, "height": 20 },
-    "battle_arena_water": { "file": null, "width": 640, "height": 300 },
-    "battle_arena_mud": { "file": null, "width": 640, "height": 300 },
-    "battle_body": { "file": null, "width": 64, "height": 56 },
-    "battle_head": { "file": null, "width": 16, "height": 16 },
-    "battle_enemy_manAtArms": { "file": null, "width": 14, "height": 18 },
-    "battle_enemy_headhunter": { "file": null, "width": 14, "height": 18 },
-    "battle_enemy_torchbearer": { "file": null, "width": 14, "height": 18 },
-    "battle_stump": { "file": null, "width": 10, "height": 10 },
-    "battle_scar": { "file": null, "width": 10, "height": 10 },
-    "battle_mist_cloud": { "file": null, "width": 64, "height": 64 }
+    "battle_tile_mud": { "file": null, "width": 42, "height": 46 },
+    "battle_tile_water": { "file": null, "width": 42, "height": 46 },
+    "battle_hex_mark": { "file": null, "width": 42, "height": 36 },
+    "battle_hex_fill": { "file": null, "width": 42, "height": 36 },
+    "battle_shadow": { "file": null, "width": 22, "height": 7 },
+    "battle_mist_puff": { "file": null, "width": 20, "height": 11 },
+    "battle_body": { "file": null, "width": 132, "height": 110 },
+    "battle_head": { "file": null, "width": 20, "height": 14 },
+    "battle_enemy_manAtArms": { "file": null, "width": 26, "height": 38 },
+    "battle_enemy_headhunter": { "file": null, "width": 26, "height": 38 },
+    "battle_enemy_torchbearer": { "file": null, "width": 26, "height": 38 },
+    "battle_stump": { "file": null, "width": 10, "height": 8 },
+    "battle_scar": { "file": null, "width": 10, "height": 8 }
   }
 }
