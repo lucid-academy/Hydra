@@ -79,92 +79,103 @@ Prompt sketch: *"Pixel art game tile, 28x32 pixels, pointy-top hexagon, top-down
 
 A tiny hydra seen from above-front: a squat dark green body with **three heads** on short necks, eyes glowing yellow-green. Must read clearly at 20 px against teal and olive tiles; a dark outline helps.
 
-## Battle graphics: wait before drawing them
+## Battle graphics: the slanted view
 
-> **Status (2026-09-30):** the battle screen may change from this top-down view to a slanted view with a hex grid (see the open decision in the project chat). Everything below describes the current top-down placeholders. **Don't generate final battle graphics yet**: their sizes and viewing angle would change.
+The battle is a board of hexes seen from a slant (like the board in Into the Breach, but made of hexes), with the hydra's body in the middle. Rules for every battle graphic, on top of the general ones above:
 
-## Battle arenas: battle_arena_water, battle_arena_mud
+- **Seen from a slant:** the ground is squashed (a hex is 42 px wide and 36 px tall on screen); people and the hydra stand up and are seen from the side and a little from above (three-quarter view).
+- **Everyone faces right.** The game mirrors them when they face left.
+- Light from the upper left. Transparent background (tiles only have transparency outside the hex).
+- The board is 13 hexes across and 9 rows deep. Hex centres are 42 px apart within a row and rows are 27 px apart.
+- The numbers that the game relies on (tile sizes, the body's anchor, where feet stand) are also in `src/assets/battleArt.ts`.
+
+## Battle tiles: battle_tile_mud, battle_tile_water
 
 | | |
 |---|---|
-| Size | 640×300 px each |
-| Frames | 1 (static) |
-| Anchor | top-left (0, 0) |
-| Background | opaque, fills the whole arena |
-| Used in | battle screen, below the 16 px top bar and above the head cards |
+| Size | 42×46 px each |
+| Frames | 1 |
+| Anchor | centre of the top face, (21, 18) |
+| Background | transparent outside the tile |
+| Used in | battle board; one tile per hex |
 
-The floor of the fight, seen **straight from above**. Which one is used depends on the terrain of the map hex where the battle started.
+Two parts, one under the other:
 
-- **battle_arena_water:** a flooded cave: murky deep teal water, lighter teal ripple lines, a few glowing yellow-green spores.
-- **battle_arena_mud:** dark olive swamp mud, lighter clumps, a few glowing yellow-green spores.
+- **Top face (upper 36 px):** a pointy-top hex squashed vertically: top point at (21, 0), straight sides at x=0 and x=41 from y=9 to y=27, bottom point at (21, 35). Keep it quiet and low-contrast (soldiers, heads and HP bars are drawn on top) with a 1 px darker rim, so neighbouring hexes read as separate fields.
+- **Wall (lower 10 px):** earth under the two lower edges of the hex, as if the board were a thick slab: darker on the left half, a little lighter on the right, a few darker horizontal layers. Only the front row of the board shows its walls; the next row covers the rest.
 
-Keep the floor **quiet and low-contrast**: heads, necks, soldiers and HP bars are drawn on top and must stay readable. The outer ~6 px can be darker, like cave walls closing in. No objects that look like obstacles: the whole arena is walkable. The hydra sits in the middle (x 320, y 150) and the Order starts near the edges, all around it.
+- **battle_tile_mud:** dark olive swamp mud with a few lighter clumps.
+- **battle_tile_water:** murky teal shallow water with a few light ripples (battles that start on a water hex).
 
-Prompt sketch: *"Pixel art, 640x300, top-down view, hard pixels, no anti-aliasing. Floor of a [flooded cave, murky deep teal water with faint ripples / dark olive swamp mud with small clumps], scattered tiny yellow-green bioluminescent spores, darker edges. Low contrast, empty, no objects. Dark fantasy underground swamp."*
+Prompt sketch: *"Pixel art game tile, 42x46 pixels, transparent background. A pointy-top hexagon floor tile seen from a slanted top-down angle (squashed vertically, 42 wide and 36 tall), dark olive swamp mud with subtle lighter clumps and a 1 px darker rim; below its two lower edges a 10 px thick earth side wall, darker on the left, slightly lighter on the right, like a board game slab. Hard pixels, no anti-aliasing, dark fantasy underground swamp palette."*
 
 ## battle_body
 
 | | |
 |---|---|
-| Size | 64×56 px |
+| Size | 132×110 px |
 | Frames | 1 (static for now) |
-| Anchor | centre (32, 28) |
+| Anchor | middle of its footprint, (66, 66) from the left and top edges |
 | Background | transparent |
-| Used in | battle screen, the hydra's Body |
+| Used in | battle, the hydra's Body |
 
-The hydra's torso **seen from above**, without heads or necks (the game draws the necks itself, starting at the body's edge, and the heads are separate sprites). A squat, dark green, almost round mound with paler scales and a dark outline. It has no front or back: necks leave it evenly in every direction and soldiers stand all around it, so keep the outline a plain oval with no head-shaped bumps and no tail.
+The hydra's torso seen from the side and above, **without heads and necks** (the game draws the necks rising from the upper rim of the mound, and the heads are separate images). A big, squat mound of dark green scaly hide covering seven hexes: its base is an oval about 126 px wide and 84 px tall centred on the anchor, and it rises about 20 px above that, up to the top edge of the image. Paler scales on the back, a dark outline. It has no front or back: necks leave it in every direction and soldiers stand all around it, so no tail and no head-shaped bumps.
+
+Prompt sketch: *"Pixel art, 132x110, transparent background, seen from a slanted top-down angle. The headless, neckless torso of a swamp hydra: a huge squat mound of dark green scaly hide with paler scales on its back, dark outline, light from the upper left. No head, no neck, no tail. Hard pixels, no anti-aliasing, dark fantasy."*
 
 ## battle_head
 
 | | |
 |---|---|
-| Size | 16×16 px |
+| Size | 20×14 px |
 | Frames | 1 (static for now) |
-| Anchor | centre (8, 8); the game rotates the sprite around it |
+| Anchor | centre |
 | Background | transparent |
-| Used in | battle screen, one per head |
+| Used in | battle, one per head, at the end of its neck |
 
-One hydra head seen from above, **facing right** (snout at the right edge), two small glowing yellow eyes. Draw it in **pale grey / white with a dark outline**: the game tints it with the colour of the head's class (from `src/data/heads.json`), so a coloured drawing would come out muddy. One sprite serves all classes.
+One hydra head seen from the side, **snout pointing right**, a glowing eye, a long mouth line. Draw it in **pale grey / white with a dark outline**: the game tints it with the colour of the head's class (from `src/data/heads.json`), so one image serves all classes.
 
 ## Order soldiers: battle_enemy_manAtArms, battle_enemy_headhunter, battle_enemy_torchbearer
 
 | | |
 |---|---|
-| Size | 14×18 px each |
-| Frames | 1 (static for now) |
-| Anchor | centre (7, 9) |
+| Size | 26×38 px each |
+| Frames | 1 (static for now; the game makes them bob, hop and lunge) |
+| Anchor | feet, at the bottom middle (13, 37) |
 | Background | transparent |
-| Used in | battle screen |
+| Used in | battle, one per soldier standing on a hex |
 
-People of the Order of the Eternal Flame **seen from above**: helmet in the middle, shoulders, tabard. They are not rotated by the game, so draw them upright. Each must be recognisable at a glance at this size, mainly by colour and by what they carry (held on the left side of the sprite):
+People of the Order of the Eternal Flame, standing, seen from the side and a little from above, **facing right**, holding their gear on the right side (towards the enemy). Each must be recognisable at a glance by colour and gear:
 
-- **battle_enemy_manAtArms:** banner-red tabard, steel helmet, a sword.
-- **battle_enemy_headhunter:** dark blood-red, heavier build, a big axe.
-- **battle_enemy_torchbearer:** a lay brother in a brown habit carrying a burning torch: the only warm, bright flame on the screen.
+- **battle_enemy_manAtArms:** banner-red tabard with a small gold flame, steel helmet with a visor, a sword held upright.
+- **battle_enemy_headhunter:** dark blood-red, broader build, a big axe.
+- **battle_enemy_torchbearer:** a lay brother in a brown habit, tonsured head, no helmet, carrying a burning torch: the only bright, warm flame on the board.
 
-A new enemy type needs a graphic with the key `battle_enemy_<type id from enemies.json>`; without one, the game shows the Man-at-Arms.
+A new enemy type needs an image with the key `battle_enemy_<type id from enemies.json>`; without one, the game shows the Man-at-Arms.
+
+Prompt sketch: *"Pixel art character sprite, 26x38 pixels, transparent background, seen from a slanted top-down three-quarter angle, standing, facing right. A man-at-arms of a grim fire-worshipping religious order: banner-red tabard with a small gold flame emblem, steel helmet with visor, sword held upright on the right. Hard pixels, no anti-aliasing, dark outline, dark fantasy with warm colours."*
 
 ## battle_stump, battle_scar
 
 | | |
 |---|---|
-| Size | 10×10 px each |
+| Size | 10×8 px each |
 | Frames | 1 |
-| Anchor | centre (5, 5) |
+| Anchor | centre |
 | Background | transparent |
-| Used in | battle screen, at the body's edge where a head was severed |
+| Used in | battle, on the rim of the body where a head was severed |
 
-- **battle_stump:** a fresh neck stump seen from above: a raw dark red disc with a darker rim. Two new heads will grow from it.
+- **battle_stump:** a fresh neck stump seen from a slant: a raw dark red oval with a darker rim. Two new heads will grow from it.
 - **battle_scar:** the same stump burnt shut: charred black-brown, no red. Nothing grows from it.
 
-## battle_mist_cloud
+## battle_mist_puff
 
-| | |
-|---|---|
-| Size | 64×64 px |
-| Frames | 1 (static for now) |
-| Anchor | centre (32, 32) |
-| Background | transparent |
-| Used in | battle screen, where a Mist Breather's breath lands |
+20×11 px, anchor centre. A small puff of mist: solid middle breaking up into scattered pixels at the edge, **white**. The game tints it pale greenish grey (or yellow-green when the Mist turns to Acid Fog) and floats a few of them over each misty hex. Can stay a code placeholder.
 
-A round puff of mist **seen from above**: solid in the middle, breaking up into scattered pixels towards the edge (dithering, not a smooth gradient), transparent corners. Draw it in **white / very pale grey**: the game tints it pale greenish grey for plain Mist and yellow-green when it turns into Acid Fog, and draws it half see-through over heads and soldiers. The game also scales it to the cloud radius from `src/data/combos.json` (now 30 px, so the sprite is shown at about 60×60).
+## battle_shadow, battle_hex_mark, battle_hex_fill
+
+Helpers that can stay code placeholders:
+
+- **battle_shadow** (22×7): a plain oval, drawn black and half see-through under each soldier's feet.
+- **battle_hex_mark** (42×36): the outline of a squashed hex in white, tinted by the game to show a head's reach, targets and where the body is going.
+- **battle_hex_fill** (42×36): the same hex filled white, tinted pale for Mist over a hex.

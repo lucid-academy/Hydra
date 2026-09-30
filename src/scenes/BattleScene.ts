@@ -33,7 +33,8 @@ const COMBO_SLOWDOWN_MS = 350;
 const HEAD_TAP_RADIUS = 14;
 /** Soldier images: how far around their feet a tap still counts as tapping them. */
 const SOLDIER_TAP = { halfWidth: 13, up: 38, down: 4 };
-const NECK_SEGMENTS = 12;
+/** Necks are drawn as overlapping discs, one every few pixels, so long necks stay one smooth tube. */
+const NECK_DISC_SPACING = 2.5;
 /** How fast drawn heads follow where they should be (ms to cover most of the way). */
 const HEAD_FOLLOW_MS = 90;
 
@@ -564,10 +565,12 @@ export class BattleScene extends Phaser.Scene {
   /** A neck as a chain of segments rising from the body in an arc, thinner towards the head. */
   private drawNeck(from: Point, to: Point): void {
     const bend = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 18 };
+    const length = Math.hypot(bend.x - from.x, bend.y - from.y) + Math.hypot(to.x - bend.x, to.y - bend.y);
+    const discs = Math.max(8, Math.ceil(length / NECK_DISC_SPACING));
     for (const [width, fill] of [[5, 0x0e120e], [3.8, 0x3f7a4c]] as const) {
       this.necks.fillStyle(fill);
-      for (let i = 0; i <= NECK_SEGMENTS; i++) {
-        const t = i / NECK_SEGMENTS;
+      for (let i = 0; i <= discs; i++) {
+        const t = i / discs;
         const x = (1 - t) * (1 - t) * from.x + 2 * (1 - t) * t * bend.x + t * t * to.x;
         const y = (1 - t) * (1 - t) * from.y + 2 * (1 - t) * t * bend.y + t * t * to.y;
         this.necks.fillCircle(Math.round(x), Math.round(y), width - 1.5 * t);
