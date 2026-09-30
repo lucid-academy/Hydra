@@ -18,7 +18,7 @@ describe('data files', () => {
 });
 
 describe('validateData', () => {
-  const good = { map: { movementPointsPerTurn: 3, sightRangeHexes: 2 }, alert: { min: 0, max: 100 }, battle: { ticksPerSecond: 20 } };
+  const good = loadGameData().balance;
 
   it('names the file and the field when a value has the wrong type', () => {
     const bad = { ...good, map: { ...good.map, movementPointsPerTurn: 'three' } };
@@ -26,8 +26,13 @@ describe('validateData', () => {
     expect(() => validateData('balance.json', balanceSchema, bad)).toThrow(/balance\.json[\s\S]*map\.movementPointsPerTurn/);
   });
 
-  it('catches a misspelled field name', () => {
+  it('accepts the real file and catches a misspelled field name', () => {
+    expect(() => validateData('balance.json', balanceSchema, good)).not.toThrow();
     const typo = { ...good, map: { ...good.map, sightRangeHexs: 2 } };
-    expect(() => validateData('balance.json', balanceSchema, typo)).toThrow(/sightRangeHex/);
+    expect(() => validateData('balance.json', balanceSchema, typo)).toThrow(/Unrecognized key: "sightRangeHexs"/);
+  });
+
+  it('allows "//" notes in data files', () => {
+    expect(() => validateData('balance.json', balanceSchema, { ...good, '//': 'TODO(design): note' })).not.toThrow();
   });
 });

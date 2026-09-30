@@ -5,10 +5,29 @@ import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 import { preview } from 'vite';
 
+const DESKTOP = { width: 1280, height: 720 };
+
+/** Taps the reachable hex that costs the most to reach, like a player would. */
+async function moveFarthest(page) {
+  const points = await page.evaluate(() => window.__hydra.reachableOnScreen());
+  if (points.length === 0) throw new Error('No reachable hex to tap');
+  const target = points.reduce((a, b) => (b.cost > a.cost ? b : a));
+  const canvas = (await page.locator('canvas').boundingBox()) ?? { x: 0, y: 0, width: 640, height: 360 };
+  const scale = canvas.width / 640;
+  await page.mouse.click(canvas.x + target.x * scale, canvas.y + target.y * scale);
+  await page.waitForTimeout(1200); // walking + camera pan
+}
+
 const SHOTS = [
-  { name: 'title', query: '?seed=123', viewport: { width: 1280, height: 720 }, scene: 'title' },
-  { name: 'title-debug', query: '?seed=123&debug=1', viewport: { width: 1280, height: 720 }, scene: 'title' },
+  { name: 'title', query: '?seed=123', viewport: DESKTOP, scene: 'title' },
+  { name: 'title-debug', query: '?seed=123&debug=1', viewport: DESKTOP, scene: 'title' },
   { name: 'title-phone-landscape', query: '?seed=123', viewport: { width: 844, height: 390 }, scene: 'title' },
+  { name: 'map-start', query: '?seed=123&scene=map&debug=1', viewport: DESKTOP, scene: 'map' },
+  { name: 'map-after-moves', query: '?seed=123&scene=map&debug=1', viewport: DESKTOP, scene: 'map', act: async (page) => {
+    await moveFarthest(page);
+    await moveFarthest(page);
+  } },
+  { name: 'map-phone-landscape', query: '?seed=123&scene=map', viewport: { width: 844, height: 390 }, scene: 'map' },
 ];
 
 const OUT_DIR = 'docs/screens';
@@ -31,6 +50,7 @@ try {
     await page.goto(new URL(shot.query, baseUrl).href);
     await page.waitForFunction((scene) => window.__hydra?.readyScenes.includes(scene), shot.scene, { timeout: 15_000 });
     await page.waitForTimeout(500); // let the first frames render
+    if (shot.act) await shot.act(page);
     await page.screenshot({ path: `${OUT_DIR}/${shot.name}.png` });
     console.log(`saved ${OUT_DIR}/${shot.name}.png`);
     await page.close();

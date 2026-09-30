@@ -1,8 +1,9 @@
 // `?debug=1`: a small panel with the seed and simulation state, drawn above every other scene.
-// Turn, ticks and visibility show "-" until the systems that own them exist (M1).
+// Ticks show "-" until battles exist; turn and visibility show "-" outside a run.
 
 import * as Phaser from 'phaser';
 import { getContext } from '../scenes/context';
+import { getRun } from '../scenes/RunController';
 import { SceneKey } from '../scenes/sceneKeys';
 
 export class DebugOverlayScene extends Phaser.Scene {
@@ -13,7 +14,8 @@ export class DebugOverlayScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.label = this.add.text(4, 4, '', {
+    // Below the HUD's top bar.
+    this.label = this.add.text(4, 20, '', {
       fontFamily: 'monospace',
       fontSize: '10px',
       color: '#e8f0e0',
@@ -26,6 +28,15 @@ export class DebugOverlayScene extends Phaser.Scene {
 
   private refresh(): void {
     const { seed } = getContext(this);
+    const run = getRun(this)?.state;
+    let visibility = '-';
+    let turn = '-';
+    if (run) {
+      const states = [...run.visibility.values()];
+      const visible = states.filter((s) => s === 'visible').length;
+      visibility = `${visible} visible, ${states.length - visible} remembered, ${run.map.tiles.size - states.length} unexplored`;
+      turn = `${run.turn}  alert: ${run.alert.toFixed(1)}`;
+    }
     const active = this.scene.manager
       .getScenes(true)
       .map((s) => s.scene.key)
@@ -34,8 +45,8 @@ export class DebugOverlayScene extends Phaser.Scene {
       [
         `seed: ${seed}`,
         `scene: ${active.join(', ') || '-'}`,
-        'turn: -   ticks: -',
-        'visibility: -',
+        `turn: ${turn}   ticks: -`,
+        `visibility: ${visibility}`,
         `fps: ${Math.round(this.game.loop.actualFps)}`,
       ].join('\n'),
     );

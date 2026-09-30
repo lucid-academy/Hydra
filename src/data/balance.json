@@ -1,11 +1,34 @@
 {
   "map": {
-    "movementPointsPerTurn": 3,
-    "sightRangeHexes": 2
+    "movementPointsPerTurn": 5,
+    "sightRangeHexes": 2,
+    "undergroundRadius": 9
+  },
+  "terrain": {
+    "water": { "moveCost": 1, "blocksSight": false },
+    "mud": { "moveCost": 1, "blocksSight": false },
+    "rock": { "moveCost": null, "blocksSight": true }
+  },
+  "undergroundGenerator": {
+    "//": "TODO(design): working values for M1, tune after playtest. Shares are fractions of all hexes before cleanup.",
+    "rockShare": 0.3,
+    "waterShare": 0.35,
+    "smoothingPasses": 2,
+    "minPassableShare": 0.55,
+    "encounterCount": 6,
+    "encounterMinDistanceFromLair": 3,
+    "muckDepositCount": 8
+  },
+  "resources": {
+    "//": "TODO(design): working value for M1.",
+    "muckPerDeposit": 10
   },
   "alert": {
+    "//": "TODO(design): perHexDiscovered and perBattle are working values for M1.",
     "min": 0,
-    "max": 100
+    "max": 100,
+    "perHexDiscovered": 0.2,
+    "perBattle": 5
   },
   "battle": {
     "ticksPerSecond": 20

@@ -76,7 +76,7 @@ Dwie osobne mapy heksagonalne: **Underground** (podziemia) i **Surface** (powier
 
 ### 5.2 Tury i ruch
 - Warstwa strategiczna jest turowa. Hydra to jeden żeton na mapie.
-- Hydra ma punkty ruchu na turę (startowo 3). Koszt wejścia na heks zależy od terenu (roboczo: woda 1, błoto 1, korzenie 2, sól 3, lita skała nieprzechodnia).
+- Hydra ma punkty ruchu na turę (startowo 5). Koszt wejścia na heks zależy od terenu (roboczo: woda 1, błoto 1, korzenie 2, sól 3, lita skała nieprzechodnia).
 - Przycisk **End Turn** uruchamia turę świata: ruszają się ludzkie jednostki, Mist na powierzchni zanika, jaja się wykluwają, mogą pojawić się eventy. Sam upływ tur podnosi Alert minimalnie albo wcale (sekcja 8).
 - Na powierzchni obowiązuje cykl dnia i nocy liczony w turach (roboczo 6 tur dnia, 4 tury nocy).
 

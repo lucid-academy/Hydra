@@ -1,5 +1,14 @@
 {
   "images": {
-    "title_background": { "file": null, "width": 640, "height": 360 }
+    "title_background": { "file": null, "width": 640, "height": 360 },
+    "hex_water": { "file": null, "width": 28, "height": 32 },
+    "hex_mud": { "file": null, "width": 28, "height": 32 },
+    "hex_rock": { "file": null, "width": 28, "height": 32 },
+    "hex_shade": { "file": null, "width": 28, "height": 32 },
+    "hex_reachable": { "file": null, "width": 28, "height": 32 },
+    "icon_lair": { "file": null, "width": 14, "height": 14 },
+    "icon_encounter": { "file": null, "width": 12, "height": 12 },
+    "icon_muck": { "file": null, "width": 12, "height": 12 },
+    "token_hydra": { "file": null, "width": 20, "height": 20 }
   }
 }

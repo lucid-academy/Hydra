@@ -2,7 +2,18 @@
   "title": {
     "gameTitle": "HYDRA",
     "subtitle": "The Flame never sleeps. Neither do you.",
-    "pressToStart": "Press to start",
-    "notReadyYet": "The swamp is not ready yet. Come back later."
+    "pressToStart": "Press to start"
+  },
+  "hud": {
+    "turn": "Turn",
+    "moves": "Moves",
+    "muck": "Muck",
+    "alert": "Alert",
+    "endTurn": "End Turn"
+  },
+  "battlePlaceholder": {
+    "//": "Temporary: shown instead of a battle until M1 part B.",
+    "message": "A patrol of the Order blocks the way.\nThey have filled in a form about you.\n\n(Battles arrive in the next update.)",
+    "winButton": "Eat them anyway"
   }
 }

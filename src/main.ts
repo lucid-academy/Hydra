@@ -4,8 +4,10 @@ import { DataError } from './data/validate';
 import { computeZoom } from './scaling';
 import { BootScene } from './scenes/BootScene';
 import { setContext } from './scenes/context';
+import { MapScene } from './scenes/MapScene';
 import { TitleScene } from './scenes/TitleScene';
 import { DebugOverlayScene } from './ui/DebugOverlayScene';
+import { HudScene } from './ui/HudScene';
 import { parseUrlParams } from './urlParams';
 
 const GAME_WIDTH = 640;
@@ -37,7 +39,8 @@ function start(): void {
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     banner: false,
-    scene: [BootScene, TitleScene, DebugOverlayScene],
+    // Order matters: later scenes draw on top and get input first.
+    scene: [BootScene, TitleScene, MapScene, HudScene, DebugOverlayScene],
   });
   setContext(game, { data, seed, params });
 

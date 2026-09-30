@@ -1,12 +1,37 @@
-// A tiny window.__hydra object so automated screenshots know when a scene has finished drawing.
+// A tiny window.__hydra object for automated screenshots and smoke tests:
+// which scenes have finished drawing, and where on screen the map's clickable hexes are.
+
+export interface ScreenPoint {
+  x: number;
+  y: number;
+  cost: number;
+}
 
 declare global {
   interface Window {
-    __hydra?: { readyScenes: string[] };
+    __hydra?: {
+      readyScenes: string[];
+      /** Screen positions (in game pixels, 640×360) of hexes the hydra can reach now. */
+      reachableOnScreen?: () => ScreenPoint[];
+      /** Short summary of the current run. */
+      runSummary?: () => { turn: number; muck: number; alert: number; inBattle: boolean; explored: number };
+    };
   }
 }
 
-export function markReady(sceneKey: string): void {
+function hooks(): NonNullable<Window['__hydra']> {
   window.__hydra ??= { readyScenes: [] };
-  window.__hydra.readyScenes.push(sceneKey);
+  return window.__hydra;
+}
+
+export function markReady(sceneKey: string): void {
+  hooks().readyScenes.push(sceneKey);
+}
+
+export function exposeReachable(probe: () => ScreenPoint[]): void {
+  hooks().reachableOnScreen = probe;
+}
+
+export function exposeRunSummary(summary: NonNullable<Window['__hydra']>['runSummary']): void {
+  hooks().runSummary = summary;
 }

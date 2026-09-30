@@ -47,15 +47,11 @@ export class TitleScene extends Phaser.Scene {
 
     this.tweens.add({ targets: prompt, alpha: 0.35, duration: 900, yoyo: true, repeat: -1 });
 
-    // There is nothing after the title yet (that comes in M1), so starting only answers back.
     const start = (): void => {
-      prompt.setText(text.title.notReadyYet);
-      this.tweens.killTweensOf(prompt);
-      prompt.setAlpha(1);
-      this.cameras.main.shake(120, 0.004);
+      this.scene.start(SceneKey.Map);
     };
-    this.input.on('pointerdown', start);
-    this.input.keyboard?.on('keydown', start);
+    this.input.once('pointerup', start);
+    this.input.keyboard?.once('keydown', start);
 
     this.cameras.main.setBackgroundColor(color(palette.underground.black));
     markReady(SceneKey.Title);
