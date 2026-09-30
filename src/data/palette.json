@@ -1,0 +1,15 @@
+{
+  "underground": {
+    "black": "#05090a",
+    "deepTeal": "#0e3b3f",
+    "swampGreen": "#2f4a2a",
+    "bioluminescence": "#c6e04a"
+  },
+  "order": {
+    "gold": "#d9a93b",
+    "orange": "#e0702a",
+    "bannerRed": "#9e2323",
+    "fire": "#ffcf5c"
+  },
+  "mist": "#a9b8a8"
+}

@@ -1,0 +1,13 @@
+{
+  "map": {
+    "movementPointsPerTurn": 3,
+    "sightRangeHexes": 2
+  },
+  "alert": {
+    "min": 0,
+    "max": 100
+  },
+  "battle": {
+    "ticksPerSecond": 20
+  }
+}
