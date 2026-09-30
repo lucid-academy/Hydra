@@ -65,6 +65,58 @@ describe('battle simulation', () => {
   });
 });
 
+describe('the hydra in the middle, the Order all around', () => {
+  it('starts with the body in the middle and the enemies spread around it, inside the arena', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const s = battle(['manAtArms', 'manAtArms', 'headhunter', 'torchbearer'], undefined, seed);
+      expect(s.body.pos).toEqual({ x: rules.arenaWidth / 2, y: rules.arenaHeight / 2 });
+      for (const e of s.enemies) {
+        expect(e.pos.x).toBeGreaterThan(0);
+        expect(e.pos.x).toBeLessThan(rules.arenaWidth);
+        expect(e.pos.y).toBeGreaterThan(0);
+        expect(e.pos.y).toBeLessThan(rules.arenaHeight);
+      }
+      // Surrounded: there are enemies on both sides of the body, and both above and below it.
+      expect(s.enemies.some((e) => e.pos.x < s.body.pos.x)).toBe(true);
+      expect(s.enemies.some((e) => e.pos.x > s.body.pos.x)).toBe(true);
+      expect(s.enemies.some((e) => e.pos.y < s.body.pos.y)).toBe(true);
+      expect(s.enemies.some((e) => e.pos.y > s.body.pos.y)).toBe(true);
+    }
+  });
+
+  it('necks leave the body evenly all around', () => {
+    const s = battle(['manAtArms'], ['biter', 'biter', 'biter', 'biter']);
+    const angles = s.heads.map((h) => h.anchorAngle).sort((a, b) => a - b);
+    for (let i = 1; i < angles.length; i++) expect(angles[i]! - angles[i - 1]!).toBeCloseTo(Math.PI / 2);
+  });
+
+  it('heads left alone each take the enemy on their own side; an order makes them gang up', () => {
+    const still: BattleRules = {
+      ...rules,
+      enemyTypes: Object.fromEntries(
+        Object.entries(rules.enemyTypes).map(([id, t]) => [id, { ...t, speed: 0, attack: { ...t.attack, range: 0.001, damage: 0 } }]),
+      ),
+    };
+    const s = battle(['manAtArms', 'manAtArms'], ['biter', 'biter']);
+    const [rightHead, leftHead] = s.heads;
+    rightHead!.anchorAngle = 0;
+    leftHead!.anchorAngle = Math.PI;
+    const [rightEnemy, leftEnemy] = s.enemies;
+    rightEnemy!.pos = { x: s.body.pos.x + 70, y: s.body.pos.y };
+    leftEnemy!.pos = { x: s.body.pos.x - 70, y: s.body.pos.y };
+    for (const e of s.enemies) e.hp = e.maxHp = 99999;
+
+    for (let t = 0; t < 60; t++) stepBattle(s, still);
+    expect(rightHead!.pos.x).toBeGreaterThan(s.body.pos.x);
+    expect(leftHead!.pos.x).toBeLessThan(s.body.pos.x);
+
+    applyCommand(s, { type: 'attack', headId: leftHead!.id, enemyId: rightEnemy!.id }, still);
+    for (let t = 0; t < 60; t++) stepBattle(s, still);
+    expect(leftHead!.pos.x).toBeGreaterThan(s.body.pos.x);
+    expect(rightHead!.pos.x).toBeGreaterThan(s.body.pos.x);
+  });
+});
+
 describe('severing, regrowth and cauterizing', () => {
   /** A battle where the only head is about to be cut off by a Man-at-Arms standing next to it. */
   function aboutToSever(enemy: string): BattleState {
@@ -165,39 +217,50 @@ describe('statuses, mist clouds and combos', () => {
   it('the Acid Spitter leaves Corroded, which lowers armor, hurts every second and wears off', () => {
     const s = duel('acidSpitter', 'manAtArms');
     const enemy = s.enemies[0]!;
-    expect(enemyArmor(enemy, passive)).toBe(1);
-    for (let t = 0; t < 40 && !hasStatus(enemy, 'corroded'); t++) stepBattle(s, passive);
+    // Expected values come from the data files, so changing numbers there doesn't break this test.
+    const armor = passive.enemyTypes.manAtArms!.armor;
+    const corroded = passive.statuses.corroded!;
+    expect(corroded.armorChange).toBeLessThan(0);
+    expect(corroded.damagePerSecond).toBeGreaterThan(0);
+    expect(enemyArmor(enemy, passive)).toBe(armor);
+    const spitTicks = passive.headClasses.acidSpitter!.attack.cooldownTicks + 40;
+    for (let t = 0; t < spitTicks && !hasStatus(enemy, 'corroded'); t++) stepBattle(s, passive);
     expect(hasStatus(enemy, 'corroded')).toBe(true);
-    expect(enemyArmor(enemy, passive)).toBe(0);
+    expect(enemyArmor(enemy, passive)).toBe(Math.max(0, armor + corroded.armorChange));
 
     // No more spitting: the status ticks for damage, then runs out.
     s.heads = [];
     const hpBefore = enemy.hp;
     let statusHits = 0;
-    for (let t = 0; t < passive.statuses.corroded!.durationTicks + 1; t++) {
+    for (let t = 0; t < corroded.durationTicks + 1; t++) {
       stepBattle(s, passive);
       statusHits += s.events.filter((e) => e.type === 'hit' && e.attacker === 'status').length;
     }
     expect(statusHits).toBeGreaterThan(0);
-    expect(enemy.hp).toBe(hpBefore - statusHits * passive.statuses.corroded!.damagePerSecond);
+    expect(enemy.hp).toBe(hpBefore - statusHits * corroded.damagePerSecond);
     expect(hasStatus(enemy, 'corroded')).toBe(false);
-    expect(enemyArmor(enemy, passive)).toBe(1);
+    expect(enemyArmor(enemy, passive)).toBe(armor);
   });
 
   it('Corrode & Crush: a bite on a Corroded enemy hits harder and breaks its armor for good', () => {
     const s = duel('biter', 'manAtArms');
     const enemy = s.enemies[0]!;
-    expect(combosIn(s, 60)).toEqual([]); // plain bites are no combo
+    const bite = passive.headClasses.biter!.attack;
+    // Long enough for the head to reach over and bite at least once.
+    const oneBite = bite.cooldownTicks + 40;
+    expect(combosIn(s, oneBite)).toEqual([]); // plain bites are no combo
 
     applyStatus(s, enemy, 'corroded', passive);
     const hpBefore = enemy.hp;
-    const seen = combosIn(s, 30);
-    expect(seen).toEqual(['corrodeAndCrush']);
-    const bite = passive.headClasses.biter!.attack.damage;
-    expect(hpBefore - enemy.hp).toBeGreaterThan(bite);
+    expect(combosIn(s, oneBite)).toEqual(['corrodeAndCrush']);
+    expect(hpBefore - enemy.hp).toBeGreaterThan(bite.damage);
     expect(enemy.armorBroken).toBe(true);
     expect(hasStatus(enemy, 'corroded')).toBe(false);
     expect(enemyArmor(enemy, passive)).toBe(0);
+
+    // Armor can only break once: more acid on the same enemy doesn't set the combo off again.
+    applyStatus(s, enemy, 'corroded', passive);
+    expect(combosIn(s, oneBite)).toEqual([]);
   });
 
   it('the Mist Breather leaves a cloud that soaks and slows people inside it', () => {

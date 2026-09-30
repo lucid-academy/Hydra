@@ -17,8 +17,8 @@ import type {
 import { applyStatus, canCauterize, createMistCloud, enemyArmor, enemySpeed, hurtEnemy, triggerCombos, updateEffects } from './effects';
 import { angleTo, clampToArena, distance, fromAngle, moveTowards, vec } from './vec';
 
-/** Angle between neighbouring heads' necks, in radians. */
-const HEAD_SPREAD = 0.42;
+/** Enemies start on a ring this far inside the arena's edges (arena pixels). */
+const SPAWN_MARGIN = { x: 24, y: 16 };
 /** How close a Torchbearer must stand to a stump to burn it. */
 const CAUTERIZE_REACH = 12;
 
@@ -35,10 +35,10 @@ export interface BattleSetup {
 
 export function createBattle(setup: BattleSetup, rules: BattleRules): BattleState {
   const rng = new Rng(setup.seed);
-  const bodyPos = vec(Math.round(rules.arenaWidth * 0.28), Math.round(rules.arenaHeight / 2));
-  const n = setup.heads.length;
+  // The hydra sits in the middle, its necks leave the body evenly all around, and the Order closes in from every side.
+  const bodyPos = vec(Math.round(rules.arenaWidth / 2), Math.round(rules.arenaHeight / 2));
   const heads: BattleHead[] = setup.heads.map((record, i) => {
-    const anchorAngle = (i - (n - 1) / 2) * HEAD_SPREAD;
+    const anchorAngle = -Math.PI / 2 + (i / setup.heads.length) * Math.PI * 2;
     return {
       ...record,
       anchorAngle,
@@ -49,14 +49,19 @@ export function createBattle(setup: BattleSetup, rules: BattleRules): BattleStat
     };
   });
 
+  // Where on the ring the first enemy stands; the others are spread evenly around from there.
+  const ringStart = rng.next() * Math.PI * 2;
   const enemies: Enemy[] = setup.enemies.map((typeId, i) => {
     const type = rules.enemyTypes[typeId];
     if (!type) throw new Error(`Unknown enemy type "${typeId}"`);
-    const slot = (i + 1) / (setup.enemies.length + 1);
+    const angle = ringStart + (i / setup.enemies.length) * Math.PI * 2 + (rng.next() - 0.5) * 0.5;
     return {
       id: i + 1,
       typeId,
-      pos: vec(rules.arenaWidth * 0.66 + rng.int(-20, 20), rules.arenaHeight * slot + rng.int(-10, 10)),
+      pos: vec(
+        bodyPos.x + Math.cos(angle) * (rules.arenaWidth / 2 - SPAWN_MARGIN.x),
+        bodyPos.y + Math.sin(angle) * (rules.arenaHeight / 2 - SPAWN_MARGIN.y),
+      ),
       hp: type.maxHp,
       maxHp: type.maxHp,
       cooldown: rng.int(0, type.attack.cooldownTicks),
@@ -172,13 +177,16 @@ function pickHeadTarget(state: BattleState, head: BattleHead, rules: BattleRules
     if (ordered) return ordered;
     head.orderTargetId = null;
   }
-  // Automatic: nearest enemy the neck can reach.
+  // Automatic: of the enemies the neck can reach, the one nearest to this head's own side of the body.
+  // So heads left alone spread out over the enemies; ganging up on one (and setting off combos) takes an order.
   const range = rules.headClasses[head.classId]!.attack.range;
+  const ownSide = restPosition(state.body.pos, head.anchorAngle, rules);
   let best: Enemy | null = null;
   let bestDistance = Infinity;
   for (const enemy of state.enemies) {
-    const d = distance(state.body.pos, enemy.pos);
-    if (d <= neckReach(rules) + range + rules.enemyTypes[enemy.typeId]!.radius && d < bestDistance) {
+    const reachable = distance(state.body.pos, enemy.pos) <= neckReach(rules) + range + rules.enemyTypes[enemy.typeId]!.radius;
+    const d = distance(ownSide, enemy.pos);
+    if (reachable && d < bestDistance) {
       best = enemy;
       bestDistance = d;
     }

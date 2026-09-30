@@ -194,6 +194,8 @@ export const combosSchema = section({
         enemyHasStatus: z.string().min(1).optional(),
         enemyInMist: z.boolean().optional(),
         enemyCarriesFire: z.boolean().optional(),
+        // false = only while the enemy's armor is still whole (so an armor-breaking combo lands once per enemy).
+        enemyArmorBroken: z.boolean().optional(),
       }),
       effects: z.array(comboEffectSchema).min(1),
     }),

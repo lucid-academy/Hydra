@@ -42,6 +42,7 @@ export interface ComboRules {
     enemyHasStatus: string | null;
     enemyInMist: boolean | null;
     enemyCarriesFire: boolean | null;
+    enemyArmorBroken: boolean | null;
   };
   effects: readonly ComboEffect[];
 }

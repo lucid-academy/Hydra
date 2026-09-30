@@ -44,9 +44,9 @@
     "ticksPerSecond": 20,
     "arenaWidth": 640,
     "arenaHeight": 300,
-    "bodyMaxHp": 120,
-    "bodyRadius": 16,
-    "bodySpeed": 30
+    "bodyMaxHp": 150,
+    "bodyRadius": 27,
+    "bodySpeed": 20
   },
   "healing": {
     "//": "TODO(design): working values. HP healed at End Turn, until the lair exists (M2).",

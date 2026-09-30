@@ -125,6 +125,7 @@ export function triggerCombos(state: BattleState, when: ComboTrigger, enemy: Ene
     if (c.enemyHasStatus !== null && !hasStatus(enemy, c.enemyHasStatus)) continue;
     if (c.enemyInMist !== null && isInMist(state, enemy.pos) !== c.enemyInMist) continue;
     if (c.enemyCarriesFire !== null && (rules.enemyTypes[enemy.typeId]!.cauterizeTicks !== null) !== c.enemyCarriesFire) continue;
+    if (c.enemyArmorBroken !== null && enemy.armorBroken !== c.enemyArmorBroken) continue;
 
     const at = { ...enemy.pos };
     let changed = false;

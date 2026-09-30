@@ -5,9 +5,9 @@
       "//": "Put on by the Acid Spitter: eats armor and hurts a little every second.",
       "displayName": "Corroded",
       "color": "#b7d13a",
-      "durationSeconds": 5,
-      "armorChange": -1,
-      "damagePerSecond": 1,
+      "durationSeconds": 6,
+      "armorChange": -2,
+      "damagePerSecond": 2,
       "speedMultiplier": 1
     },
     "soaked": {
@@ -22,7 +22,7 @@
   },
   "mistCloud": {
     "//": "Left by the Mist Breather where its attack lands.",
-    "radius": 26,
+    "radius": 30,
     "durationSeconds": 6,
     "appliesStatus": "soaked"
   },
@@ -31,9 +31,9 @@
       "id": "corrodeAndCrush",
       "displayName": "Corrode & Crush",
       "when": "headHitsEnemy",
-      "conditions": { "attackTag": "bite", "enemyHasStatus": "corroded" },
+      "conditions": { "attackTag": "bite", "enemyHasStatus": "corroded", "enemyArmorBroken": false },
       "effects": [
-        { "type": "damage", "amount": 8 },
+        { "type": "damage", "amount": 30 },
         { "type": "breakArmor" },
         { "type": "removeStatus", "status": "corroded" }
       ]
@@ -44,7 +44,7 @@
       "when": "headHitsEnemy",
       "conditions": { "attackTag": "acid", "enemyInMist": true },
       "effects": [
-        { "type": "acidifyMist", "damagePerSecond": 2, "seconds": 4 }
+        { "type": "acidifyMist", "damagePerSecond": 3, "seconds": 5 }
       ]
     },
     {

@@ -69,6 +69,7 @@ export function battleRulesFrom(data: GameData): BattleRules {
         enemyHasStatus: combo.conditions.enemyHasStatus ?? null,
         enemyInMist: combo.conditions.enemyInMist ?? null,
         enemyCarriesFire: combo.conditions.enemyCarriesFire ?? null,
+        enemyArmorBroken: combo.conditions.enemyArmorBroken ?? null,
       },
       effects: combo.effects.map((effect): ComboEffect => {
         switch (effect.type) {
