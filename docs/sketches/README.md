@@ -20,3 +20,10 @@ Na każdym szkicu jest ta sama sytuacja: hydra w środku, sześciu ludzi Zakonu 
 ## C: widok pod skosem, hydra na 3 heksach
 
 ![Szkic C](szkic-C-pod-skosem-3-heksy.png)
+
+## E: mapa podziemi pod skosem (do planu M2b, 2026-10-01)
+
+Kierunek dla mapy w duchu Songs of Conquest: te same spłaszczone heksy co w bitwie, biomy (Flooded Caves, Root Tangle, Fungal Deeps i bagno wokół leża), obiekty stojące na mapie (leże, kapliczka Wielkiego Węża, patrol ze sztandarem, złoża, skrzynia, snop światła z przejścia na powierzchnię), mgła wojny, zasięg ruchu, zasoby u góry i minimapa.
+
+![Szkic E](szkic-E-mapa-podziemi-pod-skosem.png)
+

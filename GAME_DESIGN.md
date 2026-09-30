@@ -193,6 +193,12 @@ Woda (Body szybsze, powolne leczenie), błoto, suchy grunt (Body wolniejsze), ch
 - Po bitwie: doświadczenie, łupy, jeńcy. Jeńca można zjeść (Bones, leczenie) albo przesłuchać (dialog, informacja, odsłonięcie fragmentu mapy).
 - Stan głów (ścięte, nowe, blizny, doświadczenie) przechodzi na mapę.
 
+### 6.9 Umiejętności i drzewko talentów (kierunek Piotra, do dopracowania)
+- Każda głowa ma 2–4 umiejętności. Rozwija się je w drzewku talentów i można je ulepszać.
+- Na bitwę wybiera się 1–2 umiejętności każdej głowy, plus umiejętność ostateczną (ultimate), jeśli hydra znajdzie odpowiednie zaklęcie albo kapliczkę.
+- W drzewku talentów rozwija się też całą hydrę: mutacje, szybszy ruch, regeneracja itd.
+- Stan na 2026-10-01: Piotr jeszcze projektuje głowy; szczegóły później.
+
 ## 7. Leże i królestwo
 
 - Leże to heks-baza. Tam hydra odpoczywa (leczenie, usuwanie blizn), znosi jaja, buduje komnaty i zarządza głowami (specjalizacje).
@@ -300,7 +306,10 @@ Gotowe, gdy: da się rozegrać kilka bitw pod linkiem, testy przechodzą, a zrzu
 
 **M1b: bitwa na heksach (po playteście M1).** Plansza z heksów widziana pod skosem, Body na 7 heksach na środku, ludzie chodzą z heksu na heks i otaczają hydrę, bitwa zaczyna się w pauzie. Zasady z M1 (ścinanie, odrost, przypalanie, statusy, combosy) bez zmian.
 
-**M2: podziemia na serio.** Pełny generator z biomami i walidatorem, duża mapa, leże, kapliczki, Spell Caches, zasoby, pozostałe klasy głów i ich combosy, kodeks combosów, doświadczenie i specjalizacje.
+**M2** (po playteście M1b podzielony na dwie części; najpierw M2b):
+
+- **M2b: podziemia na serio.** Pełny generator z biomami i walidatorem, duża mapa w stylu Songs of Conquest, leże, kapliczki, Spell Caches, zasoby.
+- **M2a: głowy.** Pozostałe klasy głów i ich combosy, kodeks combosów, doświadczenie i specjalizacje, umiejętności i drzewko talentów (6.9).
 
 **M3: Zakon kontratakuje.** Alert z progami, patrole i posłańcy na mapie, wyprawy, obrona leża, jaja i Broodlingi, Great Burning jako boss aktu.
 
