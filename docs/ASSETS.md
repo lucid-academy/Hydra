@@ -79,6 +79,10 @@ Prompt sketch: *"Pixel art game tile, 28x32 pixels, pointy-top hexagon, top-down
 
 A tiny hydra seen from above-front: a squat dark green body with **three heads** on short necks, eyes glowing yellow-green. Must read clearly at 20 px against teal and olive tiles; a dark outline helps.
 
+## Battle graphics: wait before drawing them
+
+> **Status (2026-09-30):** the battle screen may change from this top-down view to a slanted view with a hex grid (see the open decision in the project chat). Everything below describes the current top-down placeholders. **Don't generate final battle graphics yet**: their sizes and viewing angle would change.
+
 ## Battle arenas: battle_arena_water, battle_arena_mud
 
 | | |
@@ -94,7 +98,7 @@ The floor of the fight, seen **straight from above**. Which one is used depends 
 - **battle_arena_water:** a flooded cave: murky deep teal water, lighter teal ripple lines, a few glowing yellow-green spores.
 - **battle_arena_mud:** dark olive swamp mud, lighter clumps, a few glowing yellow-green spores.
 
-Keep the floor **quiet and low-contrast**: heads, necks, soldiers and HP bars are drawn on top and must stay readable. The outer ~6 px can be darker, like cave walls closing in. No objects that look like obstacles: the whole arena is walkable. The hydra starts on the left (around x 180, y 150), the Order on the right (around x 420).
+Keep the floor **quiet and low-contrast**: heads, necks, soldiers and HP bars are drawn on top and must stay readable. The outer ~6 px can be darker, like cave walls closing in. No objects that look like obstacles: the whole arena is walkable. The hydra sits in the middle (x 320, y 150) and the Order starts near the edges, all around it.
 
 Prompt sketch: *"Pixel art, 640x300, top-down view, hard pixels, no anti-aliasing. Floor of a [flooded cave, murky deep teal water with faint ripples / dark olive swamp mud with small clumps], scattered tiny yellow-green bioluminescent spores, darker edges. Low contrast, empty, no objects. Dark fantasy underground swamp."*
 
@@ -102,21 +106,21 @@ Prompt sketch: *"Pixel art, 640x300, top-down view, hard pixels, no anti-aliasin
 
 | | |
 |---|---|
-| Size | 44×32 px |
+| Size | 64×56 px |
 | Frames | 1 (static for now) |
-| Anchor | centre (22, 16) |
+| Anchor | centre (32, 28) |
 | Background | transparent |
 | Used in | battle screen, the hydra's Body |
 
-The hydra's torso **seen from above**, without heads or necks (the game draws the necks itself, starting at the body's edge, and the heads are separate sprites). A squat, dark green oval mass with a paler ridge of scales along the back and a dark outline. It faces right, but necks can leave it in any direction, so keep the outline roughly oval with no head-shaped bumps.
+The hydra's torso **seen from above**, without heads or necks (the game draws the necks itself, starting at the body's edge, and the heads are separate sprites). A squat, dark green, almost round mound with paler scales and a dark outline. It has no front or back: necks leave it evenly in every direction and soldiers stand all around it, so keep the outline a plain oval with no head-shaped bumps and no tail.
 
 ## battle_head
 
 | | |
 |---|---|
-| Size | 12×12 px |
+| Size | 16×16 px |
 | Frames | 1 (static for now) |
-| Anchor | centre (6, 6); the game rotates the sprite around it |
+| Anchor | centre (8, 8); the game rotates the sprite around it |
 | Background | transparent |
 | Used in | battle screen, one per head |
 
@@ -144,9 +148,9 @@ A new enemy type needs a graphic with the key `battle_enemy_<type id from enemie
 
 | | |
 |---|---|
-| Size | 8×8 px each |
+| Size | 10×10 px each |
 | Frames | 1 |
-| Anchor | centre (4, 4) |
+| Anchor | centre (5, 5) |
 | Background | transparent |
 | Used in | battle screen, at the body's edge where a head was severed |
 
@@ -163,4 +167,4 @@ A new enemy type needs a graphic with the key `battle_enemy_<type id from enemie
 | Background | transparent |
 | Used in | battle screen, where a Mist Breather's breath lands |
 
-A round puff of mist **seen from above**: solid in the middle, breaking up into scattered pixels towards the edge (dithering, not a smooth gradient), transparent corners. Draw it in **white / very pale grey**: the game tints it pale greenish grey for plain Mist and yellow-green when it turns into Acid Fog, and draws it half see-through over heads and soldiers. The game also scales it to the cloud radius from `src/data/combos.json` (now 26 px, so the sprite is shown at about 52×52).
+A round puff of mist **seen from above**: solid in the middle, breaking up into scattered pixels towards the edge (dithering, not a smooth gradient), transparent corners. Draw it in **white / very pale grey**: the game tints it pale greenish grey for plain Mist and yellow-green when it turns into Acid Fog, and draws it half see-through over heads and soldiers. The game also scales it to the cloud radius from `src/data/combos.json` (now 30 px, so the sprite is shown at about 60×60).

@@ -28,19 +28,28 @@ const SHOTS = [
     await moveFarthest(page);
   } },
   { name: 'battle-start', query: '?seed=123&scene=battle&group=burningDetail', viewport: DESKTOP, scene: 'battle', act: async (page) => {
-    await page.keyboard.press('Space'); // pause right away
-    await page.keyboard.press('1'); // select the first head
+    await page.keyboard.press('1'); // battles start paused; select the first head
   } },
   { name: 'battle-fight', query: '?seed=123&scene=battle&group=burningDetail&debug=1', viewport: DESKTOP, scene: 'battle', act: async (page) => {
-    await page.waitForTimeout(7000);
+    await page.keyboard.press('Space'); // start the battle
+    await page.waitForTimeout(16_000);
   } },
   { name: 'battle-combo', query: '?seed=123&scene=battle&group=burningDetail', viewport: DESKTOP, scene: 'battle', act: async (page) => {
-    // The moment the first combo lands: its name pops up over the target.
-    await page.waitForFunction(() => window.__hydra.battleSummary().combos.length > 0, null, { timeout: 60_000 });
+    // Like a player: send every head at the same enemy, start, and wait for the first combo to land.
+    const { heads, enemies } = await page.evaluate(() => window.__hydra.battleSummary());
+    const canvas = (await page.locator('canvas').boundingBox()) ?? { x: 0, y: 0, width: 640, height: 360 };
+    const scale = canvas.width / 640;
+    for (let i = 0; i < heads.length; i++) {
+      await page.keyboard.press(String(i + 1));
+      await page.mouse.click(canvas.x + enemies[0].x * scale, canvas.y + enemies[0].y * scale);
+    }
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__hydra.battleSummary().combos.length > 0, null, { timeout: 90_000 });
     await page.waitForTimeout(250);
   } },
   { name: 'battle-phone-landscape', query: '?seed=123&scene=battle&group=patrol', viewport: { width: 844, height: 390 }, scene: 'battle', act: async (page) => {
-    await page.waitForTimeout(3000);
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(12_000);
   } },
   { name: 'map-phone-landscape', query: '?seed=123&scene=map', viewport: { width: 844, height: 390 }, scene: 'map' },
 ];
