@@ -288,6 +288,26 @@ function battleDot(fill: string, rim: string): PlaceholderDrawer {
   };
 }
 
+/** A Mist cloud from above: a pale, dithered blob, drawn white-ish so it can be tinted (acid clouds turn yellow-green). */
+const drawMistCloud: PlaceholderDrawer = (scene, key, width, height) => {
+  const g = scene.make.graphics({}, false);
+  const rng = new Rng(23);
+  const cx = width / 2;
+  const cy = height / 2;
+  const radius = width / 2;
+  g.fillStyle(0xffffff);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy) / radius;
+      if (d >= 1) continue;
+      // Solid in the middle, thinning out in scattered pixels towards the edge.
+      if (d < 0.55 || rng.next() > (d - 0.55) / 0.45) g.fillRect(x, y, 1, 1);
+    }
+  }
+  g.generateTexture(key, width, height);
+  g.destroy();
+};
+
 export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   battle_arena_water: arenaFloor('#0c3033', '#154347', '#c6e04a', 21),
   battle_arena_mud: arenaFloor('#262d1b', '#333a22', '#c6e04a', 22),
@@ -298,6 +318,7 @@ export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   battle_enemy_torchbearer: battleEnemy('#6b5530', 'torch'),
   battle_stump: battleDot('#8a2a2a', '#3a0d0d'),
   battle_scar: battleDot('#2a2220', '#111111'),
+  battle_mist_cloud: drawMistCloud,
   title_background: drawTitleBackground,
   hex_water: hexTile('#0e3b3f', '#1d5a5c', 6, 4, 11),
   hex_mud: hexTile('#2f3a22', '#443f26', 8, 2, 12),

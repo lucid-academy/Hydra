@@ -152,3 +152,15 @@ A new enemy type needs a graphic with the key `battle_enemy_<type id from enemie
 
 - **battle_stump:** a fresh neck stump seen from above: a raw dark red disc with a darker rim. Two new heads will grow from it.
 - **battle_scar:** the same stump burnt shut: charred black-brown, no red. Nothing grows from it.
+
+## battle_mist_cloud
+
+| | |
+|---|---|
+| Size | 64×64 px |
+| Frames | 1 (static for now) |
+| Anchor | centre (32, 32) |
+| Background | transparent |
+| Used in | battle screen, where a Mist Breather's breath lands |
+
+A round puff of mist **seen from above**: solid in the middle, breaking up into scattered pixels towards the edge (dithering, not a smooth gradient), transparent corners. Draw it in **white / very pale grey**: the game tints it pale greenish grey for plain Mist and yellow-green when it turns into Acid Fog, and draws it half see-through over heads and soldiers. The game also scales it to the cloud radius from `src/data/combos.json` (now 26 px, so the sprite is shown at about 52×52).

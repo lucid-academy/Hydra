@@ -34,6 +34,11 @@ const SHOTS = [
   { name: 'battle-fight', query: '?seed=123&scene=battle&group=burningDetail&debug=1', viewport: DESKTOP, scene: 'battle', act: async (page) => {
     await page.waitForTimeout(7000);
   } },
+  { name: 'battle-combo', query: '?seed=123&scene=battle&group=burningDetail', viewport: DESKTOP, scene: 'battle', act: async (page) => {
+    // The moment the first combo lands: its name pops up over the target.
+    await page.waitForFunction(() => window.__hydra.battleSummary().combos.length > 0, null, { timeout: 60_000 });
+    await page.waitForTimeout(250);
+  } },
   { name: 'battle-phone-landscape', query: '?seed=123&scene=battle&group=patrol', viewport: { width: 844, height: 390 }, scene: 'battle', act: async (page) => {
     await page.waitForTimeout(3000);
   } },

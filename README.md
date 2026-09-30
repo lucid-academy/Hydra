@@ -19,4 +19,4 @@ npm run build      # production build into dist/
 npm run shots      # screenshots of the built game into docs/screens/
 ```
 
-URL parameters: `?seed=123` (replay a run), `?scene=title` (start in a scene), `?debug=1` (debug overlay).
+URL parameters: `?seed=123` (replay a run), `?scene=title` (start in a scene: `title`, `map`, `battle`), `?debug=1` (debug overlay), `?scene=battle&group=patrol` (test battle against an enemy group from `src/data/enemies.json`).

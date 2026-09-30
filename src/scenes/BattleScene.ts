@@ -3,7 +3,7 @@
 // Controls: tap a head (or 1–9) to select it, tap an enemy to make it attack; tap the ground (or right-click) to move the body.
 
 import * as Phaser from 'phaser';
-import { applyCommand, battleResult, createBattle, distance, fromAngle, stepBattle, stumpPosition } from '../sim/battle';
+import { applyCommand, battleResult, createBattle, distance, fromAngle, isAcid, stepBattle, stumpPosition } from '../sim/battle';
 import type { BattleEvent, BattleState, Vec } from '../sim/battle';
 import { hexKey } from '../sim/hex';
 import { exposeBattleSummary, markReady } from '../testHooks';
@@ -22,6 +22,9 @@ const TAP_SLOP = 10;
 const SPEEDS = [1, 0.5] as const;
 const NECK_SEGMENTS = 7;
 const DEFAULT_TEST_GROUP = 'burningDetail';
+/** After a combo the battle runs this many times slower for a moment, so the player can see it land. */
+const COMBO_SLOWDOWN = 0.3;
+const COMBO_SLOWDOWN_MS = 350;
 
 export class BattleScene extends Phaser.Scene {
   private run!: RunController;
@@ -31,6 +34,10 @@ export class BattleScene extends Phaser.Scene {
   private accumulator = 0;
   private selectedHeadId: string | null = null;
   private finished = false;
+  /** Real milliseconds of combo slow-down left. */
+  private slowdownLeft = 0;
+  /** Ids of combos that fired in this battle, in order (for the smoke test). */
+  private combosSeen: string[] = [];
 
   private necks!: Phaser.GameObjects.Graphics;
   private overlay!: Phaser.GameObjects.Graphics;
@@ -38,6 +45,7 @@ export class BattleScene extends Phaser.Scene {
   private headSprites = new Map<string, Phaser.GameObjects.Image>();
   private enemySprites = new Map<number, Phaser.GameObjects.Image>();
   private stumpSprites = new Map<number, Phaser.GameObjects.Image>();
+  private cloudSprites = new Map<number, Phaser.GameObjects.Image>();
   private cards!: HeadCards;
   private bodyHpText!: Phaser.GameObjects.Text;
   private pausedText!: Phaser.GameObjects.Text;
@@ -69,11 +77,14 @@ export class BattleScene extends Phaser.Scene {
     }
 
     this.battle = createBattle(setup, run.battleRules);
+    this.combosSeen = [];
     this.paused = false;
     this.speedIndex = 0;
     this.accumulator = 0;
     this.selectedHeadId = null;
     this.finished = false;
+    this.slowdownLeft = 0;
+    this.cloudSprites = new Map();
     this.headSprites = new Map();
     this.enemySprites = new Map();
     this.stumpSprites = new Map();
@@ -100,6 +111,8 @@ export class BattleScene extends Phaser.Scene {
       outcome: this.battle.outcome,
       enemies: this.battle.enemies.map((e) => ({ x: e.pos.x, y: e.pos.y + ARENA_TOP })),
       heads: this.battle.heads.length,
+      clouds: this.battle.clouds.length,
+      combos: [...this.combosSeen],
     }));
     markReady(SceneKey.Battle);
   }
@@ -230,7 +243,9 @@ export class BattleScene extends Phaser.Scene {
     if (!this.paused && !this.finished) {
       const stepMs = 1000 / rules.ticksPerSecond;
       // Never try to catch up more than a quarter second (e.g. after the tab was hidden).
-      this.accumulator = Math.min(this.accumulator + delta * SPEEDS[this.speedIndex]!, 250);
+      const slow = this.slowdownLeft > 0 ? COMBO_SLOWDOWN : 1;
+      this.slowdownLeft = Math.max(0, this.slowdownLeft - delta);
+      this.accumulator = Math.min(this.accumulator + delta * SPEEDS[this.speedIndex]! * slow, 250);
       while (this.accumulator >= stepMs && !this.battle.outcome) {
         stepBattle(this.battle, rules);
         this.showEvents(this.battle.events);
@@ -258,6 +273,8 @@ export class BattleScene extends Phaser.Scene {
       return this.add.image(0, 0, this.textures.exists(key) ? key : 'battle_enemy_manAtArms').setDepth(5);
     });
     sync(this.stumpSprites, this.battle.stumps.map((s) => s.id), () => this.add.image(0, 0, 'battle_stump').setDepth(4));
+    // Mist lies over heads and people, half see-through.
+    sync(this.cloudSprites, this.battle.clouds.map((c) => c.id), () => this.add.image(0, 0, 'battle_mist_cloud').setDepth(8).setAlpha(0));
   }
 
   private draw(): void {
@@ -295,21 +312,49 @@ export class BattleScene extends Phaser.Scene {
       this.stumpSprites.get(stump.id)!.setPosition(Math.round(pos.x), Math.round(pos.y)).setTexture(stump.cauterized ? 'battle_scar' : 'battle_stump');
     }
 
+    const { palette, text } = getContext(this).data;
+    for (const cloud of this.battle.clouds) {
+      const sprite = this.cloudSprites.get(cloud.id)!;
+      const acid = isAcid(this.battle, cloud);
+      // Thins out over its last second.
+      const fade = Math.min(1, (cloud.untilTick - this.battle.tick) / rules.ticksPerSecond);
+      sprite
+        .setPosition(Math.round(cloud.pos.x), Math.round(cloud.pos.y))
+        .setScale((cloud.radius * 2) / sprite.width)
+        .setTint(color(acid ? palette.underground.bioluminescence : palette.mist))
+        .setAlpha((acid ? 0.55 : 0.4) * Math.max(0, fade));
+    }
+
     this.drawOverlay();
-    const { text } = getContext(this).data;
     this.bodyHpText.setText(`${text.battle.body} ${Math.max(0, Math.ceil(body.hp))}/${body.maxHp}`);
     this.cards.update(this.battle.heads, this.selectedHeadId);
   }
 
-  /** HP bars, selection ring, order lines, stump timers. */
+  /** HP bars, status marks, selection ring, order lines, stump timers. */
   private drawOverlay(): void {
     const g = this.overlay;
     const rules = this.run.battleRules;
+    const { combos } = getContext(this).data;
     g.clear();
 
     for (const enemy of this.battle.enemies) {
       const r = rules.enemyTypes[enemy.typeId]!.radius;
       hpBar(g, enemy.pos.x, enemy.pos.y - r - 5, 14, enemy.hp / enemy.maxHp, 0xd04030);
+      // One small square per status above the HP bar; black with a gold rim = armor broken, grey = torch out.
+      const marks = enemy.statuses.map((s) => color(combos.statuses[s.id]?.color ?? '#ffffff'));
+      if (this.battle.tick < enemy.torchOutUntilTick) marks.push(0x777777);
+      marks.forEach((fill, i) => {
+        const x = Math.round(enemy.pos.x - 7 + i * 5);
+        const y = Math.round(enemy.pos.y - r - 11);
+        g.fillStyle(0x000000);
+        g.fillRect(x, y, 4, 4);
+        g.fillStyle(fill);
+        g.fillRect(x + 1, y + 1, 2, 2);
+      });
+      if (enemy.armorBroken) {
+        g.lineStyle(1, 0xd9a93b);
+        g.strokeRect(Math.round(enemy.pos.x - 8) - 0.5, Math.round(enemy.pos.y - r - 6) - 0.5, 17, 4);
+      }
       if (enemy.cauterizingStumpId !== null) {
         const stump = this.battle.stumps.find((s) => s.id === enemy.cauterizingStumpId);
         const cauterizeTicks = rules.enemyTypes[enemy.typeId]!.cauterizeTicks ?? 1;
@@ -343,7 +388,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private showEvents(events: readonly BattleEvent[]): void {
-    const { text } = getContext(this).data;
+    const { text, combos, palette } = getContext(this).data;
     for (const event of events) {
       switch (event.type) {
         case 'hit': {
@@ -366,6 +411,13 @@ export class BattleScene extends Phaser.Scene {
         case 'cauterized':
           this.floatText(this.battle.body.pos, text.battle.cauterized, '#ffcf5c');
           break;
+        case 'combo': {
+          const name = combos.combos.find((c) => c.id === event.comboId)?.displayName ?? event.comboId;
+          this.floatText(event.at, name, palette.order.gold, '12px');
+          this.slowdownLeft = COMBO_SLOWDOWN_MS;
+          this.combosSeen.push(event.comboId);
+          break;
+        }
         default:
           break;
       }
@@ -381,11 +433,11 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
-  private floatText(at: Vec, message: string, textColor: string): void {
+  private floatText(at: Vec, message: string, textColor: string, fontSize = '10px'): void {
     const label = this.add
       .text(Math.round(at.x), Math.round(at.y) - 30, message, {
         fontFamily: 'monospace',
-        fontSize: '10px',
+        fontSize,
         color: textColor,
         backgroundColor: '#000000aa',
         padding: { x: 3, y: 1 },

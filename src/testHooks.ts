@@ -13,9 +13,9 @@ declare global {
       readyScenes: string[];
       /** Screen positions (in game pixels, 640×360) of hexes the hydra can reach now. */
       reachableOnScreen?: () => ScreenPoint[];
-      /** Short summary of the current run. */
       /** Short summary of the current battle; positions in game pixels (640×360). */
-      battleSummary?: () => { tick: number; outcome: string | null; enemies: Array<{ x: number; y: number }>; heads: number };
+      battleSummary?: () => { tick: number; outcome: string | null; enemies: Array<{ x: number; y: number }>; heads: number; clouds: number; combos: string[] };
+      /** Short summary of the current run. */
       runSummary?: () => { turn: number; muck: number; alert: number; inBattle: boolean; explored: number };
     };
   }
