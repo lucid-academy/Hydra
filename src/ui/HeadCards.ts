@@ -4,9 +4,10 @@
 
 import * as Phaser from 'phaser';
 import { wantsToAdd } from './keys';
-import { pinToScreen } from './pinToScreen';
 
 const CARD_HEIGHT = 40;
+/** Cards are drawn above the bottom panel. */
+const DEPTH = 150;
 const GAP = 2;
 const HP_COLOR = 0x5f9a4a;
 const HP_LOW_COLOR = 0xc0392b;
@@ -33,17 +34,23 @@ export interface HeadCardInfo {
   charge: number;
 }
 
-interface CardBars {
+interface Card {
+  bg: Phaser.GameObjects.Rectangle;
   hp: Phaser.GameObjects.Rectangle;
   charge: Phaser.GameObjects.Rectangle;
 }
 
+/**
+ * The cards are plain objects on the screen, not inside a Phaser container: interactive objects in a container
+ * that is rebuilt were sometimes not registered for taps. They are rebuilt only when the heads change;
+ * picking a head just recolours its card.
+ */
 export class HeadCards {
-  private readonly container: Phaser.GameObjects.Container;
   private readonly style: HeadCardsStyle;
   private readonly cardWidth: number;
-  private bars = new Map<string, CardBars>();
-  /** Which heads (and which selection) the cards were built for; they are rebuilt only when this changes. */
+  private cards = new Map<string, Card>();
+  private objects: Phaser.GameObjects.GameObject[] = [];
+  /** Which heads the cards were built for. */
   private builtFor = '';
 
   constructor(
@@ -53,59 +60,56 @@ export class HeadCards {
   ) {
     this.style = style;
     this.cardWidth = Math.floor((style.width - GAP * (style.maxCards - 1)) / style.maxCards);
-    this.container = pinToScreen(scene.add.container(style.x, style.y)).setDepth(150);
   }
 
   update(heads: readonly HeadCardInfo[], selected: ReadonlySet<string>): void {
-    const layout = heads.map((h) => `${h.id}${selected.has(h.id) ? '*' : ''}`).join('|');
+    const layout = heads.map((h) => h.id).join('|');
     if (layout !== this.builtFor) {
       this.builtFor = layout;
-      this.build(heads, selected);
+      this.build(heads);
     }
     const barWidth = this.cardWidth - 9;
     for (const head of heads) {
-      const bars = this.bars.get(head.id);
-      if (!bars) continue;
+      const card = this.cards.get(head.id);
+      if (!card) continue;
+      const picked = selected.has(head.id);
+      card.bg.setFillStyle(picked ? 0x2a3a1a : 0x0b1112, 0.95).setStrokeStyle(1, picked ? 0xc6e04a : 0x2c3a3a);
       const hpShare = Math.max(0, head.hp / head.maxHp);
-      bars.hp.setSize(Math.round(barWidth * hpShare), 5).setFillStyle(hpShare > 0.35 ? HP_COLOR : HP_LOW_COLOR);
+      card.hp.setSize(Math.round(barWidth * hpShare), 5).setFillStyle(hpShare > 0.35 ? HP_COLOR : HP_LOW_COLOR);
       const charge = Math.max(0, Math.min(1, head.charge));
-      bars.charge.setSize(Math.round(barWidth * charge), 2).setFillStyle(charge >= 1 ? CHARGE_READY_COLOR : CHARGE_COLOR);
+      card.charge.setSize(Math.round(barWidth * charge), 2).setFillStyle(charge >= 1 ? CHARGE_READY_COLOR : CHARGE_COLOR);
     }
   }
 
-  private build(heads: readonly HeadCardInfo[], selectedIds: ReadonlySet<string>): void {
-    this.container.removeAll(true);
-    this.bars.clear();
+  private build(heads: readonly HeadCardInfo[]): void {
+    for (const object of this.objects) object.destroy();
+    this.objects = [];
+    this.cards.clear();
     const barWidth = this.cardWidth - 9;
     // Fixed width: long names are cut off at the card's edge instead of spilling onto the next card.
     const textWidth = this.cardWidth - 6;
+    const top = this.style.y;
     heads.forEach((head, i) => {
-      const x = i * (this.cardWidth + GAP);
-      const selected = selectedIds.has(head.id);
+      const x = this.style.x + i * (this.cardWidth + GAP);
       const classColor = Phaser.Display.Color.HexStringToColor(this.style.classColors[head.classId] ?? '#cccccc').color;
-
-      const bg = this.scene.add
-        .rectangle(x, 0, this.cardWidth, CARD_HEIGHT, selected ? 0x2a3a1a : 0x0b1112, 0.95)
-        .setOrigin(0, 0)
-        .setStrokeStyle(1, selected ? 0xc6e04a : 0x2c3a3a)
-        .setInteractive({ useHandCursor: true });
+      const bg = this.scene.add.rectangle(x, top, this.cardWidth, CARD_HEIGHT, 0x0b1112, 0.95).setOrigin(0, 0).setInteractive({ useHandCursor: true });
       bg.on('pointerup', (pointer: Phaser.Input.Pointer) => this.onSelect(head.id, wantsToAdd(pointer)));
-
-      const stripe = this.scene.add.rectangle(x, 0, 3, CARD_HEIGHT, classColor).setOrigin(0, 0);
-      const name = this.scene.add.text(x + 5, 2, `${i + 1} ${head.name}`, { fontFamily: 'monospace', fontSize: '9px', color: '#e8f0e0', fixedWidth: textWidth });
-      const cls = this.scene.add.text(x + 5, 13, this.style.classNames[head.classId] ?? head.classId, {
+      const stripe = this.scene.add.rectangle(x, top, 3, CARD_HEIGHT, classColor).setOrigin(0, 0);
+      const name = this.scene.add.text(x + 5, top + 2, `${i + 1} ${head.name}`, { fontFamily: 'monospace', fontSize: '9px', color: '#e8f0e0', fixedWidth: textWidth });
+      const cls = this.scene.add.text(x + 5, top + 13, this.style.classNames[head.classId] ?? head.classId, {
         fontFamily: 'monospace',
         fontSize: '8px',
         color: '#9fb0a0',
         fixedWidth: textWidth,
       });
-      const hpBack = this.scene.add.rectangle(x + 5, 25, barWidth, 5, 0x000000).setOrigin(0, 0);
-      const hp = this.scene.add.rectangle(x + 5, 25, barWidth, 5, HP_COLOR).setOrigin(0, 0);
-      const chargeBack = this.scene.add.rectangle(x + 5, 33, barWidth, 2, 0x000000).setOrigin(0, 0);
-      const charge = this.scene.add.rectangle(x + 5, 33, 0, 2, CHARGE_COLOR).setOrigin(0, 0);
-      this.container.add([bg, stripe, name, cls, hpBack, hp, chargeBack, charge]);
-      this.bars.set(head.id, { hp, charge });
+      const hpBack = this.scene.add.rectangle(x + 5, top + 25, barWidth, 5, 0x000000).setOrigin(0, 0);
+      const hp = this.scene.add.rectangle(x + 5, top + 25, barWidth, 5, HP_COLOR).setOrigin(0, 0);
+      const chargeBack = this.scene.add.rectangle(x + 5, top + 33, barWidth, 2, 0x000000).setOrigin(0, 0);
+      const charge = this.scene.add.rectangle(x + 5, top + 33, 0, 2, CHARGE_COLOR).setOrigin(0, 0);
+      const parts = [bg, stripe, name, cls, hpBack, hp, chargeBack, charge];
+      for (const part of parts) part.setScrollFactor(0).setDepth(DEPTH);
+      this.objects.push(...parts);
+      this.cards.set(head.id, { bg, hp, charge });
     });
-    pinToScreen(this.container);
   }
 }

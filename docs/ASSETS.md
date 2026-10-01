@@ -116,7 +116,7 @@ The battle is a board of hexes seen from a slant (like the board in Into the Bre
 - The board is 13 hexes across and 9 rows deep. Hex centres are 42 px apart within a row and rows are 27 px apart.
 - The numbers that the game relies on (tile sizes, the body's anchor, where feet stand) are also in `src/assets/battleArt.ts`.
 
-## Battle tiles: battle_tile_mud, battle_tile_water
+## Battle tiles: battle_tile_<biome>_<ground|water>
 
 | | |
 |---|---|
@@ -126,15 +126,16 @@ The battle is a board of hexes seen from a slant (like the board in Into the Bre
 | Background | transparent outside the tile |
 | Used in | battle board; one tile per hex |
 
+The battle board looks like the place of the encounter: the tiles of its biome, and the `water` tile if the encounter stood in water. Current keys: `lairSwamp`, `floodedCaves`, `rootTangle`, `fungalDeeps`, each with `_ground` and `_water`. With `"file": null` the game draws a placeholder from the biome's colours in `src/data/biomes.json`.
+
 Two parts, one under the other:
 
 - **Top face (upper 36 px):** a pointy-top hex squashed vertically: top point at (21, 0), straight sides at x=0 and x=41 from y=9 to y=27, bottom point at (21, 35). Keep it quiet and low-contrast (soldiers, heads and HP bars are drawn on top) with a 1 px darker rim, so neighbouring hexes read as separate fields.
 - **Wall (lower 10 px):** earth under the two lower edges of the hex, as if the board were a thick slab: darker on the left half, a little lighter on the right, a few darker horizontal layers. Only the front row of the board shows its walls; the next row covers the rest.
 
-- **battle_tile_mud:** dark olive swamp mud with a few lighter clumps.
-- **battle_tile_water:** murky teal shallow water with a few light ripples (battles that start on a water hex).
+The ground should match the biome's map ground (see map_ground_*), only larger: swamp mud, wet stone, dark soil with roots, spongy fungal ground; the water tiles are murky still water in the biome's tint.
 
-Prompt sketch: *"Pixel art game tile, 42x46 pixels, transparent background. A pointy-top hexagon floor tile seen from a slanted top-down angle (squashed vertically, 42 wide and 36 tall), dark olive swamp mud with subtle lighter clumps and a 1 px darker rim; below its two lower edges a 10 px thick earth side wall, darker on the left, slightly lighter on the right, like a board game slab. Hard pixels, no anti-aliasing, dark fantasy underground swamp palette."*
+Prompt sketch: *"Pixel art game tile, 42x46 pixels, transparent background. A pointy-top hexagon floor tile seen from a slanted top-down angle (squashed vertically, 42 wide and 36 tall), [dark olive swamp mud / wet grey-green stone / dark soil with roots / purplish spongy fungal ground / murky still water], subtle detail and a 1 px darker rim; below its two lower edges a 10 px thick earth side wall, darker on the left, slightly lighter on the right, like a board game slab. Hard pixels, no anti-aliasing, dark fantasy underground."*
 
 ## battle_body
 

@@ -6,8 +6,9 @@ import { battleRulesFrom } from '../data/battleRules';
 import { runRulesFrom } from '../data/runRules';
 import type { BattleResult, BattleRules, BattleSetup } from '../sim/battle';
 import type { Hex } from '../sim/hex';
-import { hex } from '../sim/hex';
-import { createRun, endTurn, finishBattle, moveHydra, pendingBattleSetup, reachableHexes } from '../sim/turn';
+import { hex, hexDistance, hexKey, hexNeighbors } from '../sim/hex';
+import { hexesSeenFrom, updateVisibility } from '../sim/map';
+import { acceptBlessing, createRun, endTurn, finishBattle, moveHydra, pendingBattleSetup, reachableHexes, refuseBlessing } from '../sim/turn';
 import type { Reachable, RunEvent, RunRules, RunState } from '../sim/turn';
 import { getContext } from './context';
 
@@ -19,6 +20,8 @@ export class RunController extends Phaser.Events.EventEmitter {
   readonly state: RunState;
   /** Biomes the player has already been shown the name of (only for the screen; not part of the game state). */
   readonly knownBiomes = new Set<string>();
+  /** Events of the last command, for a scene that starts right after it (e.g. the map after a battle). */
+  lastEvents: RunEvent[] = [];
 
   constructor(seed: number, rules: RunRules, battleRules: BattleRules) {
     super();
@@ -47,14 +50,41 @@ export class RunController extends Phaser.Events.EventEmitter {
     this.publish(finishBattle(this.state, result, this.rules));
   }
 
+  acceptBlessing(): void {
+    this.publish(acceptBlessing(this.state, this.rules));
+  }
+
+  refuseBlessing(): void {
+    this.publish(refuseBlessing(this.state));
+  }
+
   /** For `?scene=battle`: a battle against the given group without walking to it, optionally with a wounded body. */
   startTestBattle(groupId: string, bodyHp: number | null = null): void {
     this.state.pendingBattle = { at: hex(0, 0), groupId };
     if (bodyHp !== null) this.state.hydra.bodyHp = Math.min(this.state.hydra.bodyMaxHp, bodyHp);
   }
 
+  /**
+   * For `?near=shrine` and the like: moves the hydra next to the nearest object of that kind and shows the area around it.
+   * Testing only; it skips the walk (and the Alert it would cost).
+   */
+  placeNear(kind: string): void {
+    const { map, hydra } = this.state;
+    const objects = [...map.tiles.values()].filter((t) => t.object?.kind === kind).sort((a, b) => hexDistance(a.hex, map.lair) - hexDistance(b.hex, map.lair));
+    for (const target of objects) {
+      const spot = hexNeighbors(target.hex)
+        .map((h) => map.tiles.get(hexKey(h)))
+        .find((t) => t && t.object === null && this.rules.terrain[t.terrain].moveCost !== null);
+      if (!spot) continue;
+      hydra.position = spot.hex;
+      updateVisibility(this.state.visibility, hexesSeenFrom(map, spot.hex, hydra.sightRange, this.rules.terrain));
+      return;
+    }
+  }
+
   private publish(events: RunEvent[]): void {
     if (events.length === 0) return;
+    this.lastEvents = events;
     this.emit('events', events);
     this.emit('changed');
   }

@@ -10,11 +10,13 @@ describe('parseUrlParams', () => {
       group: 'patrol',
       hp: 5,
       speed: 4,
+      near: null,
     });
   });
 
   it('returns defaults when nothing is given', () => {
-    expect(parseUrlParams('')).toEqual({ seed: null, scene: null, debug: false, group: null, hp: null, speed: null });
+    expect(parseUrlParams('')).toEqual({ seed: null, scene: null, debug: false, group: null, hp: null, speed: null, near: null });
+    expect(parseUrlParams('?near=shrine').near).toBe('shrine');
   });
 
   it('ignores an empty seed', () => {

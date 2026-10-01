@@ -25,6 +25,8 @@ const STEP_DURATION_MS = 130;
 const SMALL_SCREEN_ZOOM = 2;
 /** Hexes seen before but out of sight now are drawn this much darker. */
 const REMEMBERED_TINT = 0x808080;
+/** A shrine that has given its blessing. */
+const SPENT_TINT = 0x5a5a5a;
 const BIOME_LABEL_MS = 2600;
 
 // Ground lies flat at the bottom; everything that stands up is sorted by how low on the screen it stands.
@@ -56,7 +58,10 @@ export class MapScene extends Phaser.Scene {
   }
 
   create(): void {
+    const firstTime = !getRun(this);
     this.run = getRun(this) ?? startNewRun(this);
+    const { near } = getContext(this).params;
+    if (firstTime && near) this.run.placeNear(near);
     this.views = new Map();
     this.animating = false;
     this.press = null;
@@ -94,12 +99,29 @@ export class MapScene extends Phaser.Scene {
         const { x, y } = hexToPixel(LAYOUT, tile.hex);
         const around = [tile.hex, ...hexNeighbors(tile.hex)].flatMap((h) => [h, ...hexNeighbors(h)]);
         const unexploredNear = new Set(around.map(hexKey).filter((k) => map.tiles.has(k) && !visibility.has(k))).size;
-        return { x: (x - cam.worldView.x) * cam.zoom, y: (y - cam.worldView.y) * cam.zoom, cost, encounter: tile.object?.kind === 'encounter', unexploredNear };
+        return {
+          x: (x - cam.worldView.x) * cam.zoom,
+          y: (y - cam.worldView.y) * cam.zoom,
+          cost,
+          encounter: tile.object?.kind === 'encounter',
+          object: tile.object?.kind ?? null,
+          unexploredNear,
+        };
       });
     });
     exposeRunSummary(() => {
-      const { turn, resources, alert, pendingBattle, visibility } = this.run.state;
-      return { turn, muck: resources.muck, alert, inBattle: pendingBattle !== null, explored: visibility.size };
+      const { turn, resources, alert, pendingBattle, pendingShrine, visibility, hydra } = this.run.state;
+      return {
+        turn,
+        muck: resources.muck,
+        moisture: resources.moisture,
+        bones: resources.bones,
+        alert,
+        inBattle: pendingBattle !== null,
+        atShrine: pendingShrine !== null,
+        blessings: hydra.blessings.length,
+        explored: visibility.size,
+      };
     });
     markReady(SceneKey.Map);
   }
@@ -198,6 +220,12 @@ export class MapScene extends Phaser.Scene {
         for (const glow of view.glows.splice(0)) glow.image.destroy();
       }
       for (const image of [view.ground, ...view.props, ...(view.object ? [view.object] : [])]) image.setVisible(known).setTint(tint);
+      // A shrine whose blessing was taken goes dark.
+      const object = map.tiles.get(key)!.object;
+      if (object?.kind === 'shrine' && object.used) {
+        view.object?.setTint(SPENT_TINT);
+        for (const glow of view.glows.splice(0)) glow.image.destroy();
+      }
       for (const glow of view.glows) glow.image.setVisible(known).setAlpha(state === 'remembered' ? glow.alpha * 0.4 : glow.alpha);
       // Known hexes at the edge of the unknown fade into the dark.
       const edge = known && hexNeighbors(view.tile.hex).some((n) => map.tiles.has(hexKey(n)) && !visibility.has(hexKey(n)));
@@ -234,7 +262,8 @@ export class MapScene extends Phaser.Scene {
     this.showingBiomeName = true;
     const { width } = this.scale.gameSize;
     const label = this.add
-      .text(width / 2, 30, name, { fontFamily: 'Georgia, serif', fontSize: '15px', color: '#e8e0d0', backgroundColor: '#05090acc', padding: { x: 8, y: 3 } })
+      // Below the HUD's short messages, so the two never overlap.
+      .text(width / 2, 64, name, { fontFamily: 'Georgia, serif', fontSize: '15px', color: '#e8e0d0', backgroundColor: '#05090acc', padding: { x: 8, y: 3 } })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(100)

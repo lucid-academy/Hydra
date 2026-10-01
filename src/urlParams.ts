@@ -5,6 +5,7 @@
 //   ?group=patrol with ?scene=battle: which enemy group to fight
 //   ?hp=5         with ?scene=battle: start the test battle with this much body HP (to see a defeat quickly)
 //   ?speed=4      battles run this many times faster (for tests)
+//   ?near=shrine  with ?scene=map: start next to the nearest object of that kind (shrine, passage, encounter, moisture...)
 
 import { seedFromString } from './sim/rng';
 
@@ -20,6 +21,8 @@ export interface UrlParams {
   hp: number | null;
   /** Battles run this many times faster, or null for normal speed. */
   speed: number | null;
+  /** Start the map next to the nearest object of this kind, or null. */
+  near: string | null;
 }
 
 export function parseUrlParams(search: string): UrlParams {
@@ -39,5 +42,6 @@ export function parseUrlParams(search: string): UrlParams {
     group: group !== null && group.trim() !== '' ? group.trim() : null,
     hp: positive('hp'),
     speed: positive('speed'),
+    near: params.get('near')?.trim() || null,
   };
 }

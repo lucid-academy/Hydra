@@ -27,6 +27,16 @@ const SHOTS = [
     await moveFarthest(page);
     await moveFarthest(page);
   } },
+  { name: 'map-shrine', query: '?seed=123&scene=map&near=shrine', viewport: DESKTOP, scene: 'map', act: async (page) => {
+    // Step onto the shrine like a player: its blessing comes up.
+    const points = await page.evaluate(() => window.__hydra.reachableOnScreen());
+    const shrine = points.find((p) => p.object === 'shrine');
+    if (!shrine) throw new Error('No shrine next to the hydra');
+    const canvas = (await page.locator('canvas').boundingBox()) ?? { x: 0, y: 0, width: 640, height: 360 };
+    const scale = canvas.width / 640;
+    await page.mouse.click(canvas.x + shrine.x * scale, canvas.y + shrine.y * scale);
+    await page.waitForTimeout(900);
+  } },
   { name: 'battle-start', query: '?seed=123&scene=battle&group=burningDetail', viewport: DESKTOP, scene: 'battle', act: async (page) => {
     await page.keyboard.press('1'); // battles start paused; select the first head
   } },

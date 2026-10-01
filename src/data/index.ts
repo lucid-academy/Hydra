@@ -73,7 +73,13 @@ export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'> & 
   if (data.biomes && data.manifest) {
     // Every biome needs its map images (with "file": null the game draws a placeholder from the biome's colours).
     for (const [id, biome] of Object.entries(data.biomes.biomes)) {
-      const keys = [`map_rock_${id}`, ...Object.keys(biome.ground).map((g) => `map_ground_${id}_${g}`), ...biome.decorations.map((k) => `map_deco_${k}`)];
+      const keys = [
+        `map_rock_${id}`,
+        ...Object.keys(biome.ground).map((g) => `map_ground_${id}_${g}`),
+        ...biome.decorations.map((k) => `map_deco_${k}`),
+        `battle_tile_${id}_ground`,
+        `battle_tile_${id}_water`,
+      ];
       const missing = keys.filter((key) => !(key in data.manifest!.images));
       if (missing.length > 0) problems.push(`  - src/assets/manifest.json: biome ${id} needs these images (use "file": null for a placeholder): ${missing.join(', ')}`);
     }

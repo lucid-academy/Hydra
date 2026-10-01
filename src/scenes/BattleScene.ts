@@ -142,9 +142,11 @@ export class BattleScene extends Phaser.Scene {
     this.stumpSprites = new Map();
 
     this.cameras.main.setBackgroundColor(color(data.palette.underground.black));
+    // The board looks like the place of the encounter: its biome, and water if it was fought in water.
     const pending = run.state.pendingBattle!;
-    const terrain = run.state.map.tiles.get(hexKey(pending.at))?.terrain === 'water' ? 'water' : 'mud';
-    this.createBoard(terrain);
+    const tile = run.state.map.tiles.get(hexKey(pending.at));
+    const biome = tile?.biome ?? data.biomes.lairBiome;
+    this.createBoard(`battle_tile_${biome}_${tile?.terrain === 'water' ? 'water' : 'ground'}`);
 
     this.bodySprite = this.add.image(0, 0, 'battle_body');
     this.bodySprite.setOrigin(BODY_FOOT.x / this.bodySprite.width, BODY_FOOT.y / this.bodySprite.height);
@@ -175,12 +177,12 @@ export class BattleScene extends Phaser.Scene {
   // ------------------------------------------------------------ board
 
   /** Tiles row by row from the top: each row hides the walls of the row behind it, so only the front edge shows its walls. */
-  private createBoard(terrain: 'mud' | 'water'): void {
+  private createBoard(tileKey: string): void {
     const rules = this.run.battleRules;
     const originY = TILE.faceHeight / 2 / (TILE.faceHeight + TILE.wallHeight);
     for (const h of boardHexes(rules)) {
       const p = this.hexCenter(h);
-      this.add.image(p.x, p.y, `battle_tile_${terrain}`).setOrigin(0.5, originY).setDepth(DEPTH.tile + p.y / 10000);
+      this.add.image(p.x, p.y, tileKey).setOrigin(0.5, originY).setDepth(DEPTH.tile + p.y / 10000);
       this.marks.set(hexKey(h), this.add.image(p.x, p.y, 'battle_hex_mark').setDepth(DEPTH.mark).setVisible(false));
       this.mistTiles.set(hexKey(h), this.add.image(p.x, p.y, 'battle_hex_fill').setDepth(DEPTH.mark).setVisible(false));
     }
@@ -231,7 +233,9 @@ export class BattleScene extends Phaser.Scene {
     const { palette, text, heads } = getContext(this).data;
     const { width, height } = this.scale.gameSize;
 
-    this.add.rectangle(0, 0, width, ARENA_TOP, color(palette.underground.black), 0.9).setOrigin(0, 0).setDepth(DEPTH.ui).setInteractive();
+    // The bars above and below the board are not interactive: the board's own tap area ends where they begin,
+    // and an interactive bar could be counted as lying on top of the buttons and cards drawn on it.
+    this.add.rectangle(0, 0, width, ARENA_TOP, color(palette.underground.black), 0.9).setOrigin(0, 0).setDepth(DEPTH.ui);
     this.bodyHpText = this.add.text(6, 3, '', { fontFamily: 'monospace', fontSize: '10px', color: '#d8e4d0' }).setDepth(DEPTH.ui + 1);
     // Paused = the word in the top bar plus a gold frame around the board area, so nothing on the board is covered.
     this.pausedText = this.add
@@ -256,7 +260,7 @@ export class BattleScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.ui + 1);
 
-    this.add.rectangle(0, PANEL_TOP, width, height - PANEL_TOP, color(palette.underground.black)).setOrigin(0, 0).setDepth(DEPTH.ui).setInteractive();
+    this.add.rectangle(0, PANEL_TOP, width, height - PANEL_TOP, color(palette.underground.black)).setOrigin(0, 0).setDepth(DEPTH.ui);
 
     const buttonWidth = 70;
     this.cards = new HeadCards(
@@ -355,16 +359,19 @@ export class BattleScene extends Phaser.Scene {
     const rules = this.run.battleRules;
     const tappedHex = pixelToHex(LAYOUT, at.x, at.y);
     if (!rightButton) {
+      // With heads picked, a tap on an enemy is an order, even if a head hangs right next to it;
+      // with none picked, a tap picks a head.
+      const enemy = this.enemyAt(at, tappedHex);
+      if (enemy && this.selected.size > 0 && !add) {
+        for (const headId of this.selected) applyCommand(this.battle, { type: 'attack', headId, enemyId: enemy.id }, rules);
+        return;
+      }
       const head = this.headAt(at);
       if (head) {
         this.selectHead(head.id, add);
         return;
       }
-      const enemy = this.enemyAt(at, tappedHex);
-      if (enemy) {
-        for (const headId of this.selected) applyCommand(this.battle, { type: 'attack', headId, enemyId: enemy.id }, rules);
-        return;
-      }
+      if (enemy) return;
       // A tap that missed everything while heads are selected only lets go of them:
       // on a phone it is usually a missed enemy, and the body must not wander off because of it.
       if (this.selected.size > 0) {

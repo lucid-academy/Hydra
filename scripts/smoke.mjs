@@ -25,11 +25,13 @@ const END_TURN_BUTTON = { x: 590, y: 340 };
 const RESUME_BUTTON = { x: 602, y: 328 };
 const CONTINUE_BUTTON = { x: 320, y: 148 };
 const NEW_HYDRA_BUTTON = { x: 320, y: 212 };
+const ACCEPT_BLESSING_BUTTON = { x: 258, y: 248 };
 const FIRST_HEAD_CARD = { x: 32, y: 338 };
 const ALL_HEADS_BUTTON = { x: 600, y: 8 };
 const HEAD_CARD_STEP = 62;
-/** Map hexes under the top bar or the End Turn button can't be tapped. */
+/** Map hexes under the top bar, the minimap or the End Turn button can't be tapped. */
 const MAP_TAP_AREA = { left: 10, right: 630, top: 24, bottom: 320 };
+const MINIMAP = { right: 104, top: 266 };
 
 const log = (...parts) => console.log(`[${LABEL}]`, ...parts);
 
@@ -66,7 +68,12 @@ async function waitForScene(page, scene, timesBefore = 0) {
 /** One step on the map: into an encounter if one is in reach, otherwise towards unexplored ground. */
 async function mapStep(page, step) {
   const points = (await page.evaluate(() => window.__hydra.reachableOnScreen())).filter(
-    (p) => p.x > MAP_TAP_AREA.left && p.x < MAP_TAP_AREA.right && p.y > MAP_TAP_AREA.top && p.y < MAP_TAP_AREA.bottom,
+    (p) =>
+      p.x > MAP_TAP_AREA.left &&
+      p.x < MAP_TAP_AREA.right &&
+      p.y > MAP_TAP_AREA.top &&
+      p.y < MAP_TAP_AREA.bottom &&
+      !(p.x < MINIMAP.right && p.y > MINIMAP.top),
   );
   if (points.length === 0) {
     await tap(page, END_TURN_BUTTON);
@@ -121,7 +128,17 @@ try {
   let won = 0;
   let fought = 0;
   for (let step = 0; step < MAX_MAP_STEPS && won < BATTLES_TO_WIN; step++) {
-    const { inBattle } = await page.evaluate(() => window.__hydra.runSummary());
+    const { inBattle, atShrine, blessings } = await page.evaluate(() => window.__hydra.runSummary());
+    if (atShrine) {
+      // A shrine of the Great Serpent: take the blessing.
+      await page.waitForTimeout(300);
+      await tap(page, ACCEPT_BLESSING_BUTTON);
+      await page.waitForTimeout(300);
+      const after = await page.evaluate(() => window.__hydra.runSummary());
+      if (after.atShrine || after.blessings !== blessings + 1) throw new Error(`Accepting the blessing did not work: ${JSON.stringify(after)}`);
+      log('took a blessing at a shrine');
+      continue;
+    }
     if (!inBattle) {
       await mapStep(page, step);
       continue;

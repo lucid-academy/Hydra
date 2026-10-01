@@ -22,7 +22,13 @@ describe('map graphics', () => {
     const { manifest, biomes } = loadGameData();
     const missing: string[] = [];
     for (const [id, biome] of Object.entries(biomes.biomes)) {
-      const keys = [`map_rock_${id}`, ...Object.keys(biome.ground).map((ground) => `map_ground_${id}_${ground}`), ...biome.decorations.map((kind) => `map_deco_${kind}`)];
+      const keys = [
+        `map_rock_${id}`,
+        ...Object.keys(biome.ground).map((ground) => `map_ground_${id}_${ground}`),
+        ...biome.decorations.map((kind) => `map_deco_${kind}`),
+        `battle_tile_${id}_ground`,
+        `battle_tile_${id}_water`,
+      ];
       for (const key of keys) if (!(key in manifest.images)) missing.push(key);
     }
     expect(missing).toEqual([]);

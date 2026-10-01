@@ -22,4 +22,4 @@ npm run smoke      # plays the built game like a player: map, battles, defeat (a
 npm run balance    # many automatic battles per enemy group; results go to docs/BALANCE.md
 ```
 
-URL parameters: `?seed=123` (replay a run), `?scene=title` (start in a scene: `title`, `map`, `battle`), `?debug=1` (debug overlay), `?scene=battle&group=patrol` (test battle against an enemy group from `src/data/enemies.json`), `&hp=5` (start that test battle with 5 body HP), `?speed=4` (battles run 4× faster).
+URL parameters: `?seed=123` (replay a run), `?scene=title` (start in a scene: `title`, `map`, `battle`), `?debug=1` (debug overlay), `?scene=battle&group=patrol` (test battle against an enemy group from `src/data/enemies.json`), `&hp=5` (start that test battle with 5 body HP), `?speed=4` (battles run 4× faster), `?scene=map&near=shrine` (start the map next to the nearest shrine; also `passage`, `encounter`, `moisture`, `muck`).

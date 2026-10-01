@@ -272,8 +272,6 @@ function battleDot(fill: string, rim: string): PlaceholderDrawer {
 
 export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   ...mapPlaceholderDrawers,
-  battle_tile_mud: battleTile('#2c3420', '#3a4329', '#161b10', '#1e160e', '#2b2014', 31),
-  battle_tile_water: battleTile('#123c3e', '#1d5a5c', '#081c1d', '#1e160e', '#2b2014', 32),
   battle_hex_mark: battleHexShape(false),
   battle_hex_fill: battleHexShape(true),
   battle_shadow: battleBlob(false),
@@ -288,7 +286,23 @@ export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   title_background: drawTitleBackground,
 };
 
-/** The placeholder for a manifest key: a fixed one, or one made from a biome's colours (map_ground_*, map_rock_*). */
+/** battle_tile_<biome>_<ground|water>: a battle tile in the colours of the biome where the fight takes place. */
+const drawBiomeBattleTile: PlaceholderDrawer = (scene, key, width, height, palette, data) => {
+  const [, biomeId, kind] = /^battle_tile_(.+)_(ground|water)$/.exec(key) ?? [];
+  const colors = data.biomes.biomes[biomeId ?? '']?.colors;
+  if (!colors) throw new Error(`No biome colours for "${key}"`);
+  const top = kind === 'water' ? colors.water : colors.ground;
+  const seed = [...key].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619), 2166136261) >>> 0;
+  battleTile(top, colors.detail, darker(top), darker(colors.rock), colors.rock, seed)(scene, key, width, height, palette, data);
+};
+
+function darker(hex: string): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return `#${[16, 8, 0].map((s) => Math.round(((n >> s) & 255) * 0.55).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** The placeholder for a manifest key: a fixed one, or one made from a biome's colours (map_ground_*, map_rock_*, battle_tile_*). */
 export function placeholderFor(key: string): PlaceholderDrawer | undefined {
+  if (/^battle_tile_.+_(ground|water)$/.test(key)) return drawBiomeBattleTile;
   return placeholderDrawers[key] ?? mapPlaceholderFor(key);
 }

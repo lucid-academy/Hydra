@@ -8,6 +8,8 @@ export interface ScreenPoint {
   cost: number;
   /** There is an encounter on this hex: walking there starts a battle. */
   encounter: boolean;
+  /** Kind of object on this hex (shrine, muck...), or null. */
+  object: string | null;
   /** How many hexes not seen yet would be within sight from there. */
   unexploredNear: number;
 }
@@ -33,7 +35,18 @@ declare global {
         combos: string[];
       };
       /** Short summary of the current run. */
-      runSummary?: () => { turn: number; muck: number; alert: number; inBattle: boolean; explored: number };
+      runSummary?: () => {
+        turn: number;
+        muck: number;
+        moisture: number;
+        bones: number;
+        alert: number;
+        inBattle: boolean;
+        /** Standing at a shrine, waiting for Accept or Refuse. */
+        atShrine: boolean;
+        blessings: number;
+        explored: number;
+      };
     };
   }
 }
