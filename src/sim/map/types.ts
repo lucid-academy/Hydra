@@ -16,8 +16,8 @@ export type MapObject =
   | { kind: 'encounter'; groupId: string; tier: number }
   | { kind: 'muck'; amount: number }
   | { kind: 'moisture'; amount: number }
-  /** A shrine of the Great Serpent. */
-  | { kind: 'shrine' }
+  /** A shrine of the Great Serpent, offering one blessing (shrines.json) until it is accepted. */
+  | { kind: 'shrine'; blessingId: string; used: boolean }
   /** A way up to the surface (sealed until the surface exists). */
   | { kind: 'passage' };
 

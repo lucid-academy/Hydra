@@ -32,7 +32,7 @@ export function runRulesFrom(data: GameData): RunRules {
       outerBiomes: Object.keys(biomes.biomes)
         .filter((id) => id !== biomes.lairBiome)
         .map(biome),
-      shrines: gen.shrines,
+      shrines: { ...gen.shrines, blessingIds: data.shrines.blessings.map((b) => b.id) },
       passages: gen.passages,
       encounters: { ...gen.encounters, groupsByTier },
       muck: { ...gen.muckDeposits, perDeposit: resources.muckPerDeposit },
@@ -40,6 +40,10 @@ export function runRulesFrom(data: GameData): RunRules {
     },
     bodyMaxHp: balance.battle.bodyMaxHp,
     startingHeads: heads.startingHeads.map((classId) => ({ classId, maxHp: heads.classes[classId]!.maxHp })),
+    hatchlingClasses: heads.hatchlingClassPool.map((classId) => ({ classId, maxHp: heads.classes[classId]!.maxHp })),
+    maxHeads: heads.maxHeads,
+    bonesPerEnemy: resources.bonesPerEnemy,
+    blessings: Object.fromEntries(data.shrines.blessings.map((b) => [b.id, b.effects])),
     headNames: heads.names,
     healing: { bodyHpPerTurn: balance.healing.bodyHpPerTurn, headHpPerTurn: balance.healing.headHpPerTurn },
     encounterGroupMembers: Object.fromEntries(enemies.encounterGroups.map((g) => [g.id, g.members])),

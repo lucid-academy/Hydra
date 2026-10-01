@@ -61,6 +61,7 @@ export const balanceSchema = section({
   resources: section({
     muckPerDeposit: z.number().int().positive(),
     moisturePerSource: z.number().int().positive(),
+    bonesPerEnemy: z.number().int().min(0),
   }),
   alert: section({
     min: z.number(),
@@ -191,6 +192,28 @@ export const biomesSchema = section({
   }
 });
 
+/** What a blessing can change (see shrines.json). */
+export const BLESSING_EFFECTS = ['movement', 'sight', 'bodyMaxHp', 'regeneration', 'alert', 'muck', 'moisture'] as const;
+
+export const shrinesSchema = section({
+  blessings: z
+    .array(
+      section({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        text: z.string().min(1),
+        effects: z.partialRecord(z.enum(BLESSING_EFFECTS), z.number().int()),
+      }),
+    )
+    .min(1),
+}).superRefine((data, ctx) => {
+  const ids = new Set<string>();
+  data.blessings.forEach((b, i) => {
+    if (ids.has(b.id)) ctx.addIssue({ code: 'custom', path: ['blessings', i, 'id'], message: `blessing id "${b.id}" is used twice` });
+    ids.add(b.id);
+  });
+});
+
 export const COMBO_TRIGGERS = ['headHitsEnemy', 'enemyInMist'] as const;
 
 const comboEffectSchema = z.discriminatedUnion('type', [
@@ -300,6 +323,16 @@ export const textSchema = z
       muck: z.string().min(1),
       alert: z.string().min(1),
       endTurn: z.string().min(1),
+      moisture: z.string().min(1),
+      bones: z.string().min(1),
+      rested: z.string().min(1),
+    }),
+    shrine: section({
+      title: z.string().min(1),
+      acceptButton: z.string().min(1),
+      refuseButton: z.string().min(1),
+      // How each effect is written; {n} becomes the number with its sign, e.g. "+1 movement".
+      effects: section(Object.fromEntries(BLESSING_EFFECTS.map((e) => [e, z.string().min(1)])) as Record<(typeof BLESSING_EFFECTS)[number], z.ZodString>),
     }),
     battle: section({
       paused: z.string().min(1),
@@ -344,6 +377,7 @@ export type HeadsData = z.infer<typeof headsSchema>;
 export type EnemiesData = z.infer<typeof enemiesSchema>;
 export type CombosData = z.infer<typeof combosSchema>;
 export type BiomesData = z.infer<typeof biomesSchema>;
+export type ShrinesData = z.infer<typeof shrinesSchema>;
 export type Palette = z.infer<typeof paletteSchema>;
 export type GameText = z.infer<typeof textSchema>;
 export type AssetManifest = z.infer<typeof manifestSchema>;

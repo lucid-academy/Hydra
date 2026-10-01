@@ -7,9 +7,10 @@ import headsJson from './heads.json';
 import enemiesJson from './enemies.json';
 import combosJson from './combos.json';
 import biomesJson from './biomes.json';
+import shrinesJson from './shrines.json';
 import manifestJson from '../assets/manifest.json';
-import { balanceSchema, biomesSchema, combosSchema, enemiesSchema, headsSchema, manifestSchema, paletteSchema, textSchema } from './schemas';
-import type { AssetManifest, Balance, BiomesData, CombosData, EnemiesData, GameText, HeadsData, Palette } from './schemas';
+import { balanceSchema, biomesSchema, combosSchema, shrinesSchema, enemiesSchema, headsSchema, manifestSchema, paletteSchema, textSchema } from './schemas';
+import type { AssetManifest, Balance, BiomesData, CombosData, ShrinesData, EnemiesData, GameText, HeadsData, Palette } from './schemas';
 import { DataError, validateData } from './validate';
 
 export interface GameData {
@@ -21,6 +22,7 @@ export interface GameData {
   enemies: EnemiesData;
   combos: CombosData;
   biomes: BiomesData;
+  shrines: ShrinesData;
 }
 
 export function loadGameData(): GameData {
@@ -33,6 +35,7 @@ export function loadGameData(): GameData {
     enemies: validateData('src/data/enemies.json', enemiesSchema, enemiesJson),
     combos: validateData('src/data/combos.json', combosSchema, combosJson),
     biomes: validateData('src/data/biomes.json', biomesSchema, biomesJson),
+    shrines: validateData('src/data/shrines.json', shrinesSchema, shrinesJson),
   };
   checkCrossReferences(data);
   return data;

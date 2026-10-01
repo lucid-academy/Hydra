@@ -9,7 +9,10 @@
     "moves": "Moves",
     "muck": "Muck",
     "alert": "Alert",
-    "endTurn": "End Turn"
+    "endTurn": "End Turn",
+    "moisture": "Moisture",
+    "bones": "Bones",
+    "rested": "The hydra sleeps in its lair. Wounds close. Burnt stumps itch, and sprout."
   },
   "battle": {
     "paused": "PAUSED",
@@ -25,6 +28,20 @@
     "defeatTitle": "The hydra is dead.",
     "continueButton": "Continue",
     "selectAllButton": "All heads"
+  },
+  "shrine": {
+    "title": "A shrine of the Great Serpent",
+    "acceptButton": "Accept",
+    "refuseButton": "Refuse",
+    "effects": {
+      "movement": "{n} movement",
+      "sight": "{n} sight",
+      "bodyMaxHp": "{n} body HP",
+      "regeneration": "{n} regeneration",
+      "alert": "Alert {n}",
+      "muck": "{n} Muck",
+      "moisture": "{n} Moisture"
+    }
   },
   "gameOver": {
     "title": "The hydra is dead.",

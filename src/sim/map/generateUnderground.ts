@@ -40,7 +40,10 @@ export interface UndergroundGeneratorSettings {
   lairBiomeRadius: number;
   /** The other biomes, each taking a wedge of the map around the lair. */
   outerBiomes: readonly BiomeSettings[];
-  shrines: PlacementRule;
+  shrines: PlacementRule & {
+    /** Blessings the shrines offer; each shrine gets a different one while they last. */
+    blessingIds: readonly string[];
+  };
   passages: PlacementRule;
   encounters: PlacementRule & {
     /** Tier n (counting from 1) of enemy groups starts this many hexes from the lair: tierStartsAtDistance[n - 1]. */
@@ -163,7 +166,12 @@ function tryGenerate(rng: Rng, grid: HexGrid, s: UndergroundGeneratorSettings, t
 
   const shrines = pickSpread(rng, free(s.shrines.minDistanceFromLair).filter(dry), s.shrines, () => 1);
   if (!shrines) return null;
-  for (const t of shrines) t.object = { kind: 'shrine' };
+  let blessings: string[] = [];
+  for (const t of shrines) {
+    if (blessings.length === 0) blessings = [...s.shrines.blessingIds];
+    const blessingId = blessings.splice(rng.int(0, blessings.length - 1), 1)[0]!;
+    t.object = { kind: 'shrine', blessingId, used: false };
+  }
 
   // Encounters: the further from the lair, the more likely, and the stronger the group.
   const encounters = pickSpread(rng, free(s.encounters.minDistanceFromLair), s.encounters, fromLair);

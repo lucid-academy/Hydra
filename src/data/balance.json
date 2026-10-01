@@ -36,7 +36,8 @@
   "resources": {
     "//": "TODO(design): working values.",
     "muckPerDeposit": 10,
-    "moisturePerSource": 10
+    "moisturePerSource": 10,
+    "bonesPerEnemy": 2
   },
   "alert": {
     "//": "TODO(design): perHexDiscovered and perBattle are working values for M1.",

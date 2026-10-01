@@ -1,0 +1,41 @@
+{
+  "//": "TODO(design): working texts and numbers written by Claude; change them freely. Each shrine of the Great Serpent offers one blessing, which the hydra can accept or refuse. effects change the whole hydra (movement: points per turn, sight: hexes, bodyMaxHp, regeneration: body HP healed per turn) or are paid at once (alert, muck, moisture). Negative numbers are the catch.",
+  "blessings": [
+    {
+      "id": "serpentsPatience",
+      "name": "The Serpent's Patience",
+      "text": "The Great Serpent has been circling the heart of the world for longer than there has been a world. It lends you a little of its stride. The Order hears something very large yawn.",
+      "effects": { "movement": 1, "alert": 8 }
+    },
+    {
+      "id": "coldBlood",
+      "name": "Cold Blood",
+      "text": "Your blood slows to the pace of deep water. Wounds close while you sleep. So, occasionally, do you.",
+      "effects": { "regeneration": 8, "movement": -1 }
+    },
+    {
+      "id": "thousandEyes",
+      "name": "A Thousand Lidless Eyes",
+      "text": "The Serpent shows you the dark as it sees it. Every head now sees a little further, and none of them will ever blink again. They argue about whose fault that is.",
+      "effects": { "sight": 1, "alert": 5 }
+    },
+    {
+      "id": "shedSkin",
+      "name": "Shed Skin",
+      "text": "You crawl out of your old skin and leave it on the altar, folded. The new one is thicker, and a size too big.",
+      "effects": { "bodyMaxHp": 40, "movement": -1 }
+    },
+    {
+      "id": "tithe",
+      "name": "The Serpent's Tithe",
+      "text": "The offering bowl holds a note: 'Muck accepted. Receipts not issued.' You feel heavier with something that is not food.",
+      "effects": { "bodyMaxHp": 25, "muck": -20 }
+    },
+    {
+      "id": "wetDreams",
+      "name": "The Dreaming Pool",
+      "text": "The shrine weeps cold water. You drink until the Order's scouts can hear you sloshing.",
+      "effects": { "moisture": 30, "alert": 6 }
+    }
+  ]
+}
