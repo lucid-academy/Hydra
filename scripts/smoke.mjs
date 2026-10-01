@@ -1,6 +1,6 @@
 // Smoke test of the whole game loop, clicked through like a player would (mouse only, no shortcuts into the code):
-//   title → map → walk to an encounter → battle with orders → victory → back on the map (twice),
-//   then a battle that is lost → Game Over → a new hydra.
+//   title → map → walk to an encounter → battle with orders → victory → back on the map (twice; a battle lost
+//   on the way goes through Game Over and a new hydra), then a battle that is surely lost → Game Over → a new hydra.
 // Opens the built game (dist/) in a headless browser. Run `npm run build` first.
 // Exits with an error on any browser console error, or when a step doesn't happen in time.
 //
@@ -119,18 +119,28 @@ try {
   await waitForScene(page, 'map');
 
   let won = 0;
+  let fought = 0;
   for (let step = 0; step < MAX_MAP_STEPS && won < BATTLES_TO_WIN; step++) {
     const { inBattle } = await page.evaluate(() => window.__hydra.runSummary());
     if (!inBattle) {
       await mapStep(page, step);
       continue;
     }
-    await waitForScene(page, 'battle', won);
-    const end = await playBattle(page, won === 0);
-    if (end.outcome !== 'won') throw new Error(`Expected to win battle ${won + 1}, but the outcome was "${end.outcome}"`);
+    await waitForScene(page, 'battle', fought);
+    const end = await playBattle(page, fought === 0);
+    fought++;
     const after = await page.evaluate(() => window.__hydra.runSummary());
     if (after.inBattle) throw new Error('Still in battle after pressing Continue');
-    won++;
+    if (end.outcome === 'won') {
+      won++;
+      continue;
+    }
+    // Losing a fight is part of the game: Game Over, then a new hydra on a new map.
+    if (fought - won > 3) throw new Error('Lost too many battles in a row');
+    const mapsBefore = await timesReady(page, 'map');
+    await tap(page, NEW_HYDRA_BUTTON);
+    await waitForScene(page, 'map', mapsBefore);
+    log('lost a battle: Game Over → a new hydra');
   }
   if (won < BATTLES_TO_WIN) throw new Error(`Found only ${won} of ${BATTLES_TO_WIN} battles in ${MAX_MAP_STEPS} map steps`);
   log('map after two battles:', JSON.stringify(await page.evaluate(() => window.__hydra.runSummary())));

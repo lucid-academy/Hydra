@@ -3,6 +3,7 @@
     "title_background": { "file": null, "width": 640, "height": 360 },
     "hex_water": { "file": null, "width": 28, "height": 32 },
     "hex_mud": { "file": null, "width": 28, "height": 32 },
+    "hex_roots": { "file": null, "width": 28, "height": 32 },
     "hex_rock": { "file": null, "width": 28, "height": 32 },
     "hex_shade": { "file": null, "width": 28, "height": 32 },
     "hex_reachable": { "file": null, "width": 28, "height": 32 },

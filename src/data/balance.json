@@ -2,7 +2,7 @@
   "map": {
     "movementPointsPerTurn": 5,
     "sightRangeHexes": 2,
-    "undergroundRadius": 9
+    "undergroundRadius": 14
   },
   "terrain": {
     "water": {
@@ -13,24 +13,30 @@
       "moveCost": 1,
       "blocksSight": false
     },
+    "roots": {
+      "moveCost": 2,
+      "blocksSight": false
+    },
     "rock": {
       "moveCost": null,
       "blocksSight": true
     }
   },
   "undergroundGenerator": {
-    "//": "TODO(design): working values for M1, tune after playtest. Shares are fractions of all hexes before cleanup.",
-    "rockShare": 0.3,
-    "waterShare": 0.35,
+    "//": "TODO(design): working values. Distances in hexes. Biomes and their ground are in biomes.json. Encounters get stronger with distance from the lair: tierStartsAtDistance[0] is where tier 1 starts, [1] tier 2, [2] tier 3 (tiers of groups are in enemies.json).",
     "smoothingPasses": 2,
-    "minPassableShare": 0.55,
-    "encounterCount": 6,
-    "encounterMinDistanceFromLair": 3,
-    "muckDepositCount": 8
+    "minPassableShare": 0.5,
+    "lairBiomeRadius": 3,
+    "shrines": { "count": 4, "minDistanceFromLair": 6, "minDistanceApart": 5 },
+    "passages": { "count": 2, "minDistanceFromLair": 10, "minDistanceApart": 8 },
+    "encounters": { "count": 18, "minDistanceFromLair": 3, "minDistanceApart": 2, "tierStartsAtDistance": [0, 7, 11] },
+    "muckDeposits": { "count": 16, "minDistanceFromLair": 2 },
+    "moistureSources": { "count": 8, "minDistanceFromLair": 2 }
   },
   "resources": {
-    "//": "TODO(design): working value for M1.",
-    "muckPerDeposit": 10
+    "//": "TODO(design): working values.",
+    "muckPerDeposit": 10,
+    "moisturePerSource": 10
   },
   "alert": {
     "//": "TODO(design): perHexDiscovered and perBattle are working values for M1.",

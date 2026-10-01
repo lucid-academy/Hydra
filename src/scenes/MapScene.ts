@@ -20,10 +20,14 @@ const STEP_DURATION_MS = 110;
 /** Below this page zoom (small screens, e.g. phones) the map camera zooms in 2×, so hexes are big enough for fingers. */
 const SMALL_SCREEN_ZOOM = 2;
 
+// Until the slanted map view is in, new objects borrow existing icons.
 const OBJECT_ICONS: Record<MapObject['kind'], string> = {
   lair: 'icon_lair',
   encounter: 'icon_encounter',
   muck: 'icon_muck',
+  moisture: 'icon_muck',
+  shrine: 'icon_lair',
+  passage: 'icon_lair',
 };
 
 interface TileView {

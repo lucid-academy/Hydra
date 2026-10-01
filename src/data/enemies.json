@@ -1,5 +1,5 @@
 {
-  "//": "TODO(design): all numbers are working values. Times in seconds. stepSeconds: how long one step from a hex to the next takes. Attack range in hexes (1 = the neighbouring hex).",
+  "//": "TODO(design): all numbers are working values. Times in seconds. stepSeconds: how long one step from a hex to the next takes. Attack range in hexes (1 = the neighbouring hex). Group tier: 1 = met near the lair, higher = further out (see undergroundGenerator in balance.json).",
   "types": {
     "manAtArms": {
       "displayName": "Man-at-Arms",
@@ -29,9 +29,10 @@
     }
   },
   "encounterGroups": [
-    { "id": "patrol", "weight": 3, "members": ["manAtArms", "manAtArms", "manAtArms"] },
-    { "id": "huntingParty", "weight": 2, "members": ["manAtArms", "headhunter", "headhunter"] },
-    { "id": "burningDetail", "weight": 2, "members": ["manAtArms", "manAtArms", "torchbearer", "headhunter"] },
-    { "id": "lostNovices", "weight": 1, "members": ["torchbearer", "torchbearer"] }
+    { "id": "lostNovices", "tier": 1, "weight": 1, "members": ["torchbearer", "torchbearer"] },
+    { "id": "patrol", "tier": 1, "weight": 3, "members": ["manAtArms", "manAtArms", "manAtArms"] },
+    { "id": "huntingParty", "tier": 2, "weight": 2, "members": ["manAtArms", "headhunter", "headhunter"] },
+    { "id": "burningDetail", "tier": 2, "weight": 2, "members": ["manAtArms", "manAtArms", "torchbearer", "headhunter"] },
+    { "id": "pyreProcession", "tier": 3, "weight": 1, "members": ["manAtArms", "manAtArms", "manAtArms", "torchbearer", "torchbearer", "headhunter"] }
   ]
 }

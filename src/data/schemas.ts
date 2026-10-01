@@ -35,19 +35,31 @@ export const balanceSchema = section({
   terrain: section({
     water: terrainRulesSchema,
     mud: terrainRulesSchema,
+    roots: terrainRulesSchema,
     rock: terrainRulesSchema,
   }),
   undergroundGenerator: section({
-    rockShare: share,
-    waterShare: share,
     smoothingPasses: z.number().int().min(0),
     minPassableShare: share,
-    encounterCount: z.number().int().min(0),
-    encounterMinDistanceFromLair: z.number().int().min(1),
-    muckDepositCount: z.number().int().min(0),
+    lairBiomeRadius: z.number().int().min(1),
+    shrines: section({ count: z.number().int().min(0), minDistanceFromLair: z.number().int().min(1), minDistanceApart: z.number().int().min(1) }),
+    passages: section({ count: z.number().int().min(0), minDistanceFromLair: z.number().int().min(1), minDistanceApart: z.number().int().min(1) }),
+    encounters: section({
+      count: z.number().int().min(0),
+      minDistanceFromLair: z.number().int().min(1),
+      minDistanceApart: z.number().int().min(1),
+      // Where each tier of enemy groups starts; must start at 0 and grow.
+      tierStartsAtDistance: z
+        .array(z.number().int().min(0))
+        .min(1)
+        .refine((d) => d[0] === 0 && d.every((v, i) => i === 0 || v > d[i - 1]!), 'must start with 0 and grow, e.g. [0, 7, 11]'),
+    }),
+    muckDeposits: section({ count: z.number().int().min(0), minDistanceFromLair: z.number().int().min(1) }),
+    moistureSources: section({ count: z.number().int().min(0), minDistanceFromLair: z.number().int().min(1) }),
   }),
   resources: section({
     muckPerDeposit: z.number().int().positive(),
+    moisturePerSource: z.number().int().positive(),
   }),
   alert: section({
     min: z.number(),
@@ -130,6 +142,8 @@ export const enemiesSchema = section({
     .array(
       section({
         id: z.string().min(1),
+        // 1 = met near the lair; higher tiers further out (undergroundGenerator.encounters in balance.json).
+        tier: z.number().int().min(1),
         weight: z.number().positive(),
         members: z.array(z.string()).min(1),
       }),
@@ -147,6 +161,31 @@ export const enemiesSchema = section({
     if (type.behavior === 'torchbearer' && type.cauterizeSeconds === undefined) {
       ctx.addIssue({ code: 'custom', path: ['types', id, 'cauterizeSeconds'], message: 'torchbearer behavior needs cauterizeSeconds' });
     }
+  }
+});
+
+/** Kinds of open ground a biome can have (rock walls are counted separately, with rockShare). */
+export const GROUND_TYPES = ['water', 'mud', 'roots'] as const;
+
+export const biomesSchema = section({
+  lairBiome: z.string().min(1),
+  biomes: z.record(
+    z.string(),
+    section({
+      displayName: z.string().min(1),
+      ground: z.partialRecord(z.enum(GROUND_TYPES), share),
+      rockShare: share,
+      colors: section({ ground: hexColor, detail: hexColor, water: hexColor, rock: hexColor, glow: hexColor }),
+    }),
+  ),
+}).superRefine((data, ctx) => {
+  if (!(data.lairBiome in data.biomes)) {
+    ctx.addIssue({ code: 'custom', path: ['lairBiome'], message: `unknown biome "${data.lairBiome}"; known: ${Object.keys(data.biomes).join(', ')}` });
+  }
+  if (Object.keys(data.biomes).length < 2) ctx.addIssue({ code: 'custom', path: ['biomes'], message: 'needs the lair biome and at least one other' });
+  for (const [id, biome] of Object.entries(data.biomes)) {
+    const sum = Object.values(biome.ground).reduce((a, b) => a + (b ?? 0), 0);
+    if (Math.abs(sum - 1) > 0.001) ctx.addIssue({ code: 'custom', path: ['biomes', id, 'ground'], message: `shares must add up to 1 (now ${sum})` });
   }
 });
 
@@ -302,6 +341,7 @@ export type Balance = z.infer<typeof balanceSchema>;
 export type HeadsData = z.infer<typeof headsSchema>;
 export type EnemiesData = z.infer<typeof enemiesSchema>;
 export type CombosData = z.infer<typeof combosSchema>;
+export type BiomesData = z.infer<typeof biomesSchema>;
 export type Palette = z.infer<typeof paletteSchema>;
 export type GameText = z.infer<typeof textSchema>;
 export type AssetManifest = z.infer<typeof manifestSchema>;

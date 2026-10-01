@@ -1,0 +1,30 @@
+{
+  "//": "TODO(design): working values. The underground is split into biomes: the swamp round the lair, and the others in wide wedges around it. ground: share of each kind of open ground (water, mud, roots) in the biome. rockShare: share of rock walls. colors: for the placeholder graphics, until real art exists.",
+  "lairBiome": "lairSwamp",
+  "biomes": {
+    "lairSwamp": {
+      "displayName": "Lair Swamp",
+      "ground": { "water": 0.3, "mud": 0.7 },
+      "rockShare": 0.12,
+      "colors": { "ground": "#2c3420", "detail": "#3f5a2c", "water": "#12393a", "rock": "#3a3129", "glow": "#c6e04a" }
+    },
+    "floodedCaves": {
+      "displayName": "Flooded Caves",
+      "ground": { "water": 0.55, "mud": 0.45 },
+      "rockShare": 0.28,
+      "colors": { "ground": "#1d3833", "detail": "#2d5a4a", "water": "#0f3a3d", "rock": "#2e3436", "glow": "#7fd0e0" }
+    },
+    "rootTangle": {
+      "displayName": "Root Tangle",
+      "ground": { "mud": 0.45, "roots": 0.55 },
+      "rockShare": 0.28,
+      "colors": { "ground": "#33261a", "detail": "#4a3a22", "water": "#1d3330", "rock": "#3a2f25", "glow": "#d9a93b" }
+    },
+    "fungalDeeps": {
+      "displayName": "Fungal Deeps",
+      "ground": { "water": 0.15, "mud": 0.85 },
+      "rockShare": 0.3,
+      "colors": { "ground": "#2a2032", "detail": "#5a3d66", "water": "#1a2a3a", "rock": "#2f2836", "glow": "#c65bd6" }
+    }
+  }
+}

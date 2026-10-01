@@ -187,7 +187,7 @@ describe('battle simulation', () => {
         expect(s.outcome, `${group.id}, seed ${seed}`).not.toBeNull();
       }
     }
-  });
+  }, 60_000);
 });
 
 describe('heads', () => {

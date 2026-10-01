@@ -1,6 +1,6 @@
 import type { Hex } from '../hex';
 
-export const TERRAIN_TYPES = ['water', 'mud', 'rock'] as const;
+export const TERRAIN_TYPES = ['water', 'mud', 'roots', 'rock'] as const;
 export type TerrainType = (typeof TERRAIN_TYPES)[number];
 
 export interface TerrainRules {
@@ -13,11 +13,18 @@ export type TerrainTable = Readonly<Record<TerrainType, TerrainRules>>;
 
 export type MapObject =
   | { kind: 'lair' }
-  | { kind: 'encounter'; groupId: string }
-  | { kind: 'muck'; amount: number };
+  | { kind: 'encounter'; groupId: string; tier: number }
+  | { kind: 'muck'; amount: number }
+  | { kind: 'moisture'; amount: number }
+  /** A shrine of the Great Serpent. */
+  | { kind: 'shrine' }
+  /** A way up to the surface (sealed until the surface exists). */
+  | { kind: 'passage' };
 
 export interface Tile {
   readonly hex: Hex;
+  /** Which biome (from biomes.json) this hex belongs to. */
+  readonly biome: string;
   terrain: TerrainType;
   object: MapObject | null;
 }

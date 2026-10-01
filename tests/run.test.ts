@@ -12,13 +12,14 @@ const rules = runRulesFrom(loadGameData());
 const terrain: TerrainTable = {
   water: { moveCost: 1, blocksSight: false },
   mud: { moveCost: 1, blocksSight: false },
+  roots: { moveCost: 2, blocksSight: false },
   rock: { moveCost: null, blocksSight: true },
 };
 
 /** A hand-made all-mud map, so tests don't depend on the generator. */
 function flatMap(radius: number, edit: (tiles: Map<string, Tile>) => void = () => {}): HexMap {
   const tiles = new Map<string, Tile>();
-  for (const h of hexesInRange(hex(0, 0), radius)) tiles.set(hexKey(h), { hex: h, terrain: 'mud', object: null });
+  for (const h of hexesInRange(hex(0, 0), radius)) tiles.set(hexKey(h), { hex: h, biome: 'lairSwamp', terrain: 'mud', object: null });
   tiles.get('0,0')!.object = { kind: 'lair' };
   edit(tiles);
   return { radius, tiles, lair: hex(0, 0) };
@@ -58,6 +59,15 @@ describe('visibility', () => {
 });
 
 describe('movement', () => {
+  it('roots cost two movement points', () => {
+    const state = runOn(flatMap(4, (tiles) => {
+      tiles.get('1,0')!.terrain = 'roots';
+    }), 2);
+    const reach = reachableHexes(state, testRules);
+    expect(reach.get('1,0')?.cost).toBe(2);
+    expect(reach.get('0,1')?.cost).toBe(1);
+  });
+
   it('reaches exactly the hexes within movement points', () => {
     const state = runOn(flatMap(8), 5);
     const reach = reachableHexes(state, testRules);
@@ -100,7 +110,7 @@ describe('movement', () => {
 
   it('stops on an encounter and blocks moving until the battle is resolved', () => {
     const state = runOn(flatMap(4, (tiles) => {
-      tiles.get('2,0')!.object = { kind: 'encounter', groupId: 'patrol' };
+      tiles.get('2,0')!.object = { kind: 'encounter', groupId: 'patrol', tier: 1 };
     }));
     expect(reachableHexes(state, testRules).has('3,0')).toBe(true); // around it, not through
     const events = moveHydra(state, hex(2, 0), testRules);
@@ -126,7 +136,7 @@ describe('movement', () => {
 
   it('a lost battle ends the run', () => {
     const state = runOn(flatMap(4, (tiles) => {
-      tiles.get('1,0')!.object = { kind: 'encounter', groupId: 'patrol' };
+      tiles.get('1,0')!.object = { kind: 'encounter', groupId: 'patrol', tier: 1 };
     }));
     moveHydra(state, hex(1, 0), testRules);
     const events = finishBattle(state, { outcome: 'lost', bodyHp: 0, heads: [], newScars: 0, nextId: 9 }, testRules);

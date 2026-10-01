@@ -6,9 +6,10 @@ import textJson from './text.json';
 import headsJson from './heads.json';
 import enemiesJson from './enemies.json';
 import combosJson from './combos.json';
+import biomesJson from './biomes.json';
 import manifestJson from '../assets/manifest.json';
-import { balanceSchema, combosSchema, enemiesSchema, headsSchema, manifestSchema, paletteSchema, textSchema } from './schemas';
-import type { AssetManifest, Balance, CombosData, EnemiesData, GameText, HeadsData, Palette } from './schemas';
+import { balanceSchema, biomesSchema, combosSchema, enemiesSchema, headsSchema, manifestSchema, paletteSchema, textSchema } from './schemas';
+import type { AssetManifest, Balance, BiomesData, CombosData, EnemiesData, GameText, HeadsData, Palette } from './schemas';
 import { DataError, validateData } from './validate';
 
 export interface GameData {
@@ -19,6 +20,7 @@ export interface GameData {
   heads: HeadsData;
   enemies: EnemiesData;
   combos: CombosData;
+  biomes: BiomesData;
 }
 
 export function loadGameData(): GameData {
@@ -30,13 +32,14 @@ export function loadGameData(): GameData {
     heads: validateData('src/data/heads.json', headsSchema, headsJson),
     enemies: validateData('src/data/enemies.json', enemiesSchema, enemiesJson),
     combos: validateData('src/data/combos.json', combosSchema, combosJson),
+    biomes: validateData('src/data/biomes.json', biomesSchema, biomesJson),
   };
   checkCrossReferences(data);
   return data;
 }
 
 /** Names that one data file borrows from another must exist there. */
-export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'>): void {
+export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'> & Partial<Pick<GameData, 'balance' | 'enemies'>>): void {
   const statuses = Object.keys(data.combos.statuses);
   const problems: string[] = [];
   for (const [id, cls] of Object.entries(data.heads.classes)) {
@@ -52,5 +55,17 @@ export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'>): 
       problems.push(`  - src/data/combos.json, combos.${c}.conditions.attackTag: no head attack has the tag "${tag}"; known (from heads.json): ${[...tags].join(', ')}`);
     }
   });
+  if (data.balance && data.enemies) {
+    // Every tier of encounters needs at least one group of enemies.
+    const tiers = data.balance.undergroundGenerator.encounters.tierStartsAtDistance.length;
+    for (let tier = 1; tier <= tiers; tier++) {
+      if (!data.enemies.encounterGroups.some((g) => g.tier === tier)) {
+        problems.push(`  - src/data/enemies.json, encounterGroups: no group has tier ${tier}, but balance.json undergroundGenerator.encounters has ${tiers} tiers`);
+      }
+    }
+    for (const group of data.enemies.encounterGroups) {
+      if (group.tier > tiers) problems.push(`  - src/data/enemies.json, encounterGroups ${group.id}: tier ${group.tier} is never used (balance.json has ${tiers} tiers)`);
+    }
+  }
   if (problems.length > 0) throw new DataError(`Data files don't match each other:\n${problems.join('\n')}`);
 }

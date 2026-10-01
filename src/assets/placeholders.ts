@@ -412,6 +412,7 @@ export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   title_background: drawTitleBackground,
   hex_water: hexTile('#0e3b3f', '#1d5a5c', 6, 4, 11),
   hex_mud: hexTile('#2f3a22', '#443f26', 8, 2, 12),
+  hex_roots: hexTile('#33261a', '#6b4a2a', 10, 4, 14),
   hex_rock: hexTile('#1a1c1d', '#2c2f30', 10, 1, 13),
   hex_shade: drawHexShade,
   hex_reachable: drawHexReachable,
