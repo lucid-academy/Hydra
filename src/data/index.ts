@@ -39,7 +39,7 @@ export function loadGameData(): GameData {
 }
 
 /** Names that one data file borrows from another must exist there. */
-export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'> & Partial<Pick<GameData, 'balance' | 'enemies'>>): void {
+export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'> & Partial<Pick<GameData, 'balance' | 'enemies' | 'biomes' | 'manifest'>>): void {
   const statuses = Object.keys(data.combos.statuses);
   const problems: string[] = [];
   for (const [id, cls] of Object.entries(data.heads.classes)) {
@@ -65,6 +65,14 @@ export function checkCrossReferences(data: Pick<GameData, 'heads' | 'combos'> & 
     }
     for (const group of data.enemies.encounterGroups) {
       if (group.tier > tiers) problems.push(`  - src/data/enemies.json, encounterGroups ${group.id}: tier ${group.tier} is never used (balance.json has ${tiers} tiers)`);
+    }
+  }
+  if (data.biomes && data.manifest) {
+    // Every biome needs its map images (with "file": null the game draws a placeholder from the biome's colours).
+    for (const [id, biome] of Object.entries(data.biomes.biomes)) {
+      const keys = [`map_rock_${id}`, ...Object.keys(biome.ground).map((g) => `map_ground_${id}_${g}`), ...biome.decorations.map((k) => `map_deco_${k}`)];
+      const missing = keys.filter((key) => !(key in data.manifest!.images));
+      if (missing.length > 0) problems.push(`  - src/assets/manifest.json: biome ${id} needs these images (use "file": null for a placeholder): ${missing.join(', ')}`);
     }
   }
   if (problems.length > 0) throw new DataError(`Data files don't match each other:\n${problems.join('\n')}`);

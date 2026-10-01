@@ -1,13 +1,12 @@
 // Placeholder graphics drawn in code, used while the manifest has `"file": null`.
 // Each function draws one manifest key. Replace them by putting real files in the manifest.
 
-import type * as Phaser from 'phaser';
-import type { Palette } from '../data/schemas';
 import { color } from '../scenes/context';
 import { Rng } from '../sim/rng';
 import { BODY_FOOT, TILE } from './battleArt';
-
-type PlaceholderDrawer = (scene: Phaser.Scene, key: string, width: number, height: number, palette: Palette) => void;
+import { fillHex, hexRowSpans } from './drawing';
+import type { PlaceholderDrawer } from './drawing';
+import { mapPlaceholderDrawers, mapPlaceholderFor } from './mapPlaceholders';
 
 const drawTitleBackground: PlaceholderDrawer = (scene, key, width, height, palette) => {
   const g = scene.make.graphics({}, false);
@@ -65,130 +64,6 @@ const drawTitleBackground: PlaceholderDrawer = (scene, key, width, height, palet
     g.fillRect(rng.int(0, width), rng.int(Math.round(height * 0.6), height), 1, 1);
   }
 
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-/**
- * Horizontal spans [x0, x1) of a pointy-top hex filling a width×height box, row by row.
- * Drawing hexes as pixel rows keeps edges crisp (canvas polygons would be anti-aliased).
- */
-export function hexRowSpans(width: number, height: number): Array<[number, number]> {
-  const cap = height / 4; // height of the slanted top and bottom parts
-  const spans: Array<[number, number]> = [];
-  for (let y = 0; y < height; y++) {
-    const fromEdge = Math.min(y + 0.5, height - y - 0.5);
-    const half = fromEdge < cap ? (width / 2) * (fromEdge / cap) : width / 2;
-    const x0 = Math.round(width / 2 - half);
-    spans.push([x0, width - x0]);
-  }
-  return spans;
-}
-
-function fillHex(g: Phaser.GameObjects.Graphics, width: number, height: number): void {
-  hexRowSpans(width, height).forEach(([x0, x1], y) => g.fillRect(x0, y, x1 - x0, 1));
-}
-
-/** Hex tile: base colour plus scattered detail pixels inside the hex. */
-function hexTile(base: string, detail: string, detailCount: number, detailWidth: number, seed: number): PlaceholderDrawer {
-  return (scene, key, width, height) => {
-    const g = scene.make.graphics({}, false);
-    const rng = new Rng(seed);
-    g.fillStyle(color(base));
-    fillHex(g, width, height);
-    g.fillStyle(color(detail));
-    const spans = hexRowSpans(width, height);
-    for (let i = 0; i < detailCount; i++) {
-      const y = rng.int(3, height - 4);
-      const [x0, x1] = spans[y]!;
-      g.fillRect(rng.int(x0 + 2, Math.max(x0 + 2, x1 - detailWidth - 2)), y, detailWidth, 1);
-    }
-    g.generateTexture(key, width, height);
-    g.destroy();
-  };
-}
-
-/** Darkens a hex that was seen before but is out of sight now. */
-const drawHexShade: PlaceholderDrawer = (scene, key, width, height, palette) => {
-  const g = scene.make.graphics({}, false);
-  g.fillStyle(color(palette.underground.black), 0.6);
-  fillHex(g, width, height);
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-/** Outline marking hexes the hydra can reach this turn. */
-const drawHexReachable: PlaceholderDrawer = (scene, key, width, height, palette) => {
-  const g = scene.make.graphics({}, false);
-  g.fillStyle(color(palette.underground.bioluminescence), 0.55);
-  hexRowSpans(width, height).forEach(([x0, x1], y) => {
-    if (y <= 1 || y >= height - 2) g.fillRect(x0, y, x1 - x0, 1);
-    else {
-      g.fillRect(x0, y, 1, 1);
-      g.fillRect(x1 - 1, y, 1, 1);
-    }
-  });
-  g.fillStyle(color(palette.underground.bioluminescence), 0.12);
-  fillHex(g, width, height);
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-const drawLairIcon: PlaceholderDrawer = (scene, key, width, height, palette) => {
-  const g = scene.make.graphics({}, false);
-  const cx = width / 2;
-  const cy = height / 2;
-  g.fillStyle(color(palette.underground.black));
-  g.fillCircle(cx, cy, width / 2 - 1);
-  g.lineStyle(1, color(palette.underground.bioluminescence));
-  g.strokeCircle(cx, cy, width / 2 - 2);
-  g.strokeCircle(cx, cy, width / 4);
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-/** A red banner of the Order on a pole. */
-const drawEncounterIcon: PlaceholderDrawer = (scene, key, width, height, palette) => {
-  const g = scene.make.graphics({}, false);
-  g.fillStyle(color(palette.order.gold));
-  g.fillRect(3, 1, 1, height - 2);
-  g.fillStyle(color(palette.order.bannerRed));
-  g.fillRect(4, 2, width - 6, height / 2);
-  g.fillStyle(color(palette.order.fire));
-  g.fillRect(Math.round(width / 2), Math.round(height / 4), 2, 2);
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-/** A glistening lump of swamp muck. */
-const drawMuckIcon: PlaceholderDrawer = (scene, key, width, height) => {
-  const g = scene.make.graphics({}, false);
-  g.fillStyle(color('#1b140a'));
-  g.fillEllipse(width / 2, height / 2 + 1, width, height - 3);
-  g.fillStyle(color('#8a6a34'));
-  g.fillEllipse(width / 2, height / 2 + 1, width - 2, height - 5);
-  g.fillStyle(color('#c49a52'));
-  g.fillRect(width / 2 - 3, height / 2 - 2, 3, 1);
-  g.fillRect(width / 2 + 1, height / 2, 2, 1);
-  g.generateTexture(key, width, height);
-  g.destroy();
-};
-
-/** Map token: the hydra's body with three heads. */
-const drawHydraToken: PlaceholderDrawer = (scene, key, width, height, palette) => {
-  const g = scene.make.graphics({}, false);
-  const cx = Math.round(width / 2);
-  g.fillStyle(color(palette.underground.black));
-  g.fillEllipse(cx, height - 6, width - 4, 9);
-  g.fillStyle(color('#3f7a4c'));
-  g.fillEllipse(cx, height - 7, width - 6, 7);
-  for (const [dx, top] of [[-5, 3], [0, 1], [5, 3]] as const) {
-    g.fillRect(cx + dx - 1, top + 2, 2, height - top - 9);
-    g.fillRect(cx + dx - 2, top, 4, 3);
-    g.fillStyle(color(palette.underground.bioluminescence));
-    g.fillRect(cx + dx, top + 1, 1, 1);
-    g.fillStyle(color('#3f7a4c'));
-  }
   g.generateTexture(key, width, height);
   g.destroy();
 };
@@ -396,6 +271,7 @@ function battleDot(fill: string, rim: string): PlaceholderDrawer {
 }
 
 export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
+  ...mapPlaceholderDrawers,
   battle_tile_mud: battleTile('#2c3420', '#3a4329', '#161b10', '#1e160e', '#2b2014', 31),
   battle_tile_water: battleTile('#123c3e', '#1d5a5c', '#081c1d', '#1e160e', '#2b2014', 32),
   battle_hex_mark: battleHexShape(false),
@@ -410,14 +286,9 @@ export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   battle_stump: battleDot('#8a2a2a', '#3a0d0d'),
   battle_scar: battleDot('#2a2220', '#111111'),
   title_background: drawTitleBackground,
-  hex_water: hexTile('#0e3b3f', '#1d5a5c', 6, 4, 11),
-  hex_mud: hexTile('#2f3a22', '#443f26', 8, 2, 12),
-  hex_roots: hexTile('#33261a', '#6b4a2a', 10, 4, 14),
-  hex_rock: hexTile('#1a1c1d', '#2c2f30', 10, 1, 13),
-  hex_shade: drawHexShade,
-  hex_reachable: drawHexReachable,
-  icon_lair: drawLairIcon,
-  icon_encounter: drawEncounterIcon,
-  icon_muck: drawMuckIcon,
-  token_hydra: drawHydraToken,
 };
+
+/** The placeholder for a manifest key: a fixed one, or one made from a biome's colours (map_ground_*, map_rock_*). */
+export function placeholderFor(key: string): PlaceholderDrawer | undefined {
+  return placeholderDrawers[key] ?? mapPlaceholderFor(key);
+}

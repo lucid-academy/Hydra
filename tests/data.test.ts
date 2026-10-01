@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkCrossReferences, loadGameData } from '../src/data';
 import { balanceSchema, combosSchema } from '../src/data/schemas';
 import { DataError, validateData } from '../src/data/validate';
-import { placeholderDrawers } from '../src/assets/placeholders';
+import { placeholderFor } from '../src/assets/placeholders';
 
 describe('data files', () => {
   it('all current data files are valid', () => {
@@ -12,8 +12,20 @@ describe('data files', () => {
   it('every manifest image without a file has a placeholder', () => {
     const { manifest } = loadGameData();
     for (const [key, entry] of Object.entries(manifest.images)) {
-      if (entry.file === null) expect(placeholderDrawers[key], key).toBeDefined();
+      if (entry.file === null) expect(placeholderFor(key), key).toBeDefined();
     }
+  });
+});
+
+describe('map graphics', () => {
+  it('every biome has its ground, rock and decoration images in the manifest', () => {
+    const { manifest, biomes } = loadGameData();
+    const missing: string[] = [];
+    for (const [id, biome] of Object.entries(biomes.biomes)) {
+      const keys = [`map_rock_${id}`, ...Object.keys(biome.ground).map((ground) => `map_ground_${id}_${ground}`), ...biome.decorations.map((kind) => `map_deco_${kind}`)];
+      for (const key of keys) if (!(key in manifest.images)) missing.push(key);
+    }
+    expect(missing).toEqual([]);
   });
 });
 

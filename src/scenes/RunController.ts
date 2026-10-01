@@ -17,6 +17,8 @@ export class RunController extends Phaser.Events.EventEmitter {
   readonly rules: RunRules;
   readonly battleRules: BattleRules;
   readonly state: RunState;
+  /** Biomes the player has already been shown the name of (only for the screen; not part of the game state). */
+  readonly knownBiomes = new Set<string>();
 
   constructor(seed: number, rules: RunRules, battleRules: BattleRules) {
     super();

@@ -1,7 +1,7 @@
 // Loads every image listed in the manifest (or draws its placeholder), then starts the first scene.
 
 import * as Phaser from 'phaser';
-import { placeholderDrawers } from '../assets/placeholders';
+import { placeholderFor } from '../assets/placeholders';
 import { getContext } from './context';
 import { SceneKey, startableScenes } from './sceneKeys';
 
@@ -21,9 +21,9 @@ export class BootScene extends Phaser.Scene {
     const { data, params } = getContext(this);
     for (const [key, entry] of Object.entries(data.manifest.images)) {
       if (entry.file !== null) continue;
-      const draw = placeholderDrawers[key];
+      const draw = placeholderFor(key);
       if (!draw) throw new Error(`Manifest image "${key}" has no file and no placeholder drawer.`);
-      draw(this, key, entry.width, entry.height, data.palette);
+      draw(this, key, entry.width, entry.height, data.palette, data);
     }
 
     let first: string = SceneKey.Title;

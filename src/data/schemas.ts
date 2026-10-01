@@ -3,6 +3,7 @@
 // `.strict()` means unknown fields are errors too, so typos in field names get caught.
 
 import { z } from 'zod';
+import { DECORATION_KINDS } from '../assets/mapArt';
 
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'expected a color like "#1a2b3c"');
 
@@ -173,6 +174,7 @@ export const biomesSchema = section({
     z.string(),
     section({
       displayName: z.string().min(1),
+      decorations: z.array(z.enum(DECORATION_KINDS)),
       ground: z.partialRecord(z.enum(GROUND_TYPES), share),
       rockShare: share,
       colors: section({ ground: hexColor, detail: hexColor, water: hexColor, rock: hexColor, glow: hexColor }),

@@ -1,4 +1,4 @@
-// Map HUD drawn above the map: turn, moves, Muck, the Alert bar and the End Turn button.
+// Map HUD drawn above the map: turn, moves, Muck, the Alert bar, the minimap and the End Turn button.
 // Also shows the game-over panel when the hydra dies.
 
 import * as Phaser from 'phaser';
@@ -6,8 +6,10 @@ import { color, getContext } from '../scenes/context';
 import { requireRun, startNewRun } from '../scenes/RunController';
 import type { RunController } from '../scenes/RunController';
 import { SceneKey } from '../scenes/sceneKeys';
+import type { Hex } from '../sim/hex';
 import { Button } from './Button';
 import { onKeyDown } from './keys';
+import { Minimap } from './Minimap';
 
 const BAR_HEIGHT = 16;
 const ALERT_BAR_WIDTH = 100;
@@ -19,6 +21,7 @@ export class HudScene extends Phaser.Scene {
   private alertValue!: Phaser.GameObjects.Text;
   private endTurnButton!: Button;
   private gameOverPanel!: Phaser.GameObjects.Container;
+  private minimap!: Minimap;
 
   constructor() {
     super(SceneKey.Hud);
@@ -52,12 +55,18 @@ export class HudScene extends Phaser.Scene {
       if (event.key === 'Enter') this.run.endTurn();
     });
 
+    this.minimap = new Minimap(this, 4, height - 4, this.run, getContext(this).data, (h) => this.lookAt(h));
     this.gameOverPanel = this.createGameOverPanel();
 
     const onChanged = (): void => this.refresh();
     this.run.on('changed', onChanged);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.run.off('changed', onChanged));
     this.refresh();
+  }
+
+  private lookAt(h: Hex): void {
+    const map = this.scene.get(SceneKey.Map) as unknown as { lookAt?: (h: Hex) => void };
+    map.lookAt?.(h);
   }
 
   /** Shown when the hydra has died: the run is over, start a new one. */
@@ -104,5 +113,6 @@ export class HudScene extends Phaser.Scene {
     this.alertValue.setText(String(Math.floor(alert)));
     this.endTurnButton.setEnabled(pendingBattle === null && !over);
     this.gameOverPanel.setVisible(over);
+    this.minimap.redraw();
   }
 }

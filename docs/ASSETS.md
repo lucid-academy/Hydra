@@ -27,57 +27,84 @@ Composition: night over a swamp. Top ~40% dark sky. On the right a hill with the
 
 Prompt sketch: *"Pixel art, 640x360, hard pixels, no anti-aliasing. Night over a dark swamp. On a hill to the right, a gothic castle with a cathedral spire topped by a small eternal flame, a few warm orange windows. Murky green swamp water with teal ripples, yellow-green bioluminescent spores, pale greenish mist drifting low from the left. Cold palette of teal, black and swamp green against small warm gold and orange lights. Empty dark area top centre for a title."*
 
-## Hex tiles: hex_water, hex_mud, hex_rock
+## Map graphics: the underground seen from a slant
+
+The strategic map uses the same slanted view as the battle, in the spirit of Songs of Conquest: the ground is a carpet of squashed hexes in each biome's look, rock is raised into blocks, and decorations, objects and the hydra stand up on their hexes. Rules for every map graphic, on top of the general ones above:
+
+- Hexes are 30 px wide and 24 px tall on screen; hex centres are 30 px apart within a row and rows are 18 px apart.
+- Light from the upper left. Transparent background outside the drawn shape.
+- Things that stand on a hex have their **feet at the bottom middle** of the image; the game puts the feet 3 px below the hex centre.
+- The numbers the game relies on are also in `src/assets/mapArt.ts`.
+- Biomes (`src/data/biomes.json`) decide which ground, rock and decoration images a hex uses. A new biome needs its own `map_ground_…` and `map_rock_…` images in the manifest; with `"file": null` the game draws a placeholder from the biome's colours.
+
+## Map ground: map_ground_<biome>_<water|mud|roots>
 
 | | |
 |---|---|
-| Size | 28×32 px each |
+| Size | 30×28 px each |
 | Frames | 1 |
-| Anchor | centre (14, 16) |
-| Background | transparent outside the hex |
-| Used in | strategic map |
+| Anchor | middle of the hex face, (15, 12) |
+| Background | transparent outside the tile |
+| Used in | strategic map, one per open hex |
 
-Shape: a **pointy-top hexagon** filling the box exactly: top point at (14, 0), bottom point at (14, 31), straight vertical sides from y=8 to y=23, left side at x=0, right side at x=27. Tiles are placed every 28 px horizontally and every 24 px vertically (odd rows shifted by 14 px), so the slanted edges of neighbours interlock. Keep the outer 1 px of the hex a little darker, so neighbouring tiles read as separate hexes. Seen from above.
+A squashed pointy-top hex seen from a slant: top point (15, 0), straight sides at x=0 and x=29 from y=6 to y=18, bottom point (15, 23). Below its two lower edges, a 4 px earth wall (only seen at the edge of the known map, where it makes the ground look like a thick carpet). Keep the face quiet, with a slightly darker 1 px rim so the grid reads faintly; decorations are drawn on top.
 
-- **hex_water:** murky deep teal flooded cave floor, a few lighter teal ripple lines.
-- **hex_mud:** dark olive swamp mud, a few small lighter clumps.
-- **hex_rock:** near-black solid cave rock, a few grey specks. Impassable, so it should read as a wall/solid mass.
+Current keys (biome × ground): `lairSwamp` (water, mud), `floodedCaves` (water, mud), `rootTangle` (mud, roots), `fungalDeeps` (water, mud). The manifest also lists the other combinations, in case a biome's ground shares change.
 
-Prompt sketch: *"Pixel art game tile, 28x32 pixels, pointy-top hexagon, top-down view, transparent background outside the hexagon, hard pixels no anti-aliasing. [murky deep teal water with light ripples / dark olive swamp mud / near-black cave rock with grey specks]. Dark fantasy underground swamp palette."*
+- **water:** murky still water in the biome's tint, a few light ripples.
+- **mud:** the biome's floor: swamp mud (Lair Swamp), wet stone and silt (Flooded Caves), dark soil (Root Tangle), purplish spongy fungal ground (Fungal Deeps).
+- **roots:** dark soil with thick roots crawling across it (2 movement points: it should look slow).
 
-## hex_shade
+Prompt sketch: *"Pixel art game tile, 30x28 pixels, transparent background. A pointy-top hexagon floor tile seen from a slanted top-down angle (squashed, 30 wide and 24 tall) with a 4 px earth edge below its lower sides. [Dark olive swamp mud / murky teal water with faint ripples / dark soil with thick crawling roots / purplish spongy fungal ground]. Low contrast, dark underground cave, hard pixels, no anti-aliasing."*
 
-28×32 px, same hex shape, **black at ~60% opacity**, nothing else. Drawn over hexes the player has seen before but can't see now. Can stay a code placeholder.
-
-## hex_reachable
-
-28×32 px, same hex shape: a 1–2 px glowing yellow-green (`#c6e04a`) outline with a very faint fill (~12%). Marks hexes the hydra can reach this turn. Can stay a code placeholder.
-
-## Map icons: icon_lair, icon_encounter, icon_muck
+## Map rock: map_rock_<biome>
 
 | | |
 |---|---|
-| Size | icon_lair 14×14, icon_encounter 12×12, icon_muck 12×12 px |
+| Size | 30×40 px |
 | Frames | 1 |
-| Anchor | centre |
+| Anchor | middle of the hex it stands on, (15, 24); its top face is raised 12 px above that |
 | Background | transparent |
-| Used in | strategic map, drawn in the middle of a hex tile |
+| Used in | strategic map, impassable rock |
 
-- **icon_lair:** the hydra's lair: a dark hole in the swamp ringed with glowing yellow-green.
-- **icon_encounter:** a small red banner of the Order of the Eternal Flame on a gold pole, a tiny flame emblem.
-- **icon_muck:** a glistening lump of brown swamp muck.
+The hex raised into a rough block of cave rock: the top face (same shape as a ground tile, at the top of the image) with rock walls below it down to the ground, darker on the left. It hides what stands right behind it, like a cave wall. In the biome's rock colour.
 
-## token_hydra
+## Map decorations: map_deco_<kind>
 
 | | |
 |---|---|
-| Size | 20×20 px |
-| Frames | 1 (static for now) |
-| Anchor | centre, drawn 4 px above the hex centre so its base sits in the hex |
+| Size | 14×16 px each |
+| Frames | 1 |
+| Anchor | bottom middle (7, 15) |
 | Background | transparent |
-| Used in | strategic map, the hydra's piece |
+| Used in | strategic map, scattered over open hexes (each biome lists its kinds in biomes.json) |
 
-A tiny hydra seen from above-front: a squat dark green body with **three heads** on short necks, eyes glowing yellow-green. Must read clearly at 20 px against teal and olive tiles; a dark outline helps.
+Small things that make each biome feel different. They do nothing in the game.
+
+- **reeds** (the only thing that grows out of water), **bones**, **pebbles**, **stalagmite**, **puddle**, **roots**, **sprout**, **mushroom**,
+- **glowMushroom:** a mushroom with a bright cap; the game adds a light in the biome's glow colour around it.
+
+## Map objects
+
+| Key | Size | What |
+|---|---|---|
+| map_lair | 52×30 | The lair: a dark pool with a glowing yellow-green rim, reeds and old bones around it. Anchor: bottom middle, 9 px below the hex centre. |
+| map_shrine | 26×46 | A shrine of the Great Serpent: a stone pillar on a plinth, a serpent coiled round it, a glowing teal gem on top. |
+| map_passage | 40×64 | A way up to the surface: rubble on the ground under a shaft of pale light falling from a crack in the cave roof. |
+| map_muck | 16×10 | A glistening lump of swamp muck. |
+| map_moisture | 16×20 | A spring: a small pool with water trickling down into it from above. |
+| map_encounter_1, _2, _3 | 28×36, 36×38, 44×40 | People of the Order waiting there, with a red banner. More of them and a bigger banner the stronger the group: one soldier (tier 1), two (tier 2), three with a torch (tier 3). |
+| map_hydra | 26×28 | The hydra on the map: a squat dark green body with three heads on short necks, eyes glowing yellow-green. |
+
+All objects: 1 frame, anchor at the feet (bottom middle) unless noted, transparent background.
+
+## Map helpers: map_glow, map_mark, map_fog_edge
+
+Can stay code placeholders:
+
+- **map_glow** (64×64): a soft round light in white; the game tints it and adds it on top (lair, shrines, springs, glowing fungi, torches).
+- **map_mark** (30×24): the outline of a squashed hex in white, tinted by the game to show where the hydra can go this turn.
+- **map_fog_edge** (30×28): a ragged pattern of dark pixels laid over known hexes next to the unknown, so the darkness doesn't end in a hard line.
 
 ## Battle graphics: the slanted view
 
