@@ -167,6 +167,7 @@ export class BattleScene extends Phaser.Scene {
       }),
       heads: this.battle.heads.map((h) => ({ id: h.id, classId: h.classId, x: this.heads.get(h.id)?.x ?? 0, y: this.heads.get(h.id)?.y ?? 0 })),
       selected: [...this.selected],
+      cards: this.cards.centers(),
       orders: Object.fromEntries(this.battle.heads.map((h) => [h.id, h.orderTargetId])),
       clouds: this.battle.clouds.length,
       combos: [...this.combosSeen],

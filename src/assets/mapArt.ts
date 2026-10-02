@@ -15,7 +15,20 @@ export const MAP_ROW_HEIGHT = 18;
 export const MAP_FEET_BELOW_HEX_CENTER = 3;
 
 /** Decorations a biome can scatter over its ground (biomes.json "decorations"); each has an image map_deco_<kind>. */
-export const DECORATION_KINDS = ['reeds', 'bones', 'pebbles', 'stalagmite', 'puddle', 'roots', 'sprout', 'mushroom', 'glowMushroom'] as const;
+export const DECORATION_KINDS = [
+  'reeds',
+  'bones',
+  'pebbles',
+  'stalagmite',
+  'puddle',
+  'roots',
+  'sprout',
+  'mushroom',
+  'glowMushroom',
+  'crystal',
+  'urn',
+  'brokenPillar',
+] as const;
 export type DecorationKind = (typeof DECORATION_KINDS)[number];
 
 /** Decorations that give off light in the biome's glow colour. */

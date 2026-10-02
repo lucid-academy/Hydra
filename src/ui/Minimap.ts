@@ -47,9 +47,10 @@ export class Minimap {
     const g = this.graphics;
     g.clear();
     const { map, visibility, hydra } = this.run.state;
+    // Terrain dots are a little taller than the row step, so rows touch instead of leaving dark stripes between them.
     const dot = (h: Hex, fill: number, alpha = 1, size = 2) => {
       g.fillStyle(fill, alpha);
-      g.fillRect(Math.round(this.center.x + (h.q + h.r / 2) * DOT.across - size / 2), Math.round(this.center.y + h.r * DOT.down - size / 2), size + 1, size);
+      g.fillRect(Math.round(this.center.x + (h.q + h.r / 2) * DOT.across - size / 2), Math.round(this.center.y + h.r * DOT.down - size / 2), size + 1, size + 1);
     };
     for (const [key, state] of visibility) {
       const tile = map.tiles.get(key);

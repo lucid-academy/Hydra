@@ -29,6 +29,8 @@ declare global {
         heads: Array<{ id: string; classId: string; x: number; y: number }>;
         /** Ids of the heads the player has picked. */
         selected: string[];
+        /** Middle of each head card on screen. */
+        cards: Array<{ id: string; x: number; y: number }>;
         /** Enemy each head was ordered to attack (null = none). */
         orders: Record<string, number | null>;
         clouds: number;

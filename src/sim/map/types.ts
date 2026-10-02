@@ -1,6 +1,6 @@
 import type { Hex } from '../hex';
 
-export const TERRAIN_TYPES = ['water', 'mud', 'roots', 'rock'] as const;
+export const TERRAIN_TYPES = ['water', 'mud', 'roots', 'salt', 'rock'] as const;
 export type TerrainType = (typeof TERRAIN_TYPES)[number];
 
 export interface TerrainRules {

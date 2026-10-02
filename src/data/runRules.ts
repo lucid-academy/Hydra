@@ -11,14 +11,14 @@ export function runRulesFrom(data: GameData): RunRules {
   const terrainRule = (t: Balance['terrain']['water']) => ({ moveCost: t.moveCost, blocksSight: t.blocksSight });
   const biome = (id: string): BiomeSettings => {
     const b = biomes.biomes[id]!;
-    return { id, ground: b.ground, rockShare: b.rockShare };
+    return { id, ground: b.ground, rockShare: b.rockShare, encounterDensity: b.encounterDensity ?? 1 };
   };
   const groupsByTier: Record<number, Array<{ id: string; weight: number }>> = {};
   for (const g of enemies.encounterGroups) (groupsByTier[g.tier] ??= []).push({ id: g.id, weight: g.weight });
   return {
     movementPointsPerTurn: map.movementPointsPerTurn,
     sightRangeHexes: map.sightRangeHexes,
-    terrain: { water: terrainRule(terrain.water), mud: terrainRule(terrain.mud), roots: terrainRule(terrain.roots), rock: terrainRule(terrain.rock) },
+    terrain: { water: terrainRule(terrain.water), mud: terrainRule(terrain.mud), roots: terrainRule(terrain.roots), salt: terrainRule(terrain.salt), rock: terrainRule(terrain.rock) },
     alertMin: alert.min,
     alertMax: alert.max,
     alertPerHexDiscovered: alert.perHexDiscovered,

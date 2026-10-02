@@ -26,9 +26,7 @@ const RESUME_BUTTON = { x: 602, y: 328 };
 const CONTINUE_BUTTON = { x: 320, y: 148 };
 const NEW_HYDRA_BUTTON = { x: 320, y: 212 };
 const ACCEPT_BLESSING_BUTTON = { x: 258, y: 248 };
-const FIRST_HEAD_CARD = { x: 32, y: 338 };
 const ALL_HEADS_BUTTON = { x: 600, y: 8 };
-const HEAD_CARD_STEP = 62;
 /** Map hexes under the top bar, the minimap or the End Turn button can't be tapped. */
 const MAP_TAP_AREA = { left: 10, right: 630, top: 24, bottom: 320 };
 const MINIMAP = { right: 104, top: 266 };
@@ -100,8 +98,8 @@ async function playBattle(page, allAtOnce) {
     await tap(page, ALL_HEADS_BUTTON);
     await tap(page, target);
   } else {
-    for (let i = 0; i < start.heads.length; i++) {
-      await tap(page, { x: FIRST_HEAD_CARD.x + i * HEAD_CARD_STEP, y: FIRST_HEAD_CARD.y });
+    for (const card of start.cards) {
+      await tap(page, card);
       await tap(page, target);
     }
   }

@@ -14,8 +14,8 @@ import type { HexMap, TerrainTable, TerrainType, Tile } from './types';
 
 export type GroundType = Exclude<TerrainType, 'rock'>;
 
-/** Open ground is laid from the wettest hexes up: water first, then mud, then roots. */
-const GROUND_ORDER: readonly GroundType[] = ['water', 'mud', 'roots'];
+/** Open ground is laid from the wettest hexes up: water first, then mud, then roots, then dry salt. */
+const GROUND_ORDER: readonly GroundType[] = ['water', 'mud', 'roots', 'salt'];
 
 export interface BiomeSettings {
   id: string;
@@ -23,6 +23,8 @@ export interface BiomeSettings {
   ground: Readonly<Partial<Record<GroundType, number>>>;
   /** Share of the biome's hexes that are rock walls. */
   rockShare: number;
+  /** How likely encounters are here compared with other biomes at the same distance (1 = normal). */
+  encounterDensity: number;
 }
 
 /** How many of something to place, how far from the lair, and how far from each other. */
@@ -174,7 +176,8 @@ function tryGenerate(rng: Rng, grid: HexGrid, s: UndergroundGeneratorSettings, t
   }
 
   // Encounters: the further from the lair, the more likely, and the stronger the group.
-  const encounters = pickSpread(rng, free(s.encounters.minDistanceFromLair), s.encounters, fromLair);
+  const density = new Map([s.lairBiome, ...s.outerBiomes].map((b) => [b.id, b.encounterDensity]));
+  const encounters = pickSpread(rng, free(s.encounters.minDistanceFromLair), s.encounters, (t) => fromLair(t) * (density.get(t.biome) ?? 1));
   if (!encounters) return null;
   for (const t of encounters) {
     const tier = encounterTier(fromLair(t), s.encounters.tierStartsAtDistance);

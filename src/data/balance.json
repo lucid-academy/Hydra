@@ -17,6 +17,10 @@
       "moveCost": 2,
       "blocksSight": false
     },
+    "salt": {
+      "moveCost": 3,
+      "blocksSight": false
+    },
     "rock": {
       "moveCost": null,
       "blocksSight": true

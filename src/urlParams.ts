@@ -6,6 +6,7 @@
 //   ?hp=5         with ?scene=battle: start the test battle with this much body HP (to see a defeat quickly)
 //   ?speed=4      battles run this many times faster (for tests)
 //   ?near=shrine  with ?scene=map: start next to the nearest object of that kind (shrine, passage, encounter, moisture...)
+//   ?reveal=1     show the whole underground map at the start (to look at what the generator made)
 
 import { seedFromString } from './sim/rng';
 
@@ -23,6 +24,8 @@ export interface UrlParams {
   speed: number | null;
   /** Start the map next to the nearest object of this kind, or null. */
   near: string | null;
+  /** Show the whole map at the start. */
+  reveal: boolean;
 }
 
 export function parseUrlParams(search: string): UrlParams {
@@ -43,5 +46,6 @@ export function parseUrlParams(search: string): UrlParams {
     hp: positive('hp'),
     speed: positive('speed'),
     near: params.get('near')?.trim() || null,
+    reveal: params.get('reveal') === '1' || params.get('reveal') === 'true',
   };
 }

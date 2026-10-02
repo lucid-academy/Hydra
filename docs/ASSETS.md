@@ -37,7 +37,7 @@ The strategic map uses the same slanted view as the battle, in the spirit of Son
 - The numbers the game relies on are also in `src/assets/mapArt.ts`.
 - Biomes (`src/data/biomes.json`) decide which ground, rock and decoration images a hex uses. A new biome needs its own `map_ground_…` and `map_rock_…` images in the manifest; with `"file": null` the game draws a placeholder from the biome's colours.
 
-## Map ground: map_ground_<biome>_<water|mud|roots>
+## Map ground: map_ground_<biome>_<water|mud|roots|salt>
 
 | | |
 |---|---|
@@ -49,11 +49,13 @@ The strategic map uses the same slanted view as the battle, in the spirit of Son
 
 A squashed pointy-top hex seen from a slant: top point (15, 0), straight sides at x=0 and x=29 from y=6 to y=18, bottom point (15, 23). Below its two lower edges, a 4 px earth wall (only seen at the edge of the known map, where it makes the ground look like a thick carpet). Keep the face quiet, with a slightly darker 1 px rim so the grid reads faintly; decorations are drawn on top.
 
-Current keys (biome × ground): `lairSwamp` (water, mud), `floodedCaves` (water, mud), `rootTangle` (mud, roots), `fungalDeeps` (water, mud). The manifest also lists the other combinations, in case a biome's ground shares change.
+Current keys (biome × ground): `lairSwamp` (water, mud), `floodedCaves` (water, mud), `rootTangle` (mud, roots), `fungalDeeps` (water, mud), `oldCrypts` (water, mud), `saltMines` (mud, salt). For the first four the manifest also lists the other combinations, in case a biome's ground shares change.
 
 - **water:** murky still water in the biome's tint, a few light ripples.
 - **mud:** the biome's floor: swamp mud (Lair Swamp), wet stone and silt (Flooded Caves), dark soil (Root Tangle), purplish spongy fungal ground (Fungal Deeps).
 - **roots:** dark soil with thick roots crawling across it (2 movement points: it should look slow).
+- **salt:** a dry, cracked white crust with crystals catching the light (3 movement points: it should look hard going).
+- In **Old Crypts** the "mud" is the floor of old catacombs: worn flagstones, dust, cracks.
 
 Prompt sketch: *"Pixel art game tile, 30x28 pixels, transparent background. A pointy-top hexagon floor tile seen from a slanted top-down angle (squashed, 30 wide and 24 tall) with a 4 px earth edge below its lower sides. [Dark olive swamp mud / murky teal water with faint ripples / dark soil with thick crawling roots / purplish spongy fungal ground]. Low contrast, dark underground cave, hard pixels, no anti-aliasing."*
 
@@ -82,6 +84,8 @@ The hex raised into a rough block of cave rock: the top face (same shape as a gr
 Small things that make each biome feel different. They do nothing in the game.
 
 - **reeds** (the only thing that grows out of water), **bones**, **pebbles**, **stalagmite**, **puddle**, **roots**, **sprout**, **mushroom**,
+- **crystal:** pale pink-white salt crystals (Salt Mines),
+- **urn:** a clay burial urn, **brokenPillar:** the stump of a stone column with a fallen chunk (Old Crypts),
 - **glowMushroom:** a mushroom with a bright cap; the game adds a light in the biome's glow colour around it.
 
 ## Map objects
@@ -126,7 +130,7 @@ The battle is a board of hexes seen from a slant (like the board in Into the Bre
 | Background | transparent outside the tile |
 | Used in | battle board; one tile per hex |
 
-The battle board looks like the place of the encounter: the tiles of its biome, and the `water` tile if the encounter stood in water. Current keys: `lairSwamp`, `floodedCaves`, `rootTangle`, `fungalDeeps`, each with `_ground` and `_water`. With `"file": null` the game draws a placeholder from the biome's colours in `src/data/biomes.json`.
+The battle board looks like the place of the encounter: the tiles of its biome, and the `water` tile if the encounter stood in water. Current keys: `lairSwamp`, `floodedCaves`, `rootTangle`, `fungalDeeps`, `oldCrypts`, `saltMines`, each with `_ground` and `_water`. With `"file": null` the game draws a placeholder from the biome's colours in `src/data/biomes.json`.
 
 Two parts, one under the other:
 

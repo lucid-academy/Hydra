@@ -60,8 +60,9 @@ export class MapScene extends Phaser.Scene {
   create(): void {
     const firstTime = !getRun(this);
     this.run = getRun(this) ?? startNewRun(this);
-    const { near } = getContext(this).params;
+    const { near, reveal } = getContext(this).params;
     if (firstTime && near) this.run.placeNear(near);
+    if (firstTime && reveal) this.run.revealAll();
     this.views = new Map();
     this.animating = false;
     this.press = null;

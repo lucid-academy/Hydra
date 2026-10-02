@@ -1,5 +1,5 @@
 {
-  "//": "TODO(design): working values. The underground is split into biomes: the swamp round the lair, and the others in wide wedges around it. ground: share of each kind of open ground (water, mud, roots) in the biome. rockShare: share of rock walls. decorations: what is scattered over its ground (a kind listed twice comes up twice as often; kinds: reeds, bones, pebbles, stalagmite, puddle, roots, sprout, mushroom, glowMushroom). colors: for the placeholder graphics, until real art exists.",
+  "//": "TODO(design): working values. The underground is split into biomes: the swamp round the lair, and the others in wide wedges around it. ground: share of each kind of open ground (water, mud, roots, salt) in the biome. rockShare: share of rock walls. decorations: what is scattered over its ground (a kind listed twice comes up twice as often; kinds: reeds, bones, pebbles, stalagmite, puddle, roots, sprout, mushroom, glowMushroom, crystal, urn, brokenPillar). encounterDensity: how likely encounters are here (1 = normal). colors: for the placeholder graphics, until real art exists.",
   "lairBiome": "lairSwamp",
   "biomes": {
     "lairSwamp": {
@@ -22,6 +22,22 @@
       "ground": { "mud": 0.45, "roots": 0.55 },
       "rockShare": 0.28,
       "colors": { "ground": "#33261a", "detail": "#4a3a22", "water": "#1d3330", "rock": "#3a2f25", "glow": "#d9a93b" }
+    },
+    "oldCrypts": {
+      "displayName": "Old Crypts",
+      "decorations": ["urn", "bones", "brokenPillar", "bones", "pebbles"],
+      "ground": { "water": 0.15, "mud": 0.85 },
+      "rockShare": 0.38,
+      "encounterDensity": 1.2,
+      "colors": { "ground": "#2e2b27", "detail": "#4a4540", "water": "#1c2a2c", "rock": "#3b3732", "glow": "#e0b060" }
+    },
+    "saltMines": {
+      "displayName": "Salt Mines",
+      "decorations": ["crystal", "crystal", "pebbles", "bones"],
+      "ground": { "mud": 0.35, "salt": 0.65 },
+      "rockShare": 0.3,
+      "encounterDensity": 1.5,
+      "colors": { "ground": "#4a4440", "detail": "#8a8078", "water": "#2a3a40", "rock": "#5a524c", "glow": "#f0d8d0" }
     },
     "fungalDeeps": {
       "displayName": "Fungal Deeps",

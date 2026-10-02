@@ -82,6 +82,11 @@ export class RunController extends Phaser.Events.EventEmitter {
     }
   }
 
+  /** For `?reveal=1`: every hex becomes known (seen before), to look at the whole map. Testing only. */
+  revealAll(): void {
+    for (const key of this.state.map.tiles.keys()) if (!this.state.visibility.has(key)) this.state.visibility.set(key, 'remembered');
+  }
+
   private publish(events: RunEvent[]): void {
     if (events.length === 0) return;
     this.lastEvents = events;

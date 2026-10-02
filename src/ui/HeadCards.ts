@@ -6,6 +6,8 @@ import * as Phaser from 'phaser';
 import { wantsToAdd } from './keys';
 
 const CARD_HEIGHT = 40;
+/** Cards share the row as if there were at least this many heads: with few heads they are wide enough for whole names. */
+const MIN_SLOTS = 5;
 /** Cards are drawn above the bottom panel. */
 const DEPTH = 150;
 const GAP = 2;
@@ -47,7 +49,7 @@ interface Card {
  */
 export class HeadCards {
   private readonly style: HeadCardsStyle;
-  private readonly cardWidth: number;
+  private cardWidth: number;
   private cards = new Map<string, Card>();
   private objects: Phaser.GameObjects.GameObject[] = [];
   /** Which heads the cards were built for. */
@@ -59,7 +61,16 @@ export class HeadCards {
     private readonly onSelect: (headId: string, add: boolean) => void,
   ) {
     this.style = style;
-    this.cardWidth = Math.floor((style.width - GAP * (style.maxCards - 1)) / style.maxCards);
+    this.cardWidth = this.widthFor(MIN_SLOTS);
+  }
+
+  private widthFor(slots: number): number {
+    return Math.floor((this.style.width - GAP * (slots - 1)) / slots);
+  }
+
+  /** Middle of each card on screen (for tests that tap them like a player). */
+  centers(): Array<{ id: string; x: number; y: number }> {
+    return [...this.cards.entries()].map(([id, card]) => ({ id, x: card.bg.x + card.bg.width / 2, y: card.bg.y + card.bg.height / 2 }));
   }
 
   update(heads: readonly HeadCardInfo[], selected: ReadonlySet<string>): void {
@@ -82,6 +93,7 @@ export class HeadCards {
   }
 
   private build(heads: readonly HeadCardInfo[]): void {
+    this.cardWidth = this.widthFor(Math.min(this.style.maxCards, Math.max(MIN_SLOTS, heads.length)));
     for (const object of this.objects) object.destroy();
     this.objects = [];
     this.cards.clear();

@@ -44,7 +44,7 @@ function shade(hex: string, amount: number): string {
 
 /** map_ground_<biome>_<terrain>: the hex face in the biome's colours, with a thin earth wall under its lower edges. */
 const drawGround: PlaceholderDrawer = (scene, key, width, height, _palette, data) => {
-  const [, biomeId, terrain] = /^map_ground_(.+)_(water|mud|roots)$/.exec(key) ?? [];
+  const [, biomeId, terrain] = /^map_ground_(.+)_(water|mud|roots|salt)$/.exec(key) ?? [];
   const colors = data.biomes.biomes[biomeId ?? '']?.colors;
   if (!colors) throw new Error(`No biome colours for "${key}"`);
   const g = scene.make.graphics({}, false);
@@ -73,6 +73,12 @@ const drawGround: PlaceholderDrawer = (scene, key, width, height, _palette, data
   } else {
     speck(colors.detail, 9, 2);
     speck(shade(colors.ground, 1.25), 5, 1);
+  }
+  if (terrain === 'salt') {
+    // A dry white crust, cracked, with crystals catching the light.
+    speck('#cfc6bc', 10, 3);
+    speck('#f4eee8', 6, 1);
+    speck(shade(colors.ground, 0.6), 4, 4); // cracks
   }
   if (terrain === 'roots') {
     // Roots crawling over the ground.
@@ -179,6 +185,30 @@ const decorations: Record<string, PlaceholderDrawer> = {
     px(g, '#1a1020', cx - 5, b - 9, 10, 4);
     px(g, '#8a6a5a', cx - 4, b - 9, 8, 3);
     px(g, '#b08a78', cx - 2, b - 9, 3, 1);
+  }),
+  map_deco_crystal: decoration((g, cx, b) => {
+    for (const [dx, h, w] of [[-3, 9, 3], [1, 13, 3], [4, 7, 2]] as const) {
+      px(g, '#3a3036', cx + dx - 1, b - h - 1, w + 2, h + 1);
+      px(g, '#e8d8e0', cx + dx, b - h, w, h);
+      px(g, '#ffffff', cx + dx, b - h, 1, Math.floor(h / 2));
+      px(g, '#c8a8b8', cx + dx + w - 1, b - h + 2, 1, h - 2);
+    }
+  }),
+  map_deco_urn: decoration((g, cx, b) => {
+    px(g, '#1a1410', cx - 4, b - 10, 9, 10);
+    px(g, '#8a5a3a', cx - 3, b - 9, 7, 8);
+    px(g, '#a8744c', cx - 2, b - 8, 2, 5);
+    px(g, '#1a1410', cx - 2, b - 12, 5, 3);
+    px(g, '#6b4a2a', cx - 1, b - 11, 3, 1);
+  }),
+  map_deco_brokenPillar: decoration((g, cx, b) => {
+    px(g, '#15120f', cx - 5, b - 13, 11, 13);
+    px(g, '#6b6458', cx - 4, b - 12, 9, 12);
+    px(g, '#8a8276', cx - 4, b - 12, 2, 12);
+    px(g, '#4a443c', cx + 2, b - 12, 2, 12);
+    px(g, '#15120f', cx - 4, b - 14, 4, 2); // broken top
+    px(g, '#15120f', cx + 1, b - 15, 4, 3);
+    px(g, '#6b6458', cx + 7, b - 2, 3, 2); // a fallen chunk
   }),
   map_deco_glowMushroom: decoration((g, cx, b) => {
     px(g, '#e8dff0', cx - 1, b - 8, 2, 8);
@@ -389,7 +419,7 @@ export const mapPlaceholderDrawers: Readonly<Record<string, PlaceholderDrawer>> 
 
 /** Placeholders made from a biome's colours: map_ground_<biome>_<water|mud|roots> and map_rock_<biome>. */
 export function mapPlaceholderFor(key: string): PlaceholderDrawer | undefined {
-  if (/^map_ground_.+_(water|mud|roots)$/.test(key)) return drawGround;
+  if (/^map_ground_.+_(water|mud|roots|salt)$/.test(key)) return drawGround;
   if (/^map_rock_.+$/.test(key)) return drawRock;
   return undefined;
 }

@@ -13,6 +13,7 @@ const terrain: TerrainTable = {
   water: { moveCost: 1, blocksSight: false },
   mud: { moveCost: 1, blocksSight: false },
   roots: { moveCost: 2, blocksSight: false },
+  salt: { moveCost: 3, blocksSight: false },
   rock: { moveCost: null, blocksSight: true },
 };
 
@@ -59,6 +60,13 @@ describe('visibility', () => {
 });
 
 describe('movement', () => {
+  it('salt costs three movement points', () => {
+    const state = runOn(flatMap(4, (tiles) => {
+      tiles.get('1,0')!.terrain = 'salt';
+    }), 3);
+    expect(reachableHexes(state, testRules).get('1,0')?.cost).toBe(3);
+  });
+
   it('roots cost two movement points', () => {
     const state = runOn(flatMap(4, (tiles) => {
       tiles.get('1,0')!.terrain = 'roots';

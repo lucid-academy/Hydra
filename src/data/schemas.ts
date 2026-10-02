@@ -37,6 +37,7 @@ export const balanceSchema = section({
     water: terrainRulesSchema,
     mud: terrainRulesSchema,
     roots: terrainRulesSchema,
+    salt: terrainRulesSchema,
     rock: terrainRulesSchema,
   }),
   undergroundGenerator: section({
@@ -167,7 +168,7 @@ export const enemiesSchema = section({
 });
 
 /** Kinds of open ground a biome can have (rock walls are counted separately, with rockShare). */
-export const GROUND_TYPES = ['water', 'mud', 'roots'] as const;
+export const GROUND_TYPES = ['water', 'mud', 'roots', 'salt'] as const;
 
 export const biomesSchema = section({
   lairBiome: z.string().min(1),
@@ -178,6 +179,8 @@ export const biomesSchema = section({
       decorations: z.array(z.enum(DECORATION_KINDS)),
       ground: z.partialRecord(z.enum(GROUND_TYPES), share),
       rockShare: share,
+      // How likely encounters are here compared with other biomes (1 = normal, 1.5 = half as many again).
+      encounterDensity: z.number().positive().optional(),
       colors: section({ ground: hexColor, detail: hexColor, water: hexColor, rock: hexColor, glow: hexColor }),
     }),
   ),
