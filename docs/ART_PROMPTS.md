@@ -93,7 +93,7 @@ Request: one game sprite in two separate pieces on the flat magenta background, 
 Subject: the head of a swamp hydra in side view, snout pointing RIGHT. Reptilian and a little dragon-like: a long mouth with small teeth, a small crest at the back of the skull, a glowing eye. Draw it ONLY in pale grey and white with a dark outline, no other colours (the game colours each head by its class).
 - LEFT piece: the head without its lower jaw (skull, upper jaw with teeth, eye, crest), snout pointing right.
 - RIGHT piece: the lower jaw alone, at the same size as it would be on the head, also pointing right.
-Size: in the game the whole head is only about 20 by 14 pixels, so keep it simple and bold: a clear silhouette and a few big shapes.
+Size: in the game the whole head is only about 36 by 24 pixels, so keep it simple and bold: a clear silhouette and a few big shapes.
 ```
 
 ## Reszta tekstur gruntu (10)

@@ -113,7 +113,9 @@ describe('importing pictures', () => {
       if (inside(x, y, 190, 40, 260, 60)) return [120, 120, 120, 255]; // jaw: 70×20, apart from the head
       return MAGENTA;
     });
-    const { images } = importArt([src], 'battle_head', entries, null);
+    // Sizes of its own, so the test does not change when the game's head size is tuned.
+    const sized = { ...entries, battle_head: { file: null, width: 20, height: 14 }, battle_head_jaw: { file: null, width: 20, height: 7 } };
+    const { images } = importArt([src], 'battle_head', sized, null);
     expect(images.map((i) => i.key)).toEqual(['battle_head', 'battle_head_jaw']);
     const [head, jaw] = images.map((i) => i.picture);
     expect([head!.width, head!.height, jaw!.width, jaw!.height]).toEqual([20, 14, 20, 7]);

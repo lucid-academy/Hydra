@@ -187,7 +187,7 @@ Prompt sketch: *"Pixel art, 132x110, transparent background, seen from a slanted
 
 | | |
 |---|---|
-| Size | 20×14 px |
+| Size | 36×18 px (the jaw: 36×9 px) |
 | Frames | 1 (static for now) |
 | Anchor | centre |
 | Background | transparent |
@@ -195,7 +195,9 @@ Prompt sketch: *"Pixel art, 132x110, transparent background, seen from a slanted
 
 One hydra head seen from the side, **snout pointing right**, a glowing eye, a long mouth line. Draw it in **pale grey / white with a dark outline**: the game tints it with the colour of the head's class (from `src/data/heads.json`), so one image serves all classes.
 
-Real art comes in two parts, so the game can open the mouth: **battle_head** is the head without its lower jaw (20×14, the art sits at the bottom middle of the image) and **battle_head_jaw** is the lower jaw alone (20×7, the art sits at the top right, so the tips of both jaws line up). The game hangs the jaw under the head, both centred on the same point, the jaw's top edge overlapping the head's bottom edge by 1 px (`JAW_OVERLAP` in `src/assets/battleArt.ts`). GPT draws both parts side by side on one picture (`art/raw/battle_head.png`) and the import splits them. The placeholder head has its jaw drawn in, so its battle_head_jaw stays empty.
+Real art comes in two parts, so the game can open the mouth: **battle_head** is the head without its lower jaw (36×18, the art sits at the bottom middle of the image) and **battle_head_jaw** is the lower jaw alone (36×9, the art sits at the top right, so the tips of both jaws line up). The game hangs the jaw under the head, both centred on the same point, the jaw's top edge overlapping the head's bottom edge by 3 px (`JAW_OVERLAP` in `src/assets/battleArt.ts`), so the teeth interlock and the mouth is shut. To bite, the jaw turns around its back end (the leftmost drawn pixel of the jaw image, found by the game). GPT draws both parts side by side on one picture (`art/raw/battle_head.png`) and the import splits them. The placeholder head has its jaw drawn in, so its battle_head_jaw stays empty.
+
+The size was 20×14 until the first GPT head (2026-10-03): GPT drew it at about 43×21 pixels of its own, and squeezed to 20 px it turned to noise. At 36 px it keeps its eye, teeth and crest.
 
 ## Order soldiers: battle_enemy_manAtArms, battle_enemy_headhunter, battle_enemy_torchbearer
 

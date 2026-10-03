@@ -2,7 +2,8 @@
 
 ## Graphics
 
-All graphics are currently placeholders drawn in code (`src/assets/placeholders.ts`). No external assets yet.
+- Terrain textures (`texture_ground_*`, `texture_rock_*`), the hydra's body and head (`battle_body`, `battle_head`, `battle_head_jaw`) and the portrait of Old Mother Toad (`portrait_oldMotherToad`): made by Piotr with GPT image generation in Codex (OpenAI), October 2026. The originals and the prompts he used are in `art/raw/`; the game uses versions shrunk by `npm run art` (`public/images/`).
+- Everything else is still a placeholder drawn in code (`src/assets/placeholders.ts`). No external asset packs.
 
 ## Libraries
 
