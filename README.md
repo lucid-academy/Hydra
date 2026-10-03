@@ -8,6 +8,7 @@ Play: https://lucid-academy.github.io/hydra/
 - Working rules: [CLAUDE.md](CLAUDE.md)
 - Graphics spec: [docs/ASSETS.md](docs/ASSETS.md)
 - Balance report: [docs/BALANCE.md](docs/BALANCE.md)
+- Where the work stands (in Polish): [docs/HANDOFF.md](docs/HANDOFF.md)
 
 ## Commands
 
