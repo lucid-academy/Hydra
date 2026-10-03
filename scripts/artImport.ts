@@ -74,6 +74,9 @@ export function importArt(sources: Picture[], key: string, entries: Record<strin
     const entry = entries[key]!;
     const source = sources[0]!;
     const crop = rule.fit === 'texture' ? centredCrop(source, 1) : centredCrop(source, entry.width / entry.height);
+    if (rule.fit === 'texture' && share(source, (r, g, b) => magentaness(r, g, b) >= 120) > 0.02) {
+      notes.push(`${key}: a texture should fill the whole picture, but this one has magenta in it (did GPT draw a background?)`);
+    }
     if (rule.fit === 'texture' && Math.abs(entry.height / entry.width - TEXTURE_SQUASH) > 0.02) {
       notes.push(`${key}: the manifest size ${entry.width}×${entry.height} is not a square squashed to ${TEXTURE_SQUASH}`);
     }
@@ -84,6 +87,7 @@ export function importArt(sources: Picture[], key: string, entries: Record<strin
   cleaned.forEach((c, i) => {
     if (c.opaque === 0) throw new ImportError(`${key}${sources.length > 1 ? `, frame ${i + 1}` : ''}: nothing left after removing the magenta background`);
     if (c.magentaLeft > 0.01 * c.opaque) notes.push(`${key}: some magenta is left inside the picture (holes or a pink edge?)`);
+    if (c.opaque > 0.95 * sources[i]!.width * sources[i]!.height) notes.push(`${key}: almost nothing was removed: is the background really flat magenta?`);
   });
 
   // Several frames of one animation: one common box for all of them, so the character doesn't jump between frames.
@@ -141,6 +145,13 @@ interface Cleaned {
   box: Box;
   opaque: number;
   magentaLeft: number;
+}
+
+/** What part of a picture's pixels pass a test. */
+function share(picture: Picture, test: (r: number, g: number, b: number) => boolean): number {
+  let count = 0;
+  for (let i = 0; i < picture.data.length; i += 4) if (test(picture.data[i]!, picture.data[i + 1]!, picture.data[i + 2]!)) count++;
+  return count / (picture.width * picture.height);
 }
 
 /** How strongly a colour leans to magenta: both red and blue above green. */

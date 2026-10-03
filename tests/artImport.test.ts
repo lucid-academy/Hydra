@@ -81,6 +81,13 @@ describe('importing pictures', () => {
     expect(at(images[0]!.picture, 90, 30)).toEqual([90, 70, 50, 255]);
   });
 
+  it('warns when GPT drew a background where it should not have, or none where it should', () => {
+    const texture = picture(100, 100, (x) => (x < 50 ? MAGENTA : GREEN));
+    expect(importArt([texture], 'texture_ground_lairSwamp_mud', entries, null).notes.join()).toMatch(/has magenta/);
+    const sprite = picture(100, 100, (x) => (x === 0 ? MAGENTA : GREEN));
+    expect(importArt([sprite], 'battle_body', entries, null).notes.join()).toMatch(/almost nothing was removed/);
+  });
+
   it('trims a sprite, fits it into its box and stands it on the bottom edge', () => {
     // A wide figure in the middle of a big magenta picture.
     const src = picture(400, 400, (x, y) => (inside(x, y, 100, 150, 300, 250) ? GREEN : MAGENTA));
