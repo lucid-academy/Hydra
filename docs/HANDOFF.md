@@ -11,7 +11,7 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 
 - Zrobione: **M0, M1, M1b, M2b** (sekcja 15 w `GAME_DESIGN.md`).
 - **M2b** (podziemia) jest wdrożony i czeka na playtest Piotra.
-- 2026-10-03 Piotr zmienił sposób pracy: projekt gry powstaje w osobnym projekcie w aplikacji Claude, grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. **Plan wdrożenia grafiki czeka na OK** (sekcja 3.2).
+- 2026-10-03 Piotr zmienił sposób pracy: grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. **Plan wdrożenia grafiki czeka na OK** (sekcja 3.2).
 - Następny etap gry to **M2a** (głowy), ale dopiero gdy Piotr skończy je projektować. Nie budować systemu głów bez niego.
 
 ## 2. Co zrobione
@@ -44,8 +44,7 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 
 ### 3.1 Sposób pracy
 
-- Projekt gry Piotr prowadzi w osobnym projekcie w aplikacji Claude i wkleja stamtąd „Notatki decyzji". Najpierw zmiany w `GAME_DESIGN.md` (jeden commit na notatkę, pokazać, co zmienione), budowa dopiero w swoim etapie. Gdy notatka przeczy kodowi albo dokumentowi: pytać.
-- W Claude Code rozmowy dotyczą budowy, liczb, balansu i tego, co technicznie wykonalne.
+- Od 2026-10-03 projekt gry i budowa są w jednym projekcie Hydra w aplikacji Claude (wcześniej projekt gry był osobno, a budowa w Claude Code na serwerze). Zatwierdzone decyzje od razu do `GAME_DESIGN.md` (jeden commit, pokazać, co zmienione), budowa dopiero w swoim etapie. Gdy decyzja przeczy kodowi albo dokumentowi: pytać.
 - Szczegóły w `CLAUDE.md`.
 
 ### 3.2 Grafika i animacje: plan z 2026-10-03, czeka na OK Piotra
@@ -110,7 +109,7 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 1. Wrażenia z playtestu M2b: mapa, kapliczki, leże, nowe biomy.
 2. OK dla planu grafiki (3.2) i dwie odpowiedzi: kąt 45°, portret Old Mother Toad 128×160.
 3. Okładka gry (key art) w `art/raw/`, z której powstanie paleta.
-4. Projekt głów do M2a. Przyjdzie jako Notatki decyzji.
+4. Projekt głów do M2a. Powstanie w rozmowie w projekcie Hydra.
 
 **Z `GAME_DESIGN.md` §16 (decyduje Piotr):**
 - ile kapliczek Płomienia trzeba zgasić;
@@ -146,5 +145,5 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 2. Po OK wdrożyć potok grafiki według planu z 3.2: małymi krokami, każdy z testami, zrzutami i wdrożeniem.
 3. Gdy przyjdzie okładka: propozycja palety (próbnik i okładka w palecie), po akceptacji zapis w repo.
 4. Gdy Piotr napisze, że wrzucił grafiki: `git pull`, `npm run art`, obejrzeć wynik w grze, wdrożyć, pokazać.
-5. Notatki decyzji od razu wpisywać do `GAME_DESIGN.md`, a budować w swoim etapie.
+5. Zatwierdzone decyzje od razu wpisywać do `GAME_DESIGN.md`, a budować w swoim etapie.
 6. Potem M2a (głowy), gdy projekt głów będzie gotowy, i dalej M3 według §15.

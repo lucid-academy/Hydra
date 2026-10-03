@@ -8,7 +8,7 @@ Projekt jest długi i będzie często przebudowywany. Pisz kod tak, żeby łatwo
 
 ## Z kim pracujesz
 
-- Piotr jest autorem gry. Pisze po polsku, często z telefonu przez Remote Control. Odpowiadaj po polsku, krótko, najważniejsze na początku.
+- Piotr jest autorem gry. Pisze po polsku, często z telefonu. Odpowiadaj po polsku, krótko, najważniejsze na początku.
 - Uczy się rzeczy technicznych. Gdy wprowadzasz narzędzie albo pojęcie, wyjaśnij jednym-dwoma zdaniami po ludzku, co to jest i po co.
 - Chce szczerości. Jeśli pomysł szkodzi grze albo kodowi, powiedz to i zaproponuj alternatywę.
 
@@ -21,13 +21,20 @@ Projekt jest długi i będzie często przebudowywany. Pisz kod tak, żeby łatwo
 5. Bez dużych przebudów i zmian architektury bez pytania. Nie usuwaj ani nie przepisuj treści, które Piotr napisał w plikach danych.
 6. Otwarte pytania z dokumentu projektu: nie zgaduj. Zapytaj albo zostaw wartość w danych, z komentarzem `TODO(design)`.
 
-## Notatki decyzji (projekt gry powstaje osobno)
+## Projekt gry i decyzje
 
-- Piotr projektuje grę w osobnym projekcie w aplikacji Claude i stamtąd wkleja tutaj „Notatki decyzji".
-- Gdy dostaniesz notatkę: wprowadź zmiany do `GAME_DESIGN.md` (jeden commit na notatkę) i pokaż Piotrowi, co zmieniłeś: które sekcje i co w nich dodane, zmienione albo usunięte.
-- Budowę według notatki rób dopiero, gdy przyjdzie pora na dany etap, chyba że Piotr powie inaczej.
-- Jeśli notatka przeczy kodowi albo innej części dokumentu, zapytaj, zanim cokolwiek zmienisz.
-- Z tobą Piotr rozmawia o budowie, liczbach, balansie i o tym, co jest technicznie wykonalne.
+Od 2026-10-03 projekt gry i budowa są w jednym miejscu: w projekcie Hydra w aplikacji Claude. Te same wątki służą do rozmów o projekcie gry (mechaniki, głowy, combosy, wrogowie, eventy, dialogi, humor, świat, kierunek grafiki) i do budowy.
+
+W rozmowach o projekcie gry:
+- `GAME_DESIGN.md` jest źródłem prawdy. Zanim coś zaproponujesz, sprawdź, czy nie przeczy dokumentowi. Jeśli przeczy, powiedz to wprost i zapytaj, czy zmieniamy dokument.
+- Kwestionuj pomysły Piotra, jeśli szkodzą grze. Dawaj 2–3 konkretne warianty zamiast długich list.
+- Teksty w grze (nazwy, kwestie, eventy) po angielsku, zgodnie ze słownikiem z dokumentu.
+- Humor: świat jest poważny, Zakon śmiertelnie poważny w absurdalnych sprawach, głowy hydry to komiczny chór. Deadpan, krótko, bez memów.
+
+Decyzje:
+- Gdy Piotr zatwierdzi decyzję albo napisze „notatka": wprowadź zatwierdzone decyzje do `GAME_DESIGN.md` (jeden commit na pakiet decyzji) i pokaż, co zmieniłeś: które sekcje i co w nich dodane, zmienione albo usunięte. Tylko decyzje zatwierdzone, bez luźnych pomysłów.
+- Budowę według decyzji rób dopiero, gdy przyjdzie pora na dany etap, chyba że Piotr powie inaczej.
+- Jeśli decyzja przeczy kodowi albo innej części dokumentu, zapytaj, zanim cokolwiek zmienisz.
 
 ## Stack
 
