@@ -21,6 +21,14 @@ Projekt jest długi i będzie często przebudowywany. Pisz kod tak, żeby łatwo
 5. Bez dużych przebudów i zmian architektury bez pytania. Nie usuwaj ani nie przepisuj treści, które Piotr napisał w plikach danych.
 6. Otwarte pytania z dokumentu projektu: nie zgaduj. Zapytaj albo zostaw wartość w danych, z komentarzem `TODO(design)`.
 
+## Notatki decyzji (projekt gry powstaje osobno)
+
+- Piotr projektuje grę w osobnym projekcie w aplikacji Claude i stamtąd wkleja tutaj „Notatki decyzji".
+- Gdy dostaniesz notatkę: wprowadź zmiany do `GAME_DESIGN.md` (jeden commit na notatkę) i pokaż Piotrowi, co zmieniłeś: które sekcje i co w nich dodane, zmienione albo usunięte.
+- Budowę według notatki rób dopiero, gdy przyjdzie pora na dany etap, chyba że Piotr powie inaczej.
+- Jeśli notatka przeczy kodowi albo innej części dokumentu, zapytaj, zanim cokolwiek zmienisz.
+- Z tobą Piotr rozmawia o budowie, liczbach, balansie i o tym, co jest technicznie wykonalne.
+
 ## Stack
 
 - **Phaser 4** (najnowsze 4.x), **TypeScript** w trybie strict, **Vite**, **Vitest** do testów, **Playwright** do zrzutów ekranu i testu dymnego.
@@ -62,6 +70,23 @@ Zasady:
 - Na start grafika zastępcza generowana w kodzie (kształty w paletach z dokumentu projektu) albo paczki **wyłącznie na licencji CC0** (np. Kenney). Każde źródło wpisz do `CREDITS.md`.
 - Prowadź `docs/ASSETS.md`: dla każdej grafiki wymiary w pikselach, kadrowanie, punkt zaczepienia, liczba klatek, tło. Piotr będzie generował docelowe grafiki w GPT według tej specyfikacji, więc pisz ją tak, żeby dało się z niej zrobić prompt do generatora obrazów.
 
+## Grafika z GPT
+
+- `art/raw/`: surowe obrazki od Piotra (z GPT, później z PixelLab). Oryginałów nigdy nie nadpisuj ani nie edytuj, skrypt tylko z nich czyta.
+- Skrypt importu: wycina jednolite tło magenta `#FF00FF`, przycina, zmniejsza do rozmiaru z `docs/ASSETS.md` bez wygładzania, sprowadza kolory do palety gry i zapisuje gotowy plik tam, gdzie wskazuje manifest. Obsługuje pojedyncze obrazki, sprite sheety i osobne klatki PNG.
+- Paleta gry pochodzi z okładki (key art), którą Piotr wrzuca do `art/raw/`. Dopóki nie ma zatwierdzonej palety, zaproponuj ją na podstawie okładki.
+- Jeden kąt kamery dla całego świata gry (mapa, bitwa, jednostki), zapisany w stałym bloku stylu w `docs/ART_PROMPTS.md`.
+- Teren heksów powstaje z kwadratowych, powtarzalnych tekstur, które gra przycina do kształtu heksa. GPT nie umie rysować heksów, więc nie zamawiaj u niego heksów.
+- `docs/ART_PROMPTS.md`: gotowe prompty do GPT po angielsku. Każdy zaczyna się od tego samego stałego bloku stylu (kąt kamery, paleta, pixel art, tło magenta).
+- Gdy Piotr napisze, że wrzucił grafiki: pobierz zmiany z GitHuba, przepuść nowe pliki przez skrypt, obejrzyj wynik w grze (zrzuty ekranu), wdróż i pokaż.
+- Grafiki Piotra (GPT, PixelLab) też odnotuj w `CREDITS.md`.
+
+## Animacje: najpierw kod, potem klatki
+
+- Wszystko, co się da, animuj w kodzie z pojedynczych obrazków: szyje, wypady i kłapanie głów, kołysanie, mignięcie przy trafieniu, odrzut, śmierć. Hydra prawie w całości tak.
+- Prowadź `docs/ANIMATIONS.md`: dla każdej jednostki lista animacji (nazwa, kod czy klatki, liczba klatek, rozmiar, fps, punkt zaczepienia, kierunki).
+- Animacje klatkowe (głównie rycerze: chód, atak, śmierć) Piotr zrobi prawdopodobnie w PixelLab (narzędzie AI do pixel artu, które animuje sprite'y i robi widoki z kilku kierunków). Niczego nie instaluj ani nie kupuj. Gdy dojdziemy do animacji rycerzy, sprawdź, jak działa jego integracja z Claude Code (MCP), i zaproponuj.
+
 ## Sprawdzanie pracy
 
 - `npm run typecheck`, `npm test` i `npm run build` muszą przejść przed każdym wdrożeniem.
@@ -75,3 +100,7 @@ Zasady:
 - Repo na koncie GitHub `lucid-academy`, nazwa robocza `hydra`. `gh` na serwerze jest zalogowany. Jeśli repo jeszcze nie istnieje, zapytaj Piotra przed jego utworzeniem: GitHub Pages na darmowym planie wymaga publicznego repo.
 - Wdrożenie: GitHub Actions buduje grę przy każdym pushu do `main` i publikuje ją na GitHub Pages.
 - Zapis gry w przeglądarce (localStorage), z numerem wersji formatu zapisu, żeby stare zapisy nie wysadzały nowej wersji gry.
+
+## Sekrety
+
+- Repo jest publiczne. Nigdy nie wrzucaj do niego kluczy, haseł ani tokenów, także w plikach konfiguracyjnych i logach. Jeśli coś wymaga klucza, trzymaj go poza repo i zapytaj Piotra, gdzie ma leżeć.
