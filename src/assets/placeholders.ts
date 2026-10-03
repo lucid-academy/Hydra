@@ -258,6 +258,31 @@ function battleSoldier(tabard: string, emblem: string, gear: 'sword' | 'axe' | '
   };
 }
 
+/**
+ * The lower jaw as its own image, so the game can open the mouth. The placeholder head already has its jaw drawn in,
+ * so this one stays empty; real art brings both parts (see docs/ASSETS.md, battle_head).
+ */
+const drawEmpty: PlaceholderDrawer = (scene, key, width, height) => {
+  const g = scene.make.graphics({}, false);
+  g.generateTexture(key, width, height);
+  g.destroy();
+};
+
+/** A dialogue portrait: a dark bust in front of a swampy glow, eyes catching the light. */
+const drawPortrait: PlaceholderDrawer = (scene, key, width, height, palette) => {
+  const g = scene.make.graphics({}, false);
+  g.fillStyle(color(palette.underground.deepTeal));
+  g.fillRect(0, 0, width, height);
+  g.fillStyle(color(palette.underground.swampGreen));
+  g.fillEllipse(width / 2, height, width * 1.1, height * 0.7); // shoulders
+  g.fillEllipse(width / 2, height * 0.45, width * 0.75, height * 0.42); // head
+  g.fillStyle(color(palette.underground.bioluminescence));
+  g.fillRect(Math.round(width * 0.33), Math.round(height * 0.42), 6, 3);
+  g.fillRect(Math.round(width * 0.6), Math.round(height * 0.42), 6, 3);
+  g.generateTexture(key, width, height);
+  g.destroy();
+};
+
 function battleDot(fill: string, rim: string): PlaceholderDrawer {
   return (scene, key, width, height) => {
     const g = scene.make.graphics({}, false);
@@ -278,12 +303,14 @@ export const placeholderDrawers: Readonly<Record<string, PlaceholderDrawer>> = {
   battle_mist_puff: battleBlob(true),
   battle_body: drawBattleBody,
   battle_head: drawBattleHead,
+  battle_head_jaw: drawEmpty,
   battle_enemy_manAtArms: battleSoldier('#9e2323', '#d9a93b', 'sword', false),
   battle_enemy_headhunter: battleSoldier('#5a1a1a', '#b08a3a', 'axe', true),
   battle_enemy_torchbearer: battleSoldier('#6b5530', '#8a7040', 'torch', false),
   battle_stump: battleDot('#8a2a2a', '#3a0d0d'),
   battle_scar: battleDot('#2a2220', '#111111'),
   title_background: drawTitleBackground,
+  portrait_oldMotherToad: drawPortrait,
 };
 
 /** battle_tile_<biome>_<ground|water>: a battle tile in the colours of the biome where the fight takes place. */

@@ -5,6 +5,7 @@
 import * as Phaser from 'phaser';
 import { GLOWING_DECORATIONS, MAP_COLUMN_WIDTH, MAP_FEET_BELOW_HEX_CENTER, MAP_ROCK_LIFT, MAP_ROW_HEIGHT, MAP_TILE } from '../assets/mapArt';
 import type { DecorationKind } from '../assets/mapArt';
+import { tileVariant } from '../assets/terrainTiles';
 import { hex, hexKey, hexNeighbors, hexToPixel, pixelToHex } from '../sim/hex';
 import type { Hex, HexLayout } from '../sim/hex';
 import type { MapObject, Tile } from '../sim/map';
@@ -134,7 +135,10 @@ export class MapScene extends Phaser.Scene {
     for (const tile of this.run.state.map.tiles.values()) {
       const { x, y } = hexToPixel(LAYOUT, tile.hex);
       const rock = tile.terrain === 'rock';
-      const ground = this.add.image(x, y, rock ? `map_rock_${tile.biome}` : `map_ground_${tile.biome}_${tile.terrain}`);
+      // The same map always looks the same: each hex picks its decorations and its tile variant from this.
+      const hexSeed = (seed ^ Math.imul(tile.hex.q + 64, 73856093) ^ Math.imul(tile.hex.r + 64, 19349663)) >>> 0;
+      const tileKey = rock ? `map_rock_${tile.biome}` : `map_ground_${tile.biome}_${tile.terrain}`;
+      const ground = this.add.image(x, y, tileVariant(this.textures, tileKey, hexSeed));
       // The image's anchor is the middle of the hex face (for rock: of the hex it stands on, below the raised top).
       const faceMiddle = MAP_TILE.faceHeight / 2 + (rock ? MAP_ROCK_LIFT : 0);
       ground.setOrigin(0.5, faceMiddle / ground.height);
@@ -151,7 +155,7 @@ export class MapScene extends Phaser.Scene {
         mark: rock ? null : this.add.image(x, y, 'map_mark').setDepth(DEPTH.mark).setTint(color(data.palette.underground.bioluminescence)).setVisible(false),
         fogEdge,
       };
-      if (!rock) this.decorate(view, x, y, (seed ^ Math.imul(tile.hex.q + 64, 73856093) ^ Math.imul(tile.hex.r + 64, 19349663)) >>> 0);
+      if (!rock) this.decorate(view, x, y, hexSeed);
       this.views.set(hexKey(tile.hex), view);
       this.placeObject(view);
     }

@@ -6,7 +6,9 @@
 // With no head selected, tap a free hex to move the body there (right-click always moves it).
 
 import * as Phaser from 'phaser';
-import { BODY_FOOT, FEET_BELOW_HEX_CENTER, HEX_COLUMN_WIDTH, HEX_ROW_HEIGHT, TILE } from '../assets/battleArt';
+import { BODY_FOOT, FEET_BELOW_HEX_CENTER, HEX_COLUMN_WIDTH, HEX_ROW_HEIGHT, JAW_OVERLAP, TILE } from '../assets/battleArt';
+import { battleTileKey, tileVariant } from '../assets/terrainTiles';
+import { variantKey } from '../assets/terrain';
 import { applyCommand, battleResult, bodyDistance, boardHexes, createBattle, isAcid, isOnBoard, stepBattle } from '../sim/battle';
 import type { BattleEvent, BattleHead, BattleState, Enemy, Walker } from '../sim/battle';
 import { hexDistance, hexKey, hexToPixel, pixelToHex } from '../sim/hex';
@@ -40,7 +42,7 @@ const NECK_DISC_SPACING = 2.5;
 const HEAD_FOLLOW_MS = 90;
 
 // Depths: board, then things on it sorted by how low on the screen they stand, then necks and heads, then UI.
-const DEPTH = { tile: 0, mark: 1, shadow: 2, standing: 10, mist: 40, necks: 50, heads: 51, overlay: 60, text: 70, ui: 100 } as const;
+const DEPTH = { tile: 0, mark: 1, shadow: 2, standing: 10, mist: 40, necks: 50, jaws: 50.5, heads: 51, overlay: 60, text: 70, ui: 100 } as const;
 
 interface Point {
   x: number;
@@ -50,6 +52,8 @@ interface Point {
 /** How a head is drawn right now; it glides towards where the simulation says it should be. */
 interface HeadView {
   sprite: Phaser.GameObjects.Image;
+  /** The lower jaw, its own image so the mouth can open (empty while the head is a placeholder). */
+  jaw: Phaser.GameObjects.Image;
   x: number;
   y: number;
   lungeUntil: number;
@@ -146,7 +150,7 @@ export class BattleScene extends Phaser.Scene {
     const pending = run.state.pendingBattle!;
     const tile = run.state.map.tiles.get(hexKey(pending.at));
     const biome = tile?.biome ?? data.biomes.lairBiome;
-    this.createBoard(`battle_tile_${biome}_${tile?.terrain === 'water' ? 'water' : 'ground'}`);
+    this.createBoard(biome, tile?.terrain ?? 'mud');
 
     this.bodySprite = this.add.image(0, 0, 'battle_body');
     this.bodySprite.setOrigin(BODY_FOOT.x / this.bodySprite.width, BODY_FOOT.y / this.bodySprite.height);
@@ -177,13 +181,19 @@ export class BattleScene extends Phaser.Scene {
 
   // ------------------------------------------------------------ board
 
-  /** Tiles row by row from the top: each row hides the walls of the row behind it, so only the front edge shows its walls. */
-  private createBoard(tileKey: string): void {
+  /**
+   * Tiles row by row from the top: each row hides the walls of the row behind it, so only the front edge shows its walls.
+   * Tiles cut from a terrain texture come in variants, so each hex gets its own; otherwise all hexes share one image.
+   */
+  private createBoard(biome: string, terrain: string): void {
     const rules = this.run.battleRules;
+    const cut = battleTileKey(biome, terrain, true);
+    const tileKey = this.textures.exists(variantKey(cut, 0)) ? cut : battleTileKey(biome, terrain, false);
     const originY = TILE.faceHeight / 2 / (TILE.faceHeight + TILE.wallHeight);
     for (const h of boardHexes(rules)) {
       const p = this.hexCenter(h);
-      this.add.image(p.x, p.y, tileKey).setOrigin(0.5, originY).setDepth(DEPTH.tile + p.y / 10000);
+      const variant = tileVariant(this.textures, tileKey, Math.imul(h.q + 64, 73856093) ^ Math.imul(h.r + 64, 19349663));
+      this.add.image(p.x, p.y, variant).setOrigin(0.5, originY).setDepth(DEPTH.tile + p.y / 10000);
       this.marks.set(hexKey(h), this.add.image(p.x, p.y, 'battle_hex_mark').setDepth(DEPTH.mark).setVisible(false));
       this.mistTiles.set(hexKey(h), this.add.image(p.x, p.y, 'battle_hex_fill').setDepth(DEPTH.mark).setVisible(false));
     }
@@ -450,14 +460,17 @@ export class BattleScene extends Phaser.Scene {
     for (const [id, view] of this.heads) {
       if (headIds.has(id)) continue;
       view.sprite.destroy();
+      view.jaw.destroy();
       this.heads.delete(id);
     }
     for (const head of this.battle.heads) {
       if (this.heads.has(head.id)) continue;
       const base = this.neckBase(body, head.anchorAngle);
-      const sprite = this.add.image(base.x, base.y, 'battle_head').setDepth(DEPTH.heads).setTint(color(heads.classes[head.classId]?.color ?? '#cccccc'));
+      const tint = color(heads.classes[head.classId]?.color ?? '#cccccc');
+      const sprite = this.add.image(base.x, base.y, 'battle_head').setDepth(DEPTH.heads).setTint(tint);
+      const jaw = this.add.image(base.x, base.y, 'battle_head_jaw').setOrigin(0.5, 0).setDepth(DEPTH.jaws).setTint(tint);
       // New heads start at the stump and grow out from there.
-      this.heads.set(head.id, { sprite, x: base.x, y: base.y, lungeUntil: 0, lungeTo: base, phase: this.heads.size * 1.7 + head.anchorAngle });
+      this.heads.set(head.id, { sprite, jaw, x: base.x, y: base.y, lungeUntil: 0, lungeTo: base, phase: this.heads.size * 1.7 + head.anchorAngle });
     }
 
     const enemyIds = new Set(this.battle.enemies.map((e) => e.id));
@@ -593,6 +606,7 @@ export class BattleScene extends Phaser.Scene {
       }
       this.drawNeck(base, { x, y });
       view.sprite.setPosition(Math.round(x), Math.round(y)).setFlipX(facing < 0);
+      view.jaw.setPosition(Math.round(x), Math.round(y) + view.sprite.height / 2 - JAW_OVERLAP).setFlipX(facing < 0);
     }
   }
 
@@ -772,13 +786,11 @@ export class BattleScene extends Phaser.Scene {
       const target = event.targetKind === 'head' ? this.heads.get(event.targetId as string) : undefined;
       if (view) Object.assign(view, { lungeUntil: now + 120, lungeTo: target ? { x: target.x, y: target.y } : this.bodyCenter() });
     }
+    const headHit = event.targetKind === 'head' ? this.heads.get(event.targetId as string) : undefined;
     const sprite =
-      event.targetKind === 'enemy'
-        ? this.enemies.get(event.targetId as number)?.sprite
-        : event.targetKind === 'head'
-          ? this.heads.get(event.targetId as string)?.sprite
-          : this.bodySprite;
+      event.targetKind === 'enemy' ? this.enemies.get(event.targetId as number)?.sprite : event.targetKind === 'head' ? headHit?.sprite : this.bodySprite;
     if (sprite) this.flash(sprite);
+    if (headHit) this.flash(headHit.jaw);
   }
 
   private flash(sprite: Phaser.GameObjects.Image): void {

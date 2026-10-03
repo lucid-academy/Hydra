@@ -3,6 +3,7 @@ import { checkCrossReferences, loadGameData } from '../src/data';
 import { balanceSchema, combosSchema } from '../src/data/schemas';
 import { DataError, validateData } from '../src/data/validate';
 import { placeholderFor } from '../src/assets/placeholders';
+import { isTerrainTextureKey } from '../src/assets/terrain';
 
 describe('data files', () => {
   it('all current data files are valid', () => {
@@ -12,7 +13,8 @@ describe('data files', () => {
   it('every manifest image without a file has a placeholder', () => {
     const { manifest } = loadGameData();
     for (const [key, entry] of Object.entries(manifest.images)) {
-      if (entry.file === null) expect(placeholderFor(key), key).toBeDefined();
+      // Terrain textures are raw material for tiles: without one, the tiles keep their own placeholders.
+      if (entry.file === null && !isTerrainTextureKey(key)) expect(placeholderFor(key), key).toBeDefined();
     }
   });
 });

@@ -13,3 +13,6 @@ export const BODY_FOOT = { x: 66, y: 66 };
 
 /** Soldiers stand with their feet this many pixels below the centre of their hex. */
 export const FEET_BELOW_HEX_CENTER = 5;
+
+/** The lower jaw (battle_head_jaw) hangs under the head image, both centred on the same point: its top edge overlaps the head's bottom edge by this many pixels. */
+export const JAW_OVERLAP = 1;

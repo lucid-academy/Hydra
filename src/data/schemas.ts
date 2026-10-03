@@ -366,6 +366,8 @@ const manifestEntrySchema = z
     file: z.string().min(1).nullable(),
     width: z.number().int().positive(),
     height: z.number().int().positive(),
+    // An animation: this many frames side by side in the file; width and height are of one frame.
+    frames: z.number().int().min(2).optional(),
   })
   .strict();
 

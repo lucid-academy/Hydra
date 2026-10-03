@@ -27,6 +27,22 @@ Composition: night over a swamp. Top ~40% dark sky. On the right a hill with the
 
 Prompt sketch: *"Pixel art, 640x360, hard pixels, no anti-aliasing. Night over a dark swamp. On a hill to the right, a gothic castle with a cathedral spire topped by a small eternal flame, a few warm orange windows. Murky green swamp water with teal ripples, yellow-green bioluminescent spores, pale greenish mist drifting low from the left. Cold palette of teal, black and swamp green against small warm gold and orange lights. Empty dark area top centre for a title."*
 
+## Terrain textures: texture_ground_<biome>_<kind>, texture_rock_<biome>
+
+| | |
+|---|---|
+| Size | 96×67 px each: a 96×96 square squashed to the camera angle |
+| Frames | 1 |
+| Anchor | none (never drawn on its own) |
+| Background | none: the texture fills the whole image |
+| Used in | map ground and rock tiles, battle board tiles |
+
+Real ground is not drawn hex by hex. GPT draws a square texture, straight from above and flat; the import squashes its height to 0.7 (the camera looks at the ground from about 45°), and when the game starts it cuts the tiles out of it: `map_ground_<biome>_<kind>` (30×28), `battle_tile_<biome>_<kind>` (42×46) and, from the rock texture, `map_rock_<biome>` (30×40). Each tile is cut 8 times from different parts of the texture, so neighbouring hexes differ. The game adds a 1 px darker rim to every hex face and builds the walls under its lower edges from the biome's rock texture (or the ground texture if there is no rock yet), darker on the left, lighter on the right. A tile image with its own file in the manifest wins over the texture. The battle board uses the texture of the ground the encounter stood on (water, mud, roots or salt).
+
+Keys, one per kind of ground in each biome (`src/data/biomes.json`): `lairSwamp` (water, mud), `floodedCaves` (water, mud), `rootTangle` (mud, roots), `fungalDeeps` (water, mud), `oldCrypts` (water, mud), `saltMines` (mud, salt), and one rock texture per biome. Prompts: `docs/ART_PROMPTS.md`.
+
+The texture should be even all over (nothing big in the middle, nothing that only works once), low in contrast, with chunky detail 2–6 px big at the game size. It does not have to tile seamlessly: the game never repeats it side by side.
+
 ## Map graphics: the underground seen from a slant
 
 The strategic map uses the same slanted view as the battle, in the spirit of Songs of Conquest: the ground is a carpet of squashed hexes in each biome's look, rock is raised into blocks, and decorations, objects and the hydra stand up on their hexes. Rules for every map graphic, on top of the general ones above:
@@ -167,6 +183,8 @@ Prompt sketch: *"Pixel art, 132x110, transparent background, seen from a slanted
 
 One hydra head seen from the side, **snout pointing right**, a glowing eye, a long mouth line. Draw it in **pale grey / white with a dark outline**: the game tints it with the colour of the head's class (from `src/data/heads.json`), so one image serves all classes.
 
+Real art comes in two parts, so the game can open the mouth: **battle_head** is the head without its lower jaw (20×14, the art sits at the bottom middle of the image) and **battle_head_jaw** is the lower jaw alone (20×7, the art sits at the top right, so the tips of both jaws line up). The game hangs the jaw under the head, both centred on the same point, the jaw's top edge overlapping the head's bottom edge by 1 px (`JAW_OVERLAP` in `src/assets/battleArt.ts`). GPT draws both parts side by side on one picture (`art/raw/battle_head.png`) and the import splits them. The placeholder head has its jaw drawn in, so its battle_head_jaw stays empty.
+
 ## Order soldiers: battle_enemy_manAtArms, battle_enemy_headhunter, battle_enemy_torchbearer
 
 | | |
@@ -186,6 +204,18 @@ People of the Order of the Eternal Flame, standing, seen from the side and a lit
 A new enemy type needs an image with the key `battle_enemy_<type id from enemies.json>`; without one, the game shows the Man-at-Arms.
 
 Prompt sketch: *"Pixel art character sprite, 26x38 pixels, transparent background, seen from a slanted top-down three-quarter angle, standing, facing right. A man-at-arms of a grim fire-worshipping religious order: banner-red tabard with a small gold flame emblem, steel helmet with visor, sword held upright on the right. Hard pixels, no anti-aliasing, dark outline, dark fantasy with warm colours."*
+
+## portrait_oldMotherToad
+
+| | |
+|---|---|
+| Size | 128×160 px |
+| Frames | 1 |
+| Anchor | top-left |
+| Background | transparent |
+| Used in | dialogues (from M5); not shown in the game yet |
+
+Old Mother Toad, guardian of the lair and mentor: a bust (head and shoulders), seen from the front and turned a little to the side. Portraits are a separate shot and don't follow the game camera.
 
 ## battle_stump, battle_scar
 

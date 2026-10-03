@@ -3,3 +3,10 @@ dist/
 test-results/
 playwright-report/
 *.log
+
+# Secrets never go into this public repo (keys, passwords, tokens).
+.env
+.env.*
+*.pem
+*.key
+secrets/
