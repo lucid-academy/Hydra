@@ -32,14 +32,24 @@ const DEFAULT_TEST_GROUP = 'burningDetail';
 /** After a combo the battle runs this many times slower for a moment, so the player can see it land. */
 const COMBO_SLOWDOWN = 0.3;
 const COMBO_SLOWDOWN_MS = 350;
-/** A tap this close to a head selects it (screen pixels). */
-const HEAD_TAP_RADIUS = 14;
+/** A tap this close to the middle of a head (with its jaw) selects it (screen pixels). */
+const HEAD_TAP_RADIUS = 18;
 /** Soldier images: how far around their feet a tap still counts as tapping them. */
 const SOLDIER_TAP = { halfWidth: 13, up: 38, down: 4 };
 /** Necks are drawn as overlapping discs, one every few pixels, so long necks stay one smooth tube. */
 const NECK_DISC_SPACING = 2.5;
 /** How fast drawn heads follow where they should be (ms to cover most of the way). */
 const HEAD_FOLLOW_MS = 90;
+/** An attacking head lunges at its target for this long; its jaw opens and snaps shut in the same time. */
+const HEAD_LUNGE_MS = 120;
+/** How far the jaw opens in a bite: degrees it turns around its back end. */
+const JAW_OPEN_DEGREES = 25;
+/** A head that is hit jumps this many pixels away from the blow and comes back. */
+const HEAD_RECOIL_PX = 3;
+const HEAD_RECOIL_MS = 120;
+/** Neck colours, taken from the body art: its outline and a lit green of its scales. */
+const NECK_OUTLINE = 0x030b0b;
+const NECK_FILL = 0x486a33;
 
 // Depths: board, then things on it sorted by how low on the screen they stand, then necks and heads, then UI.
 const DEPTH = { tile: 0, mark: 1, shadow: 2, standing: 10, mist: 40, necks: 50, jaws: 50.5, heads: 51, overlay: 60, text: 70, ui: 100 } as const;
@@ -58,6 +68,9 @@ interface HeadView {
   y: number;
   lungeUntil: number;
   lungeTo: Point;
+  /** Until when the head is jolted by a blow, and where the blow came from. */
+  recoilUntil: number;
+  recoilFrom: Point;
   phase: number;
 }
 
@@ -94,6 +107,8 @@ export class BattleScene extends Phaser.Scene {
   private heads = new Map<string, HeadView>();
   private enemies = new Map<number, EnemyView>();
   private stumpSprites = new Map<number, Phaser.GameObjects.Image>();
+  /** The point of the jaw image it turns around when the mouth opens. */
+  private jawHinge: Point = { x: 0, y: 0 };
   private necks!: Phaser.GameObjects.Graphics;
   private overlay!: Phaser.GameObjects.Graphics;
   private cards!: HeadCards;
@@ -154,6 +169,7 @@ export class BattleScene extends Phaser.Scene {
 
     this.bodySprite = this.add.image(0, 0, 'battle_body');
     this.bodySprite.setOrigin(BODY_FOOT.x / this.bodySprite.width, BODY_FOOT.y / this.bodySprite.height);
+    this.jawHinge = jawHinge(this.textures);
     this.necks = this.add.graphics().setDepth(DEPTH.necks);
     this.overlay = this.add.graphics().setDepth(DEPTH.overlay);
 
@@ -400,7 +416,8 @@ export class BattleScene extends Phaser.Scene {
     for (const head of this.battle.heads) {
       const view = this.heads.get(head.id);
       if (!view) continue;
-      const d = Math.hypot(view.x - at.x, view.y - at.y);
+      const shape = this.headShape(view);
+      const d = Math.hypot(shape.x - at.x, shape.y - at.y);
       if (d <= bestDistance) {
         best = head;
         bestDistance = d;
@@ -468,9 +485,20 @@ export class BattleScene extends Phaser.Scene {
       const base = this.neckBase(body, head.anchorAngle);
       const tint = color(heads.classes[head.classId]?.color ?? '#cccccc');
       const sprite = this.add.image(base.x, base.y, 'battle_head').setDepth(DEPTH.heads).setTint(tint);
-      const jaw = this.add.image(base.x, base.y, 'battle_head_jaw').setOrigin(0.5, 0).setDepth(DEPTH.jaws).setTint(tint);
+      const jaw = this.add.image(base.x, base.y, 'battle_head_jaw').setDepth(DEPTH.jaws).setTint(tint);
+      jaw.setOrigin(this.jawHinge.x / jaw.width, this.jawHinge.y / jaw.height);
       // New heads start at the stump and grow out from there.
-      this.heads.set(head.id, { sprite, jaw, x: base.x, y: base.y, lungeUntil: 0, lungeTo: base, phase: this.heads.size * 1.7 + head.anchorAngle });
+      this.heads.set(head.id, {
+        sprite,
+        jaw,
+        x: base.x,
+        y: base.y,
+        lungeUntil: 0,
+        lungeTo: base,
+        recoilUntil: 0,
+        recoilFrom: base,
+        phase: this.heads.size * 1.7 + head.anchorAngle,
+      });
     }
 
     const enemyIds = new Set(this.battle.enemies.map((e) => e.id));
@@ -597,17 +625,42 @@ export class BattleScene extends Phaser.Scene {
       view.y += (want.y - view.y) * follow;
       let x = view.x;
       let y = view.y;
+      // How far into its bite the head is: 0 at rest, 1 with the mouth wide open, half way through the lunge.
+      let bite = 0;
       if (now < view.lungeUntil) {
         const dx = view.lungeTo.x - x;
         const dy = view.lungeTo.y - y;
         const d = Math.hypot(dx, dy) || 1;
         x += (dx / d) * 6;
         y += (dy / d) * 6;
+        bite = Math.sin((1 - (view.lungeUntil - now) / HEAD_LUNGE_MS) * Math.PI);
       }
+      if (now < view.recoilUntil) {
+        const dx = x - view.recoilFrom.x;
+        const dy = y - view.recoilFrom.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const jolt = HEAD_RECOIL_PX * Math.sin(((view.recoilUntil - now) / HEAD_RECOIL_MS) * Math.PI);
+        x += (dx / d) * jolt;
+        y += (dy / d) * jolt;
+      }
+      x = Math.round(x);
+      y = Math.round(y);
       this.drawNeck(base, { x, y });
-      view.sprite.setPosition(Math.round(x), Math.round(y)).setFlipX(facing < 0);
-      view.jaw.setPosition(Math.round(x), Math.round(y) + view.sprite.height / 2 - JAW_OVERLAP).setFlipX(facing < 0);
+      view.sprite.setPosition(x, y).setFlipX(facing < 0);
+      // The jaw hangs under the head and turns around its back end; mirrored (negative scale) when facing left,
+      // so it still turns around that end. Its image is as wide as the head's, centred under it.
+      view.jaw
+        .setPosition(x + facing * (this.jawHinge.x - view.jaw.width / 2), y + view.sprite.height / 2 - JAW_OVERLAP + this.jawHinge.y)
+        .setScale(facing, 1)
+        .setAngle(facing * bite * JAW_OPEN_DEGREES);
     }
+  }
+
+  /** The middle of a drawn head with its jaw, and how far it reaches from there sideways and up and down. */
+  private headShape(view: HeadView): { x: number; y: number; halfWidth: number; halfHeight: number } {
+    const top = view.y - view.sprite.height / 2;
+    const bottom = view.y + view.sprite.height / 2 - JAW_OVERLAP + view.jaw.height;
+    return { x: view.x, y: (top + bottom) / 2, halfWidth: view.sprite.width / 2, halfHeight: (bottom - top) / 2 };
   }
 
   /** A neck as a chain of segments rising from the body in an arc, thinner towards the head. */
@@ -615,7 +668,7 @@ export class BattleScene extends Phaser.Scene {
     const bend = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 18 };
     const length = Math.hypot(bend.x - from.x, bend.y - from.y) + Math.hypot(to.x - bend.x, to.y - bend.y);
     const discs = Math.max(8, Math.ceil(length / NECK_DISC_SPACING));
-    for (const [width, fill] of [[5, 0x0e120e], [3.8, 0x3f7a4c]] as const) {
+    for (const [width, fill] of [[5.5, NECK_OUTLINE], [4.3, NECK_FILL]] as const) {
       this.necks.fillStyle(fill);
       for (let i = 0; i <= discs; i++) {
         const t = i / discs;
@@ -718,14 +771,15 @@ export class BattleScene extends Phaser.Scene {
     for (const head of this.battle.heads) {
       const view = this.heads.get(head.id);
       if (!view) continue;
-      hpBar(g, view.x, view.y - 11, 14, head.hp / head.maxHp, 0x7fc05a);
+      const shape = this.headShape(view);
+      hpBar(g, shape.x, shape.y - shape.halfHeight - 4, 20, head.hp / head.maxHp, 0x7fc05a);
       if (!this.selected.has(head.id)) continue;
       g.lineStyle(1, 0xc6e04a);
-      g.strokeEllipse(Math.round(view.x), Math.round(view.y), 26, 20);
+      g.strokeEllipse(Math.round(shape.x), Math.round(shape.y), shape.halfWidth * 2 + 6, shape.halfHeight * 2 + 6);
       const ordered = head.orderTargetId !== null ? this.enemies.get(head.orderTargetId) : undefined;
       if (ordered) {
         g.lineStyle(1, 0xff5030, 0.7);
-        g.lineBetween(view.x, view.y, ordered.feet.x, ordered.feet.y - 16);
+        g.lineBetween(shape.x, shape.y, ordered.feet.x, ordered.feet.y - 16);
       }
     }
     // Regrowth timer under each open stump.
@@ -779,14 +833,14 @@ export class BattleScene extends Phaser.Scene {
     const hitAt = this.hexFeet(event.at);
     if (event.attacker === 'head' && typeof event.attackerId === 'string') {
       const view = this.heads.get(event.attackerId);
-      if (view) Object.assign(view, { lungeUntil: now + 110, lungeTo: { x: hitAt.x, y: hitAt.y - 16 } });
-    }
-    if (event.attacker === 'enemy' && typeof event.attackerId === 'number') {
-      const view = this.enemies.get(event.attackerId);
-      const target = event.targetKind === 'head' ? this.heads.get(event.targetId as string) : undefined;
-      if (view) Object.assign(view, { lungeUntil: now + 120, lungeTo: target ? { x: target.x, y: target.y } : this.bodyCenter() });
+      if (view) Object.assign(view, { lungeUntil: now + HEAD_LUNGE_MS, lungeTo: { x: hitAt.x, y: hitAt.y - 16 } });
     }
     const headHit = event.targetKind === 'head' ? this.heads.get(event.targetId as string) : undefined;
+    if (event.attacker === 'enemy' && typeof event.attackerId === 'number') {
+      const view = this.enemies.get(event.attackerId);
+      if (view) Object.assign(view, { lungeUntil: now + 120, lungeTo: headHit ? { x: headHit.x, y: headHit.y } : this.bodyCenter() });
+      if (view && headHit) Object.assign(headHit, { recoilUntil: now + HEAD_RECOIL_MS, recoilFrom: { x: view.feet.x, y: view.feet.y - 20 } });
+    }
     const sprite =
       event.targetKind === 'enemy' ? this.enemies.get(event.targetId as number)?.sprite : event.targetKind === 'head' ? headHit?.sprite : this.bodySprite;
     if (sprite) this.flash(sprite);
@@ -851,6 +905,15 @@ export class BattleScene extends Phaser.Scene {
     );
     panel.add([box, title, button]);
   }
+}
+
+/** The point the lower jaw turns around: the top of its back end (its leftmost drawn column), in image pixels. */
+function jawHinge(textures: Phaser.Textures.TextureManager): Point {
+  const { width, height } = textures.getFrame('battle_head_jaw');
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) if ((textures.getPixelAlpha(x, y, 'battle_head_jaw') ?? 0) > 0) return { x, y };
+  }
+  return { x: width / 2, y: 0 }; // an empty jaw (the placeholder head has its jaw drawn in)
 }
 
 function hpBar(g: Phaser.GameObjects.Graphics, cx: number, y: number, width: number, share: number, fill: number): void {

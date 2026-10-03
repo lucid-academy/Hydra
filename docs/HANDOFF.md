@@ -11,7 +11,7 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 
 - Zrobione: **M0, M1, M1b, M2b** (sekcja 15 w `GAME_DESIGN.md`).
 - **M2b** (podziemia) jest wdrożony i czeka na playtest Piotra.
-- 2026-10-03 Piotr zmienił sposób pracy: grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. Plan grafiki (sekcja 3.2) Piotr zatwierdził tego samego dnia i potok jest zbudowany; **czeka na pierwszą partię 5 obrazków z GPT**.
+- 2026-10-03 Piotr zmienił sposób pracy: grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. Plan grafiki (sekcja 3.2) Piotr zatwierdził tego samego dnia i potok jest zbudowany. Wieczorem przyszła cała pierwsza partia (21 obrazków) i jest w grze; **czeka na uwagi Piotra**.
 - Następny etap gry to **M2a** (głowy), ale dopiero gdy Piotr skończy je projektować. Nie budować systemu głów bez niego.
 
 ## 2. Co zrobione
@@ -49,7 +49,14 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 
 ### 3.2 Grafika i animacje: plan z 2026-10-03, zatwierdzony
 
-**Zrobione 2026-10-03 (w projekcie Hydra w aplikacji Claude):** prompty (`docs/ART_PROMPTS.md`, punkt 6), skrypt `npm run art` (punkty 2, 3 i 9; `scripts/artImport.ts`), cięcie heksów z tekstur przy starcie gry (punkt 5; `src/assets/terrain.ts`), żuchwa jako osobny obrazek pod głową (bez kłapania), `docs/ANIMATIONS.md` (punkt 8) i `.gitignore` (punkt 10). Kąt 45° i portret 128×160 przyjęte jak w planie. Cały proces sprawdzony na sztucznych obrazkach: import, gra, zrzuty, smoke. Zostało: paleta z okładki (punkt 4, gdy przyjdzie okładka) i dopasowanie liczb (`BODY_FOOT`, `JAW_OVERLAP`, rozmiar głowy) po pierwszej prawdziwej partii.
+**Zrobione 2026-10-03 (w projekcie Hydra w aplikacji Claude):** prompty (`docs/ART_PROMPTS.md`, punkt 6), skrypt `npm run art` (punkty 2, 3 i 9; `scripts/artImport.ts`), cięcie heksów z tekstur przy starcie gry (punkt 5; `src/assets/terrain.ts`), żuchwa jako osobny obrazek pod głową (bez kłapania), `docs/ANIMATIONS.md` (punkt 8) i `.gitignore` (punkt 10). Kąt 45° i portret 128×160 przyjęte jak w planie. Cały proces sprawdzony na sztucznych obrazkach: import, gra, zrzuty, smoke. Zostało: paleta z okładki (punkt 4, gdy przyjdzie okładka).
+
+**Pierwsza partia, 2026-10-03 wieczorem:** Piotr zrobił od razu wszystkie 21 obrazków (12 tekstur gruntu, 6 skał, tułów, głowa z żuchwą, portret) w Codexie (generator obrazków GPT) i wrzucił je do `art/raw/` razem ze swoimi promptami (`art/raw/generation-*.txt`). Import przeszedł bez ostrzeżeń. Po zrzutach:
+- głowa powiększona z 20×14 do 36×18 (żuchwa 36×9): GPT narysował ją w ok. 43×21 własnych pikseli i przy 20 px zostawał szum;
+- `JAW_OVERLAP` 3 (zęby się zazębiają, pysk zamknięty), `BODY_FOOT` bez zmian;
+- szyje w kolorach tułowia (obrys #030b0b, wypełnienie #486a33);
+- kłapanie żuchwą przy ataku i odrzut głowy przy trafieniu (punkt 8, `docs/ANIMATIONS.md`).
+Portret jest w grze, ale żadna scena go jeszcze nie pokazuje (dialogi przyjdą z późniejszym etapem).
 
 Plan:
 
@@ -111,7 +118,7 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 
 **Czekają na Piotra:**
 1. Wrażenia z playtestu M2b: mapa, kapliczki, leże, nowe biomy.
-2. Pierwsza partia 5 obrazków z GPT (prompty 1–5 w `docs/ART_PROMPTS.md`).
+2. Uwagi do pierwszej partii grafik, już w grze (np. czy sól w Salt Mines nie jest za jasna, rozmiar głów).
 3. Okładka gry (key art) w `art/raw/`, z której powstanie paleta.
 4. Projekt głów do M2a. Powstanie w rozmowie w projekcie Hydra.
 
@@ -130,7 +137,7 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 
 ## 5. Znane problemy i braki
 
-- Cała grafika jest zastępcza, rysowana w kodzie.
+- Grafika z GPT jest na terenie (mapa i bitwa), tułowiu i głowach hydry. Reszta jest jeszcze zastępcza, rysowana w kodzie: ludzie Zakonu, obiekty i hydra na mapie, ekran tytułowy.
 - Nie ma zapisu gry: odświeżenie strony zaczyna run od nowa. `CLAUDE.md` wymaga zapisu w localStorage z numerem wersji formatu, w planie jest w M6.
 - Seed widać tylko z `?debug=1`. Menu pauzy, w którym miał być (§9), jeszcze nie ma.
 - Świadomie odłożone na późniejsze etapy:
@@ -141,12 +148,11 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
   - nie ma odwrotu z bitwy;
   - umiejętności Q/W/E, doświadczenie, specjalizacje, przypadłości, klasy Screamer, Glutton i The Spare oraz combosy poza trzema pierwszymi przyjdą z M2a.
 - Balans (`docs/BALANCE.md`): najsilniejsza grupa (Pyre Procession) pokonuje hydrę bez rozkazów w 63% bitew, a przy sensownych rozkazach w 6%. Wszystkie liczby są robocze.
-- Głowa w bitwie ma 20×14 px, więc z grafiki GPT zostanie mało szczegółów. Po pierwszym imporcie trzeba zdecydować, czy ją powiększyć.
 
 ## 6. Następne kroki
 
 1. Poczekać na odpowiedzi Piotra (sekcja 4).
-2. Gdy przyjdzie pierwsza partia: obrazki do `art/raw/` pod nazwami z promptów, `npm run art`, zrzuty, poprawić liczby (3.2), wdrożyć, pokazać. Potem kłapanie i odrzut w kodzie (`docs/ANIMATIONS.md`).
+2. Pierwsza partia jest w grze. Dalej z `docs/ANIMATIONS.md` (stan „do zrobienia”): oddech i drgnięcie tułowia, ścięcie głowy. Kolejne grafiki: ludzie Zakonu, obiekty i hydra na mapie, tło tytułu (prompty trzeba dopisać do `docs/ART_PROMPTS.md`).
 3. Gdy przyjdzie okładka: propozycja palety (próbnik i okładka w palecie), po akceptacji zapis w repo.
 4. Gdy Piotr napisze, że wrzucił grafiki: `git pull`, `npm run art`, obejrzeć wynik w grze, wdrożyć, pokazać.
 5. Zatwierdzone decyzje od razu wpisywać do `GAME_DESIGN.md`, a budować w swoim etapie.

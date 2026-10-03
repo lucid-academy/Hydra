@@ -8,7 +8,7 @@ Jak czytać tabele:
 - **Klatki, rozmiar, fps:** tylko dla animacji z klatek. Rozmiar to jedna klatka w pikselach gry.
 - **Zaczepienie:** punkt obrazka, który stoi w miejscu postaci (ten sam we wszystkich klatkach).
 - **Kierunki:** wszyscy patrzą w prawo, gra odbija ich w lewo. Inne kierunki tylko wtedy, gdy postanowimy inaczej.
-- **Stan:** `jest` (działa w grze), `z grafiką` (zrobimy, gdy przyjdzie docelowy obrazek, żeby nie robić tego dwa razy), `później` (z etapem, który tego potrzebuje).
+- **Stan:** `jest` (działa w grze), `z grafiką` (zrobimy, gdy przyjdzie docelowy obrazek, żeby nie robić tego dwa razy), `do zrobienia` (obrazek już jest, animacja w kolejnym kroku), `później` (z etapem, który tego potrzebuje).
 
 Klatki jednej animacji: osobne pliki `art/raw/<klucz>_frame1.png`, `_frame2.png`... albo kilka figur obok siebie na jednym obrazku. Skrypt `npm run art` przycina wszystkie klatki jednym wspólnym prostokątem, żeby postać nie skakała, i składa je w jeden pasek.
 
@@ -18,8 +18,8 @@ Klatki jednej animacji: osobne pliki `art/raw/<klucz>_frame1.png`, `_frame2.png`
 |---|---|---|---|---|---|---|---|
 | Przesuwanie po planszy | kod: ślizg z heksu na heks | – | 132×110 | – | środek podstawy (66, 66) | brak (bez przodu i tyłu) | jest |
 | Mignięcie przy trafieniu | kod: 70 ms na biało | – | | | | | jest |
-| Oddech | kod: lekkie spłaszczanie i rozciąganie w pionie, ok. 3 s na cykl | – | | | | | z grafiką |
-| Drgnięcie przy mocnym ciosie | kod: odrzut o 1–2 px od ciosu i powrót | – | | | | | z grafiką |
+| Oddech | kod: lekkie spłaszczanie i rozciąganie w pionie, ok. 3 s na cykl | – | | | | | do zrobienia |
+| Drgnięcie przy mocnym ciosie | kod: odrzut o 1–2 px od ciosu i powrót | – | | | | | do zrobienia |
 
 ## Głowy: battle_head i battle_head_jaw
 
@@ -27,17 +27,17 @@ Jeden szary obrazek dla wszystkich klas, gra barwi go kolorem klasy. Żuchwa to 
 
 | Animacja | Jak | Klatki | Rozmiar | fps | Zaczepienie | Kierunki | Stan |
 |---|---|---|---|---|---|---|---|
-| Kołysanie w spoczynku | kod: wolne falowanie (ok. 2 px) | – | głowa 20×14, żuchwa 20×7 | – | środek głowy; żuchwa wisi pod nią | w prawo, odbicie w lewo | jest |
-| Wypad przy ataku | kod: skok o 6 px w stronę celu na 110 ms | – | | | | | jest |
+| Kołysanie w spoczynku | kod: wolne falowanie (ok. 2 px) | – | głowa 36×18, żuchwa 36×9 | – | środek głowy; żuchwa wisi pod nią, zachodzi na głowę o 3 px | w prawo, odbicie w lewo | jest |
+| Wypad przy ataku | kod: skok o 6 px w stronę celu na 120 ms | – | | | | | jest |
 | Mignięcie przy trafieniu | kod: 70 ms na biało | – | | | | | jest |
 | Wyrastanie z kikuta | kod: nowa głowa startuje z kikuta i płynie na miejsce | – | | | | | jest |
-| Kłapanie przy ataku | kod: żuchwa obraca się wokół tylnego końca (ok. 25°) i wraca, ok. 120 ms | – | | | zawias na lewym końcu żuchwy | | z grafiką |
-| Odrzut przy trafieniu | kod: głowa odskakuje o 2–3 px od ciosu | – | | | | | z grafiką |
-| Ścięcie | kod: głowa spada i znika, krótkie mignięcie kikuta | – | | | | | z grafiką |
+| Kłapanie przy ataku | kod: w czasie wypadu żuchwa obraca się o 25° wokół tylnego końca i wraca (120 ms); przy każdym ataku, też przy pluciu i zionięciu | – | | | zawias na lewym końcu żuchwy (gra sama go znajduje) | | jest |
+| Odrzut przy trafieniu | kod: głowa odskakuje o 3 px od ciosu i wraca (120 ms) | – | | | | | jest |
+| Ścięcie | kod: głowa spada i znika, krótkie mignięcie kikuta | – | | | | | do zrobienia |
 
 ## Szyje
 
-Rysowane w całości w kodzie: łańcuch nakładających się krążków po łuku od tułowia do głowy, cieńszy przy głowie. Ruszają się razem z głową. Stan: `jest`. Gdy przyjdzie grafika hydry, kolor i obrys szyi dopasujemy do tułowia (dwa kolory w kodzie, bez obrazka).
+Rysowane w całości w kodzie: łańcuch nakładających się krążków po łuku od tułowia do głowy, cieńszy przy głowie. Ruszają się razem z głową. Kolory wzięte z tułowia: obrys #030b0b i zielone wypełnienie #486a33 (`NECK_OUTLINE`, `NECK_FILL` w `src/scenes/BattleScene.ts`). Stan: `jest`.
 
 ## Ludzie Zakonu: battle_enemy_manAtArms, battle_enemy_headhunter, battle_enemy_torchbearer
 
