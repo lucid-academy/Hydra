@@ -224,7 +224,7 @@ Camera: one angle for the whole game, a three-quarter view from above, about 45 
 Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
 
 Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
-Subject: a dry, cracked crust of salt, white with a faint pink tint (#cfc6bc, #f4eee8, shadows #6a625c), broken into plates by dark cracks, with sharp little crystals catching the light. It must look hard and painful to walk on. Even detail spread over the whole square, nothing big in the middle.
+Subject: a dry, cracked crust of dirty salt deep in a dark mine: dim grey-pink, never white (plates around #8a8078 and #9c9188, shadows #4a4440, the brightest pixels #c4bab0 only on a few crystal edges), broken into plates by dark cracks, with sharp little crystals. It must look hard and painful to walk on, but stay as dark and muted as the rest of the underground. Even detail spread over the whole square, nothing big in the middle.
 Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: plates 8 to 20 pixels across, cracks 1 pixel.
 ```
 
