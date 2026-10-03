@@ -1,0 +1,194 @@
+Generator: built-in image_gen tool. Separate generation for each requested asset.
+
+texture_ground_floodedCaves_mud.png: Flooded Caves, mokry kamień i muł
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: the floor of a flooded cave: wet grey-green stone and silt (around #1d3833 and #2d5a4a), smooth water-worn pebbles, shallow puddles that catch a little light. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: pebbles and puddles 2 to 6 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_rootTangle_mud.png: Root Tangle, ziemia
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark, crumbly soil deep under the roots of a forest (around #33261a and #4a3a22): thin rootlets, small stones, a few dry leaves fallen through cracks from far above. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: stones and rootlets 2 to 6 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_rootTangle_roots.png: Root Tangle, korzenie
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark soil almost hidden under thick, gnarled roots crawling across it in every direction and twisting over each other (roots brown-grey, #6b4a2a highlights, soil #33261a). It must look slow and tiring to walk through. Even detail spread over the whole square, nothing big in the middle.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: roots 2 to 5 pixels thick.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_fungalDeeps_water.png: Fungal Deeps, woda
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark, still water in a cave full of fungi (around #1a2a3a) with a faint violet sheen, floating spores and a few tiny glowing violet specks (#c65bd6). Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: ripples and specks 1 to 5 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_fungalDeeps_mud.png: Fungal Deeps, grzybowe podłoże
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: purplish, spongy fungal ground (around #2a2032 and #5a3d66): threads of mycelium, tiny flattened caps and cups, soft lumps, a few faint pink-violet glowing specks. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: lumps and caps 2 to 6 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_oldCrypts_water.png: Old Crypts, zalane płyty
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark, stagnant water (around #1c2a2c) that has flooded the floor of old catacombs: under the surface you can just make out the edges of big stone slabs, a little floating dust and a few pale ripples. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: slab edges and ripples 1 to 4 pixels thick.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_oldCrypts_mud.png: Old Crypts, posadzka katakumb
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: the floor of old catacombs: worn grey-brown flagstones of uneven sizes (around #2e2b27 and #4a4540) with cracks, dust in the joints and a few small bone fragments. No grass, no moss. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: flagstones 12 to 30 pixels across, joints 1 pixel.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_saltMines_mud.png: Salt Mines, ubite podłoże kopalni
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: the packed floor of an old salt mine: grey-brown earth mixed with salt (around #4a4440 and #8a8078), faint cart ruts, scattered small white salt crystals. Even detail spread over the whole square, nothing big in the middle, low contrast.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: crystals and stones 1 to 5 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_ground_saltMines_salt.png: Salt Mines, solna skorupa
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square ground texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: a dry, cracked crust of salt, white with a faint pink tint (#cfc6bc, #f4eee8, shadows #6a625c), broken into plates by dark cracks, with sharp little crystals catching the light. It must look hard and painful to walk on. Even detail spread over the whole square, nothing big in the middle.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: plates 8 to 20 pixels across, cracks 1 pixel.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_rock_floodedCaves.png: Flooded Caves, skała
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square rock texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: wet, dark grey-blue cave rock (around #2e3436), smooth and water-worn, glistening with a few pale highlights, thin cracks. It must read as one solid mass of stone, not as separate stones or tiles. The game uses it for the tops of rock walls and, darkened, for their sides.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: cracks and patches 2 to 8 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_rock_rootTangle.png: Root Tangle, skała
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square rock texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark brown, earthy rock (around #3a2f25) with thin roots growing through its cracks and a few pale lichen spots. It must read as one solid mass of stone, not as separate stones or tiles. The game uses it for the tops of rock walls and, darkened, for their sides.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: cracks, roots and patches 2 to 8 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_rock_fungalDeeps.png: Fungal Deeps, skała
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square rock texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: dark violet-grey rock (around #2f2836) overgrown with patches of fungus and threads of mycelium, a few tiny violet glowing specks. It must read as one solid mass of stone, not as separate stones or tiles. The game uses it for the tops of rock walls and, darkened, for their sides.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: cracks and patches 2 to 8 pixels big.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_rock_oldCrypts.png: Old Crypts, mur krypty
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square rock texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: old crypt masonry: big dark stone blocks (around #3b3732) laid in courses, cracked and chipped, crumbling mortar lines, a little dust. The game uses it for the tops of crypt walls and, darkened, for their sides.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: blocks 16 to 32 pixels long, mortar lines 1 pixel.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+texture_rock_saltMines.png: Salt Mines, sól kamienna
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a seamless square rock texture that fills the whole picture edge to edge (no magenta, no border). Seen straight from above, completely flat: no perspective, no horizon, ignore the camera angle for this one.
+Subject: rock salt as seen in a mine wall: grey-pink layers (around #5a524c) with pale streaks and veins of white crystal, a few pick marks. It must read as one solid mass, not as separate stones or tiles. The game uses it for the tops of rock walls and, darkened, for their sides.
+Size: drawn as pixel art about 96 by 96 pixels, so keep the shapes chunky: layers and veins 2 to 8 pixels thick.
+Production clarifications: One seamless repeat tile only, NOT a grid of multiple tiles or presentation sheet. The subject fills every pixel of the square. Opposing edges wrap naturally with no visible seams when tiled in both directions. Distribute color and detail evenly throughout the whole square, no focal area, no vignette, no edge shading or borders. Actual flat top-down material texture overrides the normal game camera. A coarse approximately 96x96 LOGICAL pixel grid, displayed as a crisp nearest-neighbor enlargement. Use large uniform square pixels, discrete palette colors, no fine noise or painterly gradients. Preserve the subject-specific material colors above. No text or filenames in the artwork.
+
+-----
+
+portrait_oldMotherToad.png: Old Mother Toad
+Pixel art game asset for "Hydra", a dark fantasy roguelite about a hydra from an underground swamp. Crisp low-resolution pixel art with big, clearly visible square pixels: no anti-aliasing, no blur, no soft gradients (dithering only), no text, no signature, no frame, no border.
+Colours: a cold, dark underground of near-black #05090a, deep teal #0e3b3f, swamp green #2f4a2a and sickly yellow-green bioluminescence #c6e04a; the Order of the Eternal Flame brings warm gold #d9a93b, orange #e0702a, banner red #9e2323 and fire #ffcf5c; mist is pale greenish grey #a9b8a8. Muted and dark overall, only glows and fire are bright.
+Camera: one angle for the whole game, a three-quarter view from above, about 45 degrees above the ground; light from the upper left.
+Background: one flat, solid magenta #FF00FF everywhere around the subject, with no shadow, gradient or floor on it, unless the request below says the image is a texture that fills the whole picture.
+
+Request: a dialogue portrait, a bust (head and shoulders), on the flat magenta background. Portraits are a separate shot: ignore the game camera, show her from the front, turned slightly to the side.
+Subject: Old Mother Toad, the ancient guardian of the hydra's lair and its mentor, who has buried eleven generations of hydras. An enormous, very old swamp toad: wrinkled, warty olive-green skin, moss and lichen on her back, heavy half-closed eyes with yellow-green irises, a necklace of small bones and shells. Expression: deadpan, unimpressed, a little tired. A faint yellow-green glow of spores around her.
+Size: in the game the portrait is 128 by 160 pixels, so keep the shapes bold and readable.
+Production clarifications: One single centered bust portrait, fully inside the image, enough magenta margin to show the silhouette. Portrait aspect ratio 4:5, intended 128x160 logical pixels, enlarged as chunky square pixel blocks. Only the requested character, necklace and very sparse tiny block-shaped spore glints. The magenta background is a flat fill. No fog, soft halos, atmosphere or scenery. Bold readable face: deadpan, elderly, unimpressed and a little tired. Do not draw a frame.

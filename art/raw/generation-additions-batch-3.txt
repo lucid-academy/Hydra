@@ -1,0 +1,9 @@
+Generator: built-in image_gen.
+For assets 6–10, appended:
+Keep exactly the material and details described in Subject. The subject-specific palette takes precedence over general world colors; do not add green growth, spores, plants or other objects unless specifically requested for this surface.
+
+For assets 11–15, appended:
+Keep exactly the material and details described in Subject. The subject-specific palette takes precedence over general world colors.
+
+For texture_rock_rootTangle.png, texture_rock_fungalDeeps.png and texture_rock_saltMines.png, additionally appended:
+Crucial bedrock constraint: a continuous flat mass of rock, without separate stone silhouettes, outlined boulders, cobbles, paving stones or bevelled stone edges. Fine short branching cracks must NOT form closed compartments; no individual stone shadows. Broad subtle mineral color patches continue across the cracks. Avoid a repeated network of polygonal joints. Any plant or fungal growth is only the sparse surface detail explicitly requested.
