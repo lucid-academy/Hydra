@@ -11,7 +11,7 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 
 - Zrobione: **M0, M1, M1b, M2b** (sekcja 15 w `GAME_DESIGN.md`).
 - **M2b** (podziemia) jest wdrożony i czeka na playtest Piotra.
-- 2026-10-03 Piotr zmienił sposób pracy: grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. **Plan wdrożenia grafiki czeka na OK** (sekcja 3.2).
+- 2026-10-03 Piotr zmienił sposób pracy: grafika będzie z GPT, animacje najpierw w kodzie. Zasady są już w `CLAUDE.md`. Plan grafiki (sekcja 3.2) Piotr zatwierdził tego samego dnia i potok jest zbudowany; **czeka na pierwszą partię 5 obrazków z GPT**.
 - Następny etap gry to **M2a** (głowy), ale dopiero gdy Piotr skończy je projektować. Nie budować systemu głów bez niego.
 
 ## 2. Co zrobione
@@ -36,7 +36,7 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 - Spotkania w trzech poziomach siły, rosnących z odległością od leża. Plansza bitwy w kolorach biomu, w którym stało spotkanie.
 - Przejścia na powierzchnię stoją na mapie, ale są zamknięte do M4.
 
-**Narzędzia.** `npm run smoke` gra sama jak gracz: mapa, bitwy, przegrana, kapliczki; z `-- phone` na ekranie telefonu. `npm run balance` rozgrywa setki automatycznych bitew, wynik w `docs/BALANCE.md`. `npm run shots` robi zrzuty do `docs/screens/`. Parametry URL są w `README.md`.
+**Narzędzia.** `npm run smoke` gra sama jak gracz: mapa, bitwy, przegrana, kapliczki; z `-- phone` na ekranie telefonu. `npm run balance` rozgrywa setki automatycznych bitew, wynik w `docs/BALANCE.md`. `npm run shots` robi zrzuty do `docs/screens/`. `npm run art` wstawia do gry obrazki z `art/raw/` (opis w `docs/ASSETS.md`). Parametry URL są w `README.md`.
 
 **Zasady pracy (2026-10-03).** Nowe sekcje w `CLAUDE.md`: Notatki decyzji, Grafika z GPT, Animacje, Sekrety. Cała historia repo przejrzana: nie ma w niej kluczy, haseł ani tokenów.
 
@@ -47,7 +47,11 @@ Stan na 2026-10-03. Ten plik streszcza dotychczasową pracę, żeby następna se
 - Od 2026-10-03 projekt gry i budowa są w jednym projekcie Hydra w aplikacji Claude (wcześniej projekt gry był osobno, a budowa w Claude Code na serwerze). Zatwierdzone decyzje od razu do `GAME_DESIGN.md` (jeden commit, pokazać, co zmienione), budowa dopiero w swoim etapie. Gdy decyzja przeczy kodowi albo dokumentowi: pytać.
 - Szczegóły w `CLAUDE.md`.
 
-### 3.2 Grafika i animacje: plan z 2026-10-03, czeka na OK Piotra
+### 3.2 Grafika i animacje: plan z 2026-10-03, zatwierdzony
+
+**Zrobione 2026-10-03 (w projekcie Hydra w aplikacji Claude):** prompty (`docs/ART_PROMPTS.md`, punkt 6), skrypt `npm run art` (punkty 2, 3 i 9; `scripts/artImport.ts`), cięcie heksów z tekstur przy starcie gry (punkt 5; `src/assets/terrain.ts`), żuchwa jako osobny obrazek pod głową (bez kłapania), `docs/ANIMATIONS.md` (punkt 8) i `.gitignore` (punkt 10). Kąt 45° i portret 128×160 przyjęte jak w planie. Cały proces sprawdzony na sztucznych obrazkach: import, gra, zrzuty, smoke. Zostało: paleta z okładki (punkt 4, gdy przyjdzie okładka) i dopasowanie liczb (`BODY_FOOT`, `JAW_OVERLAP`, rozmiar głowy) po pierwszej prawdziwej partii.
+
+Plan:
 
 1. **Kąt kamery:** widok 3/4 z góry, kamera ok. 45° nad ziemią, światło z lewej góry. Tak już są narysowane plansza bitwy i mapa (heksy spłaszczone do ok. 0,7 wysokości), więc nic do przebudowy. Portrety i ekran tytułowy to osobne ujęcia, na wprost.
 2. **Skrypt `npm run art`** (biblioteka sharp, tylko jako narzędzie, do gry nie trafia):
@@ -107,7 +111,7 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 
 **Czekają na Piotra:**
 1. Wrażenia z playtestu M2b: mapa, kapliczki, leże, nowe biomy.
-2. OK dla planu grafiki (3.2) i dwie odpowiedzi: kąt 45°, portret Old Mother Toad 128×160.
+2. Pierwsza partia 5 obrazków z GPT (prompty 1–5 w `docs/ART_PROMPTS.md`).
 3. Okładka gry (key art) w `art/raw/`, z której powstanie paleta.
 4. Projekt głów do M2a. Powstanie w rozmowie w projekcie Hydra.
 
@@ -142,7 +146,7 @@ Podjęte przy budowie, nie ma ich w `GAME_DESIGN.md`. Liczby leżą w `src/data/
 ## 6. Następne kroki
 
 1. Poczekać na odpowiedzi Piotra (sekcja 4).
-2. Po OK wdrożyć potok grafiki według planu z 3.2: małymi krokami, każdy z testami, zrzutami i wdrożeniem.
+2. Gdy przyjdzie pierwsza partia: obrazki do `art/raw/` pod nazwami z promptów, `npm run art`, zrzuty, poprawić liczby (3.2), wdrożyć, pokazać. Potem kłapanie i odrzut w kodzie (`docs/ANIMATIONS.md`).
 3. Gdy przyjdzie okładka: propozycja palety (próbnik i okładka w palecie), po akceptacji zapis w repo.
 4. Gdy Piotr napisze, że wrzucił grafiki: `git pull`, `npm run art`, obejrzeć wynik w grze, wdrożyć, pokazać.
 5. Zatwierdzone decyzje od razu wpisywać do `GAME_DESIGN.md`, a budować w swoim etapie.

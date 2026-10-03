@@ -1,10 +1,22 @@
 # Assets — graphics specification
 
-Every graphic is loaded by a key from `src/assets/manifest.json`. To replace a placeholder:
+Every graphic is loaded by a key from `src/assets/manifest.json`. To replace a placeholder with a picture from GPT:
 
-1. Put the PNG in `public/` (e.g. `public/images/title_background.png`).
-2. In the manifest, change `"file": null` to the path relative to `public/`, e.g. `"file": "images/title_background.png"`.
-3. Keep the exact pixel size listed below. No code changes needed.
+1. Save the picture as `art/raw/<key>.png`, e.g. `art/raw/battle_body.png` (any size; prompts are in `docs/ART_PROMPTS.md`).
+2. Run `npm run art`. It removes the magenta background, trims and shrinks the picture to the size listed below, saves it to `public/images/<key>.png` and sets `"file"` in the manifest. The originals in `art/raw/` are never changed, so the import can be run again at any time (e.g. once the palette is settled).
+3. No code changes needed.
+
+A finished PNG at the exact size can also go straight into `public/images/`, with its path (relative to `public/`) as `"file"` in the manifest.
+
+How `npm run art` treats each kind of image (`scripts/artImport.ts`):
+
+- **Textures** (`texture_*`): no background; the middle square of the picture is squashed to the listed size.
+- **Full-screen pictures** (`title_background`): cropped to the screen's shape and shrunk.
+- **Everything else** stands on magenta: the background goes, stray specks go, and the figure is fitted into its box keeping its shape. Things that stand (soldiers, the body, decorations, objects, portraits) sit on the bottom edge of the box; others in the middle.
+- **Tinted images** (heads, mist, marks) are turned grey, the brightest part white.
+- **Shrinking** gives each game pixel the most common colour of the block of pixels it covers, so no blurred colours appear.
+- **Animations:** frames as `art/raw/<key>_frame1.png`, `_frame2.png`... (or several figures side by side on one picture when the manifest entry has `"frames"`), cut with one common box and saved as a strip; `"frames"` in the manifest says how many.
+- **Palette:** when `art/palette.json` exists (`{"colors": ["#rrggbb", ...]}`), every colour is replaced by the nearest palette colour.
 
 General rules for all graphics (use them in every image-generator prompt):
 
